@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing 
+		infrastructure -->
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- config -->
+	<beans:bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<beans:property name="locations">
+			<beans:list>
+				<beans:value>classpath:dts.properties</beans:value>
+			</beans:list>
+		</beans:property>
+		<beans:property name="placeholderPrefix">
+			<beans:value>#[</beans:value>
+		</beans:property>
+		<beans:property name="placeholderSuffix">
+			<beans:value>]</beans:value>
+		</beans:property>
+	</beans:bean>
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+		up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/assets/**" location="/assets/" />
+	<resources mapping="/assets/upload/**" location="/assets/upload/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
+		in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<context:component-scan base-package="tianci.pinao.dts" />
+	
+	<beans:bean id="dataSourceParent" destroy-method="close" abstract="true">
+		<beans:property name="driverClass">
+			<beans:value>#[jdbc.driverClassName]</beans:value>
+		</beans:property>
+		<beans:property name="maxPoolSize">
+			<beans:value>#[default.maxPoolSize]</beans:value>
+		</beans:property>
+		<beans:property name="minPoolSize">
+			<beans:value>#[default.minPoolSize]</beans:value>
+		</beans:property>
+		<beans:property name="initialPoolSize">
+			<beans:value>#[default.initialPoolSize]</beans:value>
+		</beans:property>
+		<beans:property name="idleConnectionTestPeriod">
+			<beans:value>#[default.idleConnectionTestPeriod]</beans:value>
+		</beans:property>
+		<beans:property name="maxIdleTime">
+			<beans:value>#[default.maxIdleTime]</beans:value>
+		</beans:property>
+	</beans:bean>
+	
+	<beans:bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close" parent="dataSourceParent">
+		<beans:property name="jdbcUrl">
+			<beans:value>#[db.url]</beans:value>
+		</beans:property>
+		<beans:property name="user">
+			<beans:value>#[db.username]</beans:value>
+		</beans:property>
+		<beans:property name="password">
+			<beans:value>#[db.password]</beans:value>
+		</beans:property>
+	</beans:bean>
+
+	<beans:bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<beans:property name="dataSource">
+			<beans:ref bean="dataSource" />
+		</beans:property>
+	</beans:bean>
+	
+    <!-- 开启SpringMVC上传下载功能 -->
+  	<beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+
+	<beans:bean id="areaService" class="tianci.pinao.dts.service.impl.AreaServiceImpl">
+		<beans:property name="areaDao" ref="areaDao" />
+	</beans:bean>
+	
+	<beans:bean id="areaDao" class="tianci.pinao.dts.dao.impl.AreaDaoImpl">
+		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
+	</beans:bean>
+</beans:beans>
