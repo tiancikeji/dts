@@ -134,7 +134,7 @@
 	
 	<!-- server life time record -->
 	<beans:bean id="serverLifeTimeRecordTask" class="tianci.pinao.dts.task.ServerLifeTimeRecordTask" 
-		init-method="init" destroy-method="destroy">
+		init-method="init" destroy-method="destroy" scope="singleton">
 		<beans:property name="logService" ref="logService" />
 	</beans:bean>
 	
@@ -148,8 +148,8 @@
 	</beans:bean>
 	<beans:bean id="softwareLifeTimeRecordTaskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
 		<beans:property name="jobDetail" ref="softwareLifeTimeRecordTaskJob" />
-	    <beans:property name="startDelay" ref="300000" />
-	    <beans:property name="repeatInterval" ref="300000" />
+	    <beans:property name="startDelay" value="300000" />
+	    <beans:property name="repeatInterval" value="300000" />
 	    <beans:property name="repeatCount" value="-1" />
 	</beans:bean>
 	

@@ -10,7 +10,7 @@ create table area (
 	id int(10) not null auto_increment comment "自增id",
 	name varchar(50) not null comment "分区名字",
 	level tinyint(3) not null default 0 comment "第几层：0-厂区，1-缆沟，2-分区",
-	`index` tinyinit(3) not null default 0 comment "报警区域",
+	`index` tinyint(3) not null default 0 comment "报警区域",
 	parent int(10) not null default 0 comment "父级id",
 	image varchar(1024) comment "自定义背景图片",
 	lastmod_time datetime not null comment "上次修改时间",
@@ -148,9 +148,18 @@ create table log (
 	index logtime (lastmod_time)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
 -- temp table
 CREATE TABLE `temperature` (
+	`channel` int(10) NOT NULL,
+	`tem` MEDIUMTEXT NOT NULL,
+	`stock` MEDIUMTEXT DEFAULT NULL,
+	`unstock` MEDIUMTEXT DEFAULT NULL,
+	`refer_tem` double DEFAULT NULL,
+	`date` datetime NOT NULL,
+	`status` tinyint(3) not null default 0 comment "0: new, 1: alarm checked",
+  KEY `tm_key` (`channel`,`date`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+CREATE TABLE `temperature_tmp` (
 	`channel` int(10) NOT NULL,
 	`tem` MEDIUMTEXT NOT NULL,
 	`stock` MEDIUMTEXT DEFAULT NULL,

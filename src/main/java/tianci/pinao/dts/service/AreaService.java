@@ -14,6 +14,10 @@ public interface AreaService {
 
 	public List<Area> getAllAreas();
 
+	// only for download...
+	public List<Area> getAllAailableAreas();
+	// end of only for download...
+
 	public boolean addArea(Area area, int userid);
 
 	public boolean updateArea(Area area, int userid);
@@ -56,7 +60,7 @@ public interface AreaService {
 
 	public boolean addMachine(Machine machine, int userid);
 
-	public boolean addMachines(List<Machine> machine, int userid);
+	public boolean addMachines(List<Machine> machine);
 
 	public boolean updateMachine(Machine machine, int userid);
 
@@ -70,5 +74,15 @@ public interface AreaService {
 	public boolean modifyLevelImage(LevelImage level, int userid);
 	
 	public boolean deleteLevelImage(LevelImage level, int userid);
+
+	// upload image
+	public String addFile(String path, String data);
+
+	// upload areas/channels/machines
+	public boolean replaceAreas(String data, int userid);
+
+	public boolean replaceChannels(String data, int userid);
+
+	public boolean replaceMachines(String data, int userid);
 	
 }

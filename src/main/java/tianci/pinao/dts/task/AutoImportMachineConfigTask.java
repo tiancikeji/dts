@@ -41,6 +41,7 @@ public class AutoImportMachineConfigTask {
 							machine.setName(cols[0]);
 							machine.setSerialPort(cols[1]);
 							machine.setBaudRate(cols[2]);
+							machine.setLastModUserid(-1);
 							machines.add(machine);
 						}
 					}
@@ -49,7 +50,7 @@ public class AutoImportMachineConfigTask {
 				
 				// save db
 				if(machines != null && machines.size() > 0)
-					areaService.addMachines(machines, -1);
+					areaService.addMachines(machines);
 			}
 		} catch(Throwable t){
 			if(logger.isErrorEnabled())

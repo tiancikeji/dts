@@ -1,4 +1,13 @@
 -------------------20140301
+0. 上传文件
+		url：/file/addFile
+		输入参数：
+			data : String 上传文件内容 - data:image/png;base64,.......
+		输出结果：
+			{
+				status:0
+				name:String 文件路径
+			}
 1. 厂区设置 - 最后增加二级菜单：厂区类型默认图片设置
 	NOTE: 分区没有图片（即：area.image为空）时根据area.type获取对应的level.image
 				保存分区信息时，如果使用的是level.image,那么发保存请求时area.image也为空
@@ -141,6 +150,35 @@
 					value：long - 软件使用期限，以秒为单位
 					输出参数：
 					status：0/400
+3. 下载
+	3.1 一级菜单 机器设置 页面中增加下载按钮
+		path ： /machine/download
+		输入参数：无
+		输出结果：文件保存
+	3.2 一级菜单 通道设置 页面中增加下载按钮
+		path ： /channel/download
+		输入参数：无
+		输出结果：文件保存
+	3.2 二级菜单 厂区设置/分区设置 页面中增加下载按钮
+		path ： /area/download
+		输入参数：无
+		输出结果：文件保存
+4. 上传
+	4.1 一级菜单 机器设置 页面中增加上传区域
+		path ： /machine/replace
+		输入参数：data: String 客户端选中的上传文件中内容
+							userid: int 
+		输出结果：status : 0/400
+	4.2 一级菜单 通道设置 页面中增加上传区域
+		path ： /channel/replace
+		输入参数：data: String 客户端选中的上传文件中内容
+							userid: int 
+		输出结果：status : 0/400
+	4.2 二级菜单 厂区设置/分区设置 页面中增加上传区域
+		path ： /area/replace
+		输入参数：data: String 客户端选中的上传文件中内容
+							userid: int 
+		输出结果：status : 0/400
 					
 ----------------20140223
 1. 厂区设置（子菜单可以点开/折叠）

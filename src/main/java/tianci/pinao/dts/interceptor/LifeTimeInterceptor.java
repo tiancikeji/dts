@@ -26,6 +26,11 @@ public class LifeTimeInterceptor extends HandlerInterceptorAdapter {
 	}
 
 	private boolean checkLifeTime() {
+		System.out.println("##########################");
+		System.out.println("##########################");
+		System.out.println("##########################");
+		System.out.println("##########################");
+		System.out.println("##########################");
 		Config config = configService.getLicenseConfig();
 		if(config != null){
 			List<License> licenses = configService.getAllLicenses();

@@ -1,5 +1,6 @@
 package tianci.pinao.dts.service.impl;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import tianci.pinao.dts.dao.AreaDao;
 import tianci.pinao.dts.models.Area;
@@ -18,6 +21,7 @@ import tianci.pinao.dts.models.Channel;
 import tianci.pinao.dts.models.LevelImage;
 import tianci.pinao.dts.models.Machine;
 import tianci.pinao.dts.service.AreaService;
+import tianci.pinao.dts.util.PinaoConstants;
 
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 
@@ -25,7 +29,35 @@ public class AreaServiceImpl implements AreaService {
 	
 	private AreaDao areaDao;
 	
-	private String fileDir;
+	private String fileDir = "/assets/upload/";
+
+	@Override
+	public String addFile(String path, String data) {
+		String name = StringUtils.EMPTY;
+		if(StringUtils.isNotBlank(data)){
+			FileOutputStream fs = null;
+			try {
+				String[] splits = StringUtils.split(data, ";");
+				name = fileDir +System.currentTimeMillis() + "." + splits[0].split("/")[1];
+				File dir = new File(path + fileDir);
+				if(!(dir.exists() && dir.isDirectory()))
+					dir.mkdirs();
+				fs = new FileOutputStream(path + name);
+			    fs.write(Base64.decode(splits[1].split(",")[1])); 
+			} catch (Throwable t) {
+				t.printStackTrace();
+			} finally{
+				if(fs != null)
+					try {
+						fs.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+			}
+		}
+		
+		return name;
+	}
 
 	// area
 	@Override
@@ -39,43 +71,15 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addArea(Area area, int userid) {
 		if(area != null){
-			if(StringUtils.isNotBlank(area.getImage())){
-				saveImage(area);
-			}
 			area.setLastModUserid(userid);
 			return areaDao.addArea(area);
 		}
 		return true;
 	}
 
-	public void saveImage(Area area) {
-		FileOutputStream fs = null;
-		try {
-			String image = area.getImage();
-			String[] splits = image.split(";");
-			String _name = area.getName() + System.currentTimeMillis() + "." + splits[0].split("/")[1];
-			area.setImage(_name);
-			String filename = fileDir+_name;
-			fs = new FileOutputStream(filename);
-		    fs.write(Base64.decode(splits[1].split(",")[1])); 
-		} catch (Throwable t) {
-			t.printStackTrace();
-		} finally{
-			if(fs != null)
-				try {
-					fs.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-		}
-	}
-
 	@Override
 	public boolean updateArea(Area area, int userid) {
 		if(area != null && area.getId() > 0){
-			if(StringUtils.isNotBlank(area.getImage())){
-				saveImage(area);
-			}
 			area.setLastModUserid(userid);
 			return areaDao.updateArea(area);
 		}
@@ -111,6 +115,11 @@ public class AreaServiceImpl implements AreaService {
 			
 		
 		return result;
+	}
+
+	@Override
+	public List<Area> getAllAailableAreas() {
+		return areaDao.getAllAreas();
 	}
 
 	// area hardware config
@@ -338,8 +347,8 @@ public class AreaServiceImpl implements AreaService {
 	}
 
 	@Override
-	public boolean addMachines(List<Machine> machines, int userid) {
-		return areaDao.addMachines(machines, userid);
+	public boolean addMachines(List<Machine> machines) {
+		return areaDao.addMachines(machines);
 	}
 
 	@Override
@@ -394,6 +403,237 @@ public class AreaServiceImpl implements AreaService {
 			return areaDao.deleteLevelImage(level);
 		} else
 			return areaDao.deleteLevelImage(level);
+	}
+
+	@Override
+	@Transactional(rollbackFor=Exception.class, value="txManager")
+	public boolean replaceAreas(String data, int userid) {
+		if(StringUtils.isNotBlank(data)){
+			String content = getContent(data);
+			if(StringUtils.isNotBlank(content)){
+				
+				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
+				if(lines != null && lines.length > 0){
+					List<Channel> channels = getAllChannels();
+					Map<String, Map<String, Channel>> cMap = new HashMap<String, Map<String, Channel>>();
+					if(channels != null && channels.size() > 0)
+						for(Channel channel : channels){
+							Map<String, Channel> tmp = cMap.get(channel.getMachineName());
+							if(tmp == null){
+								tmp = new HashMap<String, Channel>();
+								cMap.put(channel.getMachineName(), tmp);
+							}
+							tmp.put(channel.getName(), channel);
+						}
+
+					List<Area> areas = new ArrayList<Area>();
+					Map<String, Area> parents = new HashMap<String, Area>();
+					Map<String, AreaHardwareConfig> hardConfigs = new HashMap<String, AreaHardwareConfig>();
+					Map<String, AreaTempConfig> tempConfigs = new HashMap<String, AreaTempConfig>();
+					Map<String, AreaChannel> areaChannels = new HashMap<String, AreaChannel>();
+					
+					for(String line : lines)
+						if(StringUtils.isNotBlank(line) && !StringUtils.startsWith(line, PinaoConstants.FILE_COMMENT_PREFIX)){
+							String[] cols = StringUtils.split(line, PinaoConstants.TEM_DATA_COL_SEP);
+							if(cols != null && cols.length > 0 && StringUtils.isNotBlank(cols[0])){
+								Area area = new Area();
+								area.setName(StringUtils.trimToEmpty(cols[0]));
+								if(cols.length > 1)
+									area.setLevel(NumberUtils.toInt(cols[1], 0));
+								if(cols.length > 2)
+									area.setIndex(NumberUtils.toInt(cols[2], 0));
+								if(cols.length > 3 && StringUtils.isNotBlank(cols[3]))
+									parents.put(StringUtils.trimToEmpty(cols[3]), area);
+								if(cols.length > 4)
+									area.setImage(StringUtils.trimToEmpty(cols[4]));
+								area.setLastModUserid(userid);
+								areas.add(area);
+								
+								if((cols.length > 5 && StringUtils.isNotBlank(cols[5]))
+										|| (cols.length > 6 && StringUtils.isNotBlank(cols[6]))
+												|| (cols.length > 7 && StringUtils.isNotBlank(cols[7]))){
+									AreaHardwareConfig config = new AreaHardwareConfig();
+									if(cols.length > 5 && StringUtils.isNotBlank(cols[5]))
+										config.setLight(StringUtils.trimToEmpty(cols[6]));
+									if(cols.length > 6 && StringUtils.isNotBlank(cols[6]))
+										config.setRelay(StringUtils.trimToEmpty(cols[6]));
+									if(cols.length > 7 && StringUtils.isNotBlank(cols[7]))
+										config.setVoice(StringUtils.trimToEmpty(cols[7]));
+									
+									config.setLastModUserid(userid);
+									hardConfigs.put(area.getName(), config);
+								}
+								
+								if((cols.length > 8 && NumberUtils.isNumber(cols[8]))
+										|| (cols.length > 9 && NumberUtils.isNumber(cols[9]))
+										|| (cols.length > 10 && NumberUtils.isNumber(cols[10]))
+												|| (cols.length > 11 && NumberUtils.isNumber(cols[11]))){
+									AreaTempConfig config = new AreaTempConfig();
+									if(cols.length > 8 && NumberUtils.isNumber(cols[8]))
+										config.setTemperatureLow(NumberUtils.toInt(cols[8], Integer.MAX_VALUE));
+									if(cols.length > 9 && NumberUtils.isNumber(cols[9]))
+										config.setTemperatureHigh(NumberUtils.toInt(cols[10], Integer.MAX_VALUE));
+									if(cols.length > 10 && NumberUtils.isNumber(cols[10]))
+										config.setTemperatureDiff(NumberUtils.toInt(cols[10], Integer.MAX_VALUE));
+									if(cols.length > 11 && NumberUtils.isNumber(cols[11]))
+										config.setExotherm(NumberUtils.toInt(cols[11], Integer.MAX_VALUE));
+									
+									config.setLastModUserid(userid);
+									tempConfigs.put(area.getName(), config);
+								}
+								
+								if((cols.length > 13 && StringUtils.isNotBlank(cols[13]))
+										|| (cols.length > 14 && StringUtils.isNotBlank(cols[14]))
+										|| (cols.length > 15 && NumberUtils.isNumber(cols[15]))
+												|| (cols.length > 16 && NumberUtils.isNumber(cols[16]))){
+									String tmpMachineName = StringUtils.trimToEmpty(cols[14]);
+									if(cMap.containsKey(tmpMachineName)){
+										String tmpChannelName = StringUtils.trimToEmpty(cols[13]);
+										Map<String, Channel> ctmp = cMap.get(tmpMachineName);
+										if(ctmp != null && ctmp.containsKey(tmpChannelName)){
+											Channel tmpChannel = ctmp.get(tmpChannelName);
+											int start = NumberUtils.toInt(cols[15], -1);
+											int end = NumberUtils.toInt(cols[16], -1);
+											if(start > 0 && end >= start){
+												AreaChannel areaChannel = new AreaChannel();
+												areaChannel.setStart(start);
+												areaChannel.setEnd(end);
+												areaChannel.setMachineid(tmpChannel.getMachineid());
+												areaChannel.setChannelid(tmpChannel.getId());
+												areaChannel.setName(StringUtils.trimToEmpty(cols[12]));
+												
+												areaChannel.setLastModUserid(userid);
+												areaChannels.put(area.getName(), areaChannel);
+											}
+										}
+									}
+								}
+							}
+						}
+					
+					if(areas != null && areas.size() > 0){
+						areaDao.deleteAllAreas(userid);
+						if(areaDao.addAreas(areas)){
+							areas = getAllAailableAreas();
+							
+							if(areas != null && areas.size() > 0)
+								for(Area area : areas){
+									int id = area.getId();
+									String name = area.getName();
+									
+									if(parents.containsKey(name))
+										parents.get(name).setParent(id);
+									
+									if(hardConfigs.containsKey(name))
+										hardConfigs.get(name).setAreaid(id);
+
+									if(tempConfigs.containsKey(name))
+										tempConfigs.get(name).setAreaid(id);
+
+									if(areaChannels.containsKey(name))
+										areaChannels.get(name).setAreaid(id);
+								}
+							
+							if(parents != null && parents.size() > 0)
+								areaDao.updateAreaParents(new ArrayList<Area>(parents.values()));
+							
+							if(hardConfigs != null && hardConfigs.size() > 0){
+								areaDao.deleteAllHardwareConfigs(userid);
+								areaDao.addHardwareConfigs(new ArrayList<AreaHardwareConfig>(hardConfigs.values()));
+							}
+							
+							if(tempConfigs != null && tempConfigs.size() > 0){
+								areaDao.deleteAllTempConfigs(userid);
+								areaDao.addTempConfigs(new ArrayList<AreaTempConfig>(tempConfigs.values()));
+							}
+							
+							if(areaChannels != null && areaChannels.size() > 0){
+								areaDao.deleteAllAreaChannels(userid);
+								areaDao.addAreaChannels(new ArrayList<AreaChannel>(areaChannels.values()));
+							}
+							
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	@Transactional(rollbackFor=Exception.class, value="txManager")
+	public boolean replaceChannels(String data, int userid) {
+		if(StringUtils.isNotBlank(data)){
+			String content = getContent(data);
+			if(StringUtils.isNotBlank(content)){
+				List<Channel> channels = new ArrayList<Channel>();
+				
+				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
+				if(lines != null && lines.length > 0){
+					List<Machine> machines = getAllMachines();
+					Map<String, Machine> mMap = new HashMap<String, Machine>();
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines)
+							mMap.put(machine.getName(), machine);
+					
+					for(String line : lines)
+						if(StringUtils.isNotBlank(line) && !StringUtils.startsWith(line, PinaoConstants.FILE_COMMENT_PREFIX)){
+							String[] cols = StringUtils.split(line, PinaoConstants.TEM_DATA_COL_SEP);
+							if(cols != null && cols.length > 2 && mMap.containsKey(cols[1]) && NumberUtils.isNumber(cols[2])){
+								Channel channel = new Channel();
+								channel.setName(StringUtils.trimToEmpty(cols[0]));
+								channel.setMachineid(mMap.get(cols[1]).getId());
+								channel.setLength(NumberUtils.toInt(cols[2], -1));
+								channel.setLastModUserid(userid);
+								channels.add(channel);
+							}
+						}
+				}
+				
+				if(channels != null && channels.size() > 0){
+					areaDao.deleteAllChannels(userid);
+					return areaDao.addChannels(channels);
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	@Transactional(rollbackFor=Exception.class, value="txManager")
+	public boolean replaceMachines(String data, int userid) {
+		if(StringUtils.isNotBlank(data)){
+			String content = getContent(data);
+			if(StringUtils.isNotBlank(content)){
+				List<Machine> machines = new ArrayList<Machine>();
+				
+				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
+				if(lines != null && lines.length > 0)
+					for(String line : lines)
+						if(StringUtils.isNotBlank(line) && !StringUtils.startsWith(line, PinaoConstants.FILE_COMMENT_PREFIX)){
+							String[] cols = StringUtils.split(line, PinaoConstants.TEM_DATA_COL_SEP);
+							if(cols != null && cols.length > 2){
+								Machine machine = new Machine();
+								machine.setName(StringUtils.trimToEmpty(cols[0]));
+								machine.setSerialPort(StringUtils.trimToEmpty(cols[1]));
+								machine.setBaudRate(StringUtils.trimToEmpty(cols[2]));
+								machine.setLastModUserid(userid);
+								machines.add(machine);
+							}
+						}
+				
+				if(machines != null && machines.size() > 0){
+					areaDao.deleteAllMachines(userid);
+					return areaDao.addMachines(machines);
+				}
+			}
+		}
+		return false;
+	}
+	
+	private String getContent(String data){
+		return StringUtils.split(data, ";")[1].split(",")[1];
 	}
 
 	public AreaDao getAreaDao() {

@@ -15,6 +15,8 @@ public class Area {
 	
 	private int level;
 	
+	private int index;
+	
 	private int parent;
 	
 	private String image;
@@ -102,6 +104,14 @@ public class Area {
 
 	public void setChildren(List<Area> children) {
 		this.children = children;
+	}
+
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
 	}
 	
 }

@@ -54,7 +54,7 @@ public class ConfigDaoImpl extends JdbcDaoSupport implements ConfigDao {
 
 	@Override
 	public boolean addLifeTime(String mac, long time) {
-		int count = getJdbcTemplate().update("inser into " + SqlConstants.TABLE_LICENSE + "(mac, user_time, lastmod_time, lastmod_userid, isdel) values(?, ?, now(), ?, 0)", new Object[]{mac, time, -1, 0});
+		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_LICENSE + "(mac, use_time, lastmod_time, lastmod_userid, isdel) values(?, ?, now(), ?, ?)", new Object[]{mac, time, -1, 0});
 		return count > 0;
 	}
 

@@ -25,6 +25,12 @@ public interface AreaDao {
 	public boolean updateArea(Area area);
 	
 	public boolean deleteArea(int areaid, int userid);
+
+	public void deleteAllAreas(int userid);
+
+	public boolean addAreas(List<Area> areas);
+
+	public void updateAreaParents(List<Area> values);
 	
 	// area harware config
 	public boolean addHardwareConfig(AreaHardwareConfig config);
@@ -36,6 +42,10 @@ public interface AreaDao {
 	public boolean updateHardwareConfig(AreaHardwareConfig config);
 	
 	public boolean deleteHardwareConfig(int configid, int userid);
+
+	public void deleteAllHardwareConfigs(int userid);
+
+	public void addHardwareConfigs(List<AreaHardwareConfig> hardConfigs);
 	
 	// area channel
 	public boolean addAreaChannels(List<AreaChannel> channels);
@@ -49,6 +59,8 @@ public interface AreaDao {
 	public boolean updateAreaChannel(AreaChannel channel);
 	
 	public boolean deleteAreaChannel(int channelid, int userid);
+
+	public void deleteAllAreaChannels(int userid);
 	
 	// area temp config
 	public boolean addTempConfig(AreaTempConfig config);
@@ -61,6 +73,10 @@ public interface AreaDao {
 
 	public List<AreaTempConfig> getAllTempConfigs();
 
+	public void deleteAllTempConfigs(int userid);
+
+	public void addTempConfigs(List<AreaTempConfig> tempConfigs);
+
 	// channels
 	public List<Channel> getAllChannels();
 
@@ -70,16 +86,22 @@ public interface AreaDao {
 
 	public boolean deleteChannel(Channel channel);
 
+	public void deleteAllChannels(int userid);
+
+	public boolean addChannels(List<Channel> channels);
+
 	// machines
 	public List<Machine> getAllMachines();
 
 	public boolean addMachine(Machine machine);
 
-	public boolean addMachines(List<Machine> machines, int userid);
+	public boolean addMachines(List<Machine> machines);
 
 	public boolean updateMachine(Machine machine);
 
 	public boolean deleteMachine(Machine machine);
+	
+	public void deleteAllMachines(int userid);
 	
 	// level - images
 	public List<LevelImage> getAllLevels();
