@@ -148,7 +148,7 @@
 	</beans:bean>
 	<beans:bean id="softwareLifeTimeRecordTaskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
 		<beans:property name="jobDetail" ref="softwareLifeTimeRecordTaskJob" />
-	    <beans:property name="startDelay" ref="0" />
+	    <beans:property name="startDelay" ref="300000" />
 	    <beans:property name="repeatInterval" ref="300000" />
 	    <beans:property name="repeatCount" value="-1" />
 	</beans:bean>

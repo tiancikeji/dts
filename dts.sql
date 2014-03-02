@@ -147,3 +147,33 @@ create table log (
 	primary key(id),
 	index logtime (lastmod_time)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- temp table
+CREATE TABLE `temperature` (
+	`channel` int(10) NOT NULL,
+	`tem` MEDIUMTEXT NOT NULL,
+	`stock` MEDIUMTEXT DEFAULT NULL,
+	`unstock` MEDIUMTEXT DEFAULT NULL,
+	`refer_tem` double DEFAULT NULL,
+	`date` datetime NOT NULL,
+  KEY `tm_key` (`channel`,`date`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+CREATE TABLE `temperature_event` (
+	`channel` int(10) NOT NULL,
+	`tem` MEDIUMTEXT NOT NULL,
+	`stock` MEDIUMTEXT DEFAULT NULL,
+	`unstock` MEDIUMTEXT DEFAULT NULL,
+	`refer_tem` double DEFAULT NULL,
+	`date` datetime NOT NULL,
+  KEY `tm_key` (`channel`,`date`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+CREATE TABLE `temperature_log` (
+	`channel` int(10) NOT NULL,
+	`tem` MEDIUMTEXT NOT NULL,
+	`stock` MEDIUMTEXT DEFAULT NULL,
+	`unstock` MEDIUMTEXT DEFAULT NULL,
+	`refer_tem` double DEFAULT NULL,
+	`date` datetime NOT NULL,
+  KEY `tm_key` (`channel`,`date`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;

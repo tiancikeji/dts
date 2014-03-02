@@ -13,7 +13,7 @@ public class ServerLifeTimeRecordTask {
 	
 	private Log log;
 	
-	{
+	public ServerLifeTimeRecordTask(){
 		log = new Log();
 		try {
 			log.setValue(InetAddress.getLocalHost().getHostAddress().toString());
