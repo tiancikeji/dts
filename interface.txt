@@ -1,4 +1,3 @@
--------------------20140301
 0. 上传文件
 		url：/file/addFile
 		输入参数：
@@ -8,6 +7,367 @@
 				status:0
 				name:String 文件路径
 			}
+1. 厂区设置（子菜单可以点开/折叠）
+	1.1 分区设置
+		1）默认显示所有的数据，使用查询接口
+			url：/area/areas
+			输入参数：无
+			输出结果：（可以用缩进代表他们的隶属关系）
+				{
+					status:0
+					data:[
+						{
+							id:唯一id
+							name：分区名称
+							level：第几层：0-厂区，1-缆沟，2-分区，暂时不显示
+							image：图片，用户可以上传，上传的内容我这边需要解析联调一下
+							parent：父级id
+							children：隶属于这个数据的子数据（目前就三层）
+						},
+						...
+						
+					]
+				}
+		1.1）所有的厂区id和name映射数据，使用查询接口
+			url：/area/areanames
+			输入参数：无
+			输出结果：
+				{
+					status:0
+					data:[
+						{
+							id:唯一id
+							name：分区名称
+						},
+						...
+						
+					]
+				}
+		2）新增接口 - 可以新开一个窗口
+			URL：/area/addArea
+			输入参数：
+				{
+							name：分区名称
+							image：图片，用户可以上传，上传的内容我这边需要解析联调一下
+							parent：父级id
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		3）修改接口 - 可以新开一个窗口
+			URL：/area/updateArea
+			输入参数：
+				{
+							id:唯一id
+							name：分区名称
+							image：图片，用户可以上传，上传的内容我这边需要解析联调一下
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		4）删除接口
+			URL：/area/deleteArea
+			输入参数：
+				{
+							id:唯一id
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+	1.2 硬件设备设置
+		1）默认显示所有的数据，使用查询接口
+			url：/area/hwconfigs
+			输入参数：无
+			输出结果：
+				{
+					status:0
+					data:[
+						{
+							id:唯一id
+							areaid：分区id
+							areaname：分区名称
+							light：灯号
+							relay：继电器号
+							voice：声音地址
+						},
+						...
+						
+					]
+				}
+		2）新增接口 - 可以新开一个窗口
+			URL：/area/addhwconfig
+			输入参数：
+				{
+							areaid：分区id - 从/area/areas获取列表
+							light：灯号
+							relay：继电器号
+							voice：声音地址
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		3）修改接口 - 可以新开一个窗口
+			URL：/area/updatehwconfig
+			输入参数：
+				{
+							id:唯一id
+							areaid：分区id - 从/area/areas获取列表
+							light：灯号
+							relay：继电器号
+							voice：声音地址
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		4）删除接口
+			URL：/area/deletehwconfig
+			输入参数：
+				{
+							id:唯一id
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		
+	1.3 温度报警设置 - 分为三块：定温报警、升温报警、温差报警
+		1）默认显示所有的数据，使用查询接口
+			url：/area/tempconfigs
+			输入参数：无
+			输出结果：
+				{
+					status:0
+					data:[
+						{
+							id:唯一id
+							areaid：分区id
+							areaname：分区名称
+							low：预警定温[框]中低级报警温度
+							high：定温[框]中紧急报警温度
+							exotherm：升温[框]中温度
+							diff：温差[框]中温度
+						},
+						...
+						
+					]
+				}
+		2）新增接口 - 可以新开一个窗口
+			URL：/area/addTempconfig
+			输入参数：
+				{
+							areaid：分区id - 从/area/areas获取列表
+							low：预警定温[框]中低级报警温度
+							high：定温[框]中紧急报警温度
+							exotherm：升温[框]中温度
+							diff：温差[框]中温度
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		3）修改接口 - 可以新开一个窗口
+			URL：/area/updateTempconfig
+			输入参数：
+				{
+							id:唯一id
+							areaid：分区id - 从/area/areas获取列表
+							low：预警定温[框]中低级报警温度
+							high：定温[框]中紧急报警温度
+							exotherm：升温[框]中温度
+							diff：温差[框]中温度
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		4）删除接口
+			URL：/area/deleteTempconfig
+			输入参数：
+				{
+							id:唯一id
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+	1.4 分区通道设置
+		1）默认显示所有的数据，使用查询接口
+			url：/area/channels
+			输入参数：无
+			输出结果：
+				{
+					status:0
+					data:[
+						{
+							id:唯一id
+							name：分区通道名称
+							areaid：分区id
+							areaname：分区名称
+							channelid：通道id
+							channelname：通道名称
+							machineid：机器id
+							machinename：机器名称
+							start：分区通道开始距离
+							end：分区通道结束距离
+						},
+						...
+						
+					]
+				}
+		2）新增接口 - 可以新开一个窗口
+			URL：/area/addchannel
+			输入参数：
+				{
+							name：分区通道名称
+							areaid：分区id - 从/area/areas获取列表
+							channelid：通道id - 从/channel/channels获取列表
+							start：分区通道开始距离 用户设置
+							end：分区通道结束距离 用户设置
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		3）修改接口 - 可以新开一个窗口
+			URL：/area/updatechannel
+			输入参数：
+				{
+							id:唯一id
+							name：分区通道名称
+							areaid：分区id - 从/area/areas获取列表
+							channelid：通道id - 从/channel/channels获取列表
+							start：分区通道开始距离 用户设置
+							end：分区通道结束距离 用户设置
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		4）删除接口
+			URL：/area/deletechannel
+			输入参数：
+				{
+							id:唯一id
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+2. 机器设置
+		1）默认显示所有的数据，使用查询接口
+			url：/machine/machines
+			输入参数：无
+			输出结果：
+				{
+					status:0
+					data:[
+						{
+							id:唯一id
+							name：分区通道名称
+							serialport：串口号
+							baudrate：波特率
+						},
+						...
+						
+					]
+				}
+		2）新增接口 - 可以新开一个窗口
+			URL：/machine/addmachine
+			输入参数：
+				{
+							name：分区通道名称 用户设置
+							serialport：串口号 用户设置
+							baudrate：波特率 用户设置
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		3）修改接口 - 可以新开一个窗口
+			URL：/area/updatechannel
+			输入参数：
+				{
+							id:唯一id
+							name：分区通道名称 用户设置
+							serialport：串口号 用户设置
+							baudrate：波特率 用户设置
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		4）删除接口
+			URL：/area/deletechannel
+			输入参数：
+				{
+							id:唯一id
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+	
+3. 通道设置 
+		1）默认显示所有的数据，使用查询接口
+			url：/channel/channels
+			输入参数：无
+			输出结果：
+				{
+					status:0
+					data:[
+						{
+							id:唯一id
+							name：通道名称
+							machineid：机器id
+							machinename：机器名称
+							length：长度
+						},
+						...
+						
+					]
+				}
+		2）新增接口 - 可以新开一个窗口
+			URL：/channel/addchannel
+			输入参数：
+				{
+							name：通道名称 用户设置
+							machineid：机器id - 从/machine/machines获取列表
+							length：长度 用户设置
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		3）修改接口 - 可以新开一个窗口
+			URL：/channel/updatechannel
+			输入参数：
+				{
+							id:唯一id
+							name：通道名称 用户设置
+							machineid：机器id - 从/machine/machines获取列表
+							length：长度 用户设置
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+		4）删除接口
+			URL：/channel/deletechannel
+			输入参数：
+				{
+							id:唯一id
+						}
+			输出参数
+			{
+					status:0/400（正常/错误）
+				}
+--------------------------------------------2014-03-04-----------------
+		
 1. 厂区设置 - 最后增加二级菜单：厂区类型默认图片设置
 	NOTE: 分区没有图片（即：area.image为空）时根据area.type获取对应的level.image
 				保存分区信息时，如果使用的是level.image,那么发保存请求时area.image也为空
@@ -179,363 +539,3 @@
 		输入参数：data: String 客户端选中的上传文件中内容
 							userid: int 
 		输出结果：status : 0/400
-					
-----------------20140223
-1. 厂区设置（子菜单可以点开/折叠）
-	1.1 分区设置
-		1）默认显示所有的数据，使用查询接口
-			url：/area/areas
-			输入参数：无
-			输出结果：（可以用缩进代表他们的隶属关系）
-				{
-					status:0
-					data:[
-						{
-							id:唯一id
-							name：分区名称
-							level：第几层：0-厂区，1-缆沟，2-分区，暂时不显示
-							image：图片，用户可以上传，上传的内容我这边需要解析联调一下
-							parent：父级id
-							children：隶属于这个数据的子数据（目前就三层）
-						},
-						...
-						
-					]
-				}
-		2）新增接口 - 可以新开一个窗口
-			URL：/area/addArea
-			输入参数：
-				{
-							name：分区名称
-							image：图片，用户可以上传，上传的内容我这边需要解析联调一下
-							parent：父级id
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		3）修改接口 - 可以新开一个窗口
-			URL：/area/updateArea
-			输入参数：
-				{
-							id:唯一id
-							name：分区名称
-							image：图片，用户可以上传，上传的内容我这边需要解析联调一下
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		4）删除接口
-			URL：/area/deleteArea
-			输入参数：
-				{
-							id:唯一id
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-	1.2 硬件设备设置
-		1）默认显示所有的数据，使用查询接口
-			url：/area/hwconfigs
-			输入参数：无
-			输出结果：
-				{
-					status:0
-					data:[
-						{
-							id:唯一id
-							areaid：分区id
-							areaname：分区名称
-							light：灯号
-							relay：继电器号
-							voice：声音地址
-						},
-						...
-						
-					]
-				}
-		2）新增接口 - 可以新开一个窗口
-			URL：/area/addhwconfig
-			输入参数：
-				{
-							areaid：分区id - 从/area/areas获取列表
-							areaname：分区名称 - 从/area/areas获取列表
-							light：灯号
-							relay：继电器号
-							voice：声音地址
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		3）修改接口 - 可以新开一个窗口
-			URL：/area/updatehwconfig
-			输入参数：
-				{
-							id:唯一id
-							areaid：分区id - 从/area/areas获取列表
-							areaname：分区名称 - 从/area/areas获取列表
-							light：灯号
-							relay：继电器号
-							voice：声音地址
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		4）删除接口
-			URL：/area/deletehwconfig
-			输入参数：
-				{
-							id:唯一id
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		
-	1.3 温度报警设置 - 分为三块：定温报警、升温报警、温差报警
-		1）默认显示所有的数据，使用查询接口
-			url：/area/tempconfigs
-			输入参数：无
-			输出结果：
-				{
-					status:0
-					data:[
-						{
-							id:唯一id
-							areaid：分区id
-							areaname：分区名称
-							low：预警定温[框]中低级报警温度
-							high：定温[框]中紧急报警温度
-							exotherm：升温[框]中温度
-							diff：温差[框]中温度
-						},
-						...
-						
-					]
-				}
-		2）新增接口 - 可以新开一个窗口
-			URL：/area/addTempconfig
-			输入参数：
-				{
-							areaid：分区id - 从/area/areas获取列表
-							areaname：分区名称 - 从/area/areas获取列表
-							low：预警定温[框]中低级报警温度
-							high：定温[框]中紧急报警温度
-							exotherm：升温[框]中温度
-							diff：温差[框]中温度
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		3）修改接口 - 可以新开一个窗口
-			URL：/area/updateTempconfig
-			输入参数：
-				{
-							id:唯一id
-							areaid：分区id - 从/area/areas获取列表
-							areaname：分区名称 - 从/area/areas获取列表
-							low：预警定温[框]中低级报警温度
-							high：定温[框]中紧急报警温度
-							exotherm：升温[框]中温度
-							diff：温差[框]中温度
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		4）删除接口
-			URL：/area/deleteTempconfig
-			输入参数：
-				{
-							id:唯一id
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-	1.4 分区通道设置
-		1）默认显示所有的数据，使用查询接口
-			url：/area/channels
-			输入参数：无
-			输出结果：
-				{
-					status:0
-					data:[
-						{
-							id:唯一id
-							name：分区通道名称
-							areaid：分区id
-							areaname：分区名称
-							channelid：通道id
-							channelname：通道名称
-							machineid：机器id
-							machinename：机器名称
-							start：分区通道开始距离
-							end：分区通道结束距离
-						},
-						...
-						
-					]
-				}
-		2）新增接口 - 可以新开一个窗口
-			URL：/area/addchannel
-			输入参数：
-				{
-							name：分区通道名称
-							areaid：分区id - 从/area/areas获取列表
-							areaname：分区名称 - 从/area/areas获取列表
-							channelid：通道id - 从/channel/channels获取列表
-							channelname：通道名称 - 从/channel/channels获取列表
-							machineid：机器id - 从/machine/machines获取列表
-							machinename：机器名称 - 从/machine/machines获取列表
-							start：分区通道开始距离 用户设置
-							end：分区通道结束距离 用户设置
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		3）修改接口 - 可以新开一个窗口
-			URL：/area/updatechannel
-			输入参数：
-				{
-							id:唯一id
-							name：分区通道名称
-							areaid：分区id - 从/area/areas获取列表
-							areaname：分区名称 - 从/area/areas获取列表
-							channelid：通道id - 从/channel/channels获取列表
-							channelname：通道名称 - 从/channel/channels获取列表
-							machineid：机器id - 从/machine/machines获取列表
-							machinename：机器名称 - 从/machine/machines获取列表
-							start：分区通道开始距离 用户设置
-							end：分区通道结束距离 用户设置
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		4）删除接口
-			URL：/area/deletechannel
-			输入参数：
-				{
-							id:唯一id
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-2. 机器设置
-		1）默认显示所有的数据，使用查询接口
-			url：/machine/machines
-			输入参数：无
-			输出结果：
-				{
-					status:0
-					data:[
-						{
-							id:唯一id
-							name：分区通道名称
-							serialport：串口号
-							baudrate：波特率
-						},
-						...
-						
-					]
-				}
-		2）新增接口 - 可以新开一个窗口
-			URL：/machine/addmachine
-			输入参数：
-				{
-							name：分区通道名称 用户设置
-							serialport：串口号 用户设置
-							baudrate：波特率 用户设置
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		3）修改接口 - 可以新开一个窗口
-			URL：/area/updatechannel
-			输入参数：
-				{
-							id:唯一id
-							name：分区通道名称 用户设置
-							serialport：串口号 用户设置
-							baudrate：波特率 用户设置
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		4）删除接口
-			URL：/area/deletechannel
-			输入参数：
-				{
-							id:唯一id
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-	
-3. 通道设置 
-		1）默认显示所有的数据，使用查询接口
-			url：/channel/channels
-			输入参数：无
-			输出结果：
-				{
-					status:0
-					data:[
-						{
-							id:唯一id
-							name：通道名称
-							machineid：机器id
-							machinename：机器名称
-							length：长度
-						},
-						...
-						
-					]
-				}
-		2）新增接口 - 可以新开一个窗口
-			URL：/channel/addchannel
-			输入参数：
-				{
-							name：通道名称 用户设置
-							machineid：机器id - 从/machine/machines获取列表
-							machinename：机器名称 - 从/machine/machines获取列表
-							length：长度 用户设置
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		3）修改接口 - 可以新开一个窗口
-			URL：/channel/updatechannel
-			输入参数：
-				{
-							id:唯一id
-							name：通道名称 用户设置
-							machineid：机器id - 从/machine/machines获取列表
-							machinename：机器名称 - 从/machine/machines获取列表
-							length：长度 用户设置
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}
-		4）删除接口
-			URL：/channel/deletechannel
-			输入参数：
-				{
-							id:唯一id
-						}
-			输出参数
-			{
-					status:0/400（正常/错误）
-				}

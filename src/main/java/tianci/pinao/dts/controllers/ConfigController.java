@@ -34,7 +34,7 @@ public class ConfigController {
 		return result;
 	}
 
-	@RequestMapping(value="/config/update", method = RequestMethod.GET)
+	@RequestMapping(value="/config/update", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> updateConfig(Config config, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();

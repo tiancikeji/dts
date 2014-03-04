@@ -33,7 +33,7 @@ public class AreaController {
 	@Autowired
 	private AreaService areaService;
 
-	@RequestMapping(value="/file/addFile", method = RequestMethod.GET)
+	@RequestMapping(value="/file/addFile", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addFile(HttpServletRequest request, String data){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -52,7 +52,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/level/addLevel", method = RequestMethod.GET)
+	@RequestMapping(value="/level/addLevel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addLevel(LevelImage level, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -70,7 +70,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/level/modifyLevel", method = RequestMethod.GET)
+	@RequestMapping(value="/level/modifyLevel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> modifyLevel(LevelImage level, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -88,7 +88,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/level/deleteLevel", method = RequestMethod.GET)
+	@RequestMapping(value="/level/deleteLevel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> deleteLevel(LevelImage level, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -140,7 +140,7 @@ public class AreaController {
 		return data;
 	}
 
-	@RequestMapping(value="/area/addArea", method = RequestMethod.GET)
+	@RequestMapping(value="/area/addArea", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addArea(Area area, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -158,7 +158,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/updateArea", method = RequestMethod.GET)
+	@RequestMapping(value="/area/updateArea", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> updateArea(Area area, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -176,7 +176,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/deleteArea", method = RequestMethod.GET)
+	@RequestMapping(value="/area/deleteArea", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> deleteArea(Area area, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -187,6 +187,30 @@ public class AreaController {
 				result.put("status", "0");
 			else
 				result.put("status", "400");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/area/areanames", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> getAreaNames(){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			List<Area> areas = areaService.getAllAailableAreas();
+			List<Map<String, Object>> data = new ArrayList<Map<String,Object>>();
+			if(areas != null && areas.size() > 0)
+				for(Area area : areas){
+					Map<String, Object> tmp = new HashMap<String, Object>();
+					tmp.put("id", area.getId());
+					tmp.put("name", area.getName());
+					data.add(tmp);
+				}
+			result.put("data", data);
+			result.put("status", "0");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -218,8 +242,22 @@ public class AreaController {
 		}
 		return result;
 	}
+
+	private Map<String, Object> parseArea(Area area) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		if(area != null){
+			result.put("id", area.getId());
+			result.put("name", area.getName());
+			result.put("level", area.getLevel());
+			result.put("index", area.getIndex());
+			result.put("image", area.getImage());
+			result.put("parent", area.getParent());
+			result.put("children", parseAreas(area.getChildren()));
+		}
+		return result;
+	}
 	
-	@RequestMapping(value="/area/replace", method = RequestMethod.GET)
+	@RequestMapping(value="/area/replace", method = RequestMethod.POST)
 	public Map<Object, Object> replaceAreas(String data, int userid) throws IOException{
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
@@ -314,21 +352,7 @@ public class AreaController {
 		}
 	}
 
-	private Map<String, Object> parseArea(Area area) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		if(area != null){
-			result.put("id", area.getId());
-			result.put("name", area.getName());
-			result.put("level", area.getLevel());
-			result.put("index", area.getIndex());
-			result.put("image", area.getImage());
-			result.put("parent", area.getParent());
-			result.put("children", parseAreas(area.getChildren()));
-		}
-		return result;
-	}
-
-	@RequestMapping(value="/area/addhwconfig", method = RequestMethod.GET)
+	@RequestMapping(value="/area/addhwconfig", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addAreaHardwareConfig(AreaHardwareConfig config, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -346,7 +370,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/updatehwconfig", method = RequestMethod.GET)
+	@RequestMapping(value="/area/updatehwconfig", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> updateAreaHardwareConfig(AreaHardwareConfig config, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -364,7 +388,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/deletehwconfig", method = RequestMethod.GET)
+	@RequestMapping(value="/area/deletehwconfig", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> deleteAreaHardwareConfig(AreaHardwareConfig config, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -416,7 +440,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/addTempconfig", method = RequestMethod.GET)
+	@RequestMapping(value="/area/addTempconfig", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addAreaTempConfig(AreaTempConfig config, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -435,7 +459,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/updateTempconfig", method = RequestMethod.GET)
+	@RequestMapping(value="/area/updateTempconfig", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> updateAreaTempConfig(AreaTempConfig config, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -454,7 +478,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/deleteTempconfig", method = RequestMethod.GET)
+	@RequestMapping(value="/area/deleteTempconfig", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> deleteAreaTempConfig(AreaTempConfig config, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -508,7 +532,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/addchannel", method = RequestMethod.GET)
+	@RequestMapping(value="/area/addchannel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addAreaChannel(AreaChannel channel, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -528,7 +552,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/updatechannel", method = RequestMethod.GET)
+	@RequestMapping(value="/area/updatechannel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> updateAreaChannel(AreaChannel channel, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -546,7 +570,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/area/deletechannel", method = RequestMethod.GET)
+	@RequestMapping(value="/area/deletechannel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> deleteeAreaChannel(AreaChannel channel, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -602,7 +626,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/channel/addchannel", method = RequestMethod.GET)
+	@RequestMapping(value="/channel/addchannel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addChannel(Channel channel, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -620,7 +644,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/channel/updatechannel", method = RequestMethod.GET)
+	@RequestMapping(value="/channel/updatechannel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> updateChannel(Channel channel, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -638,7 +662,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/channel/deletechannel", method = RequestMethod.GET)
+	@RequestMapping(value="/channel/deletechannel", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> deleteChannel(Channel channel, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -689,7 +713,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/channel/replace", method = RequestMethod.GET)
+	@RequestMapping(value="/channel/replace", method = RequestMethod.POST)
 	public Map<Object, Object> replaceChannels(String data, int userid) throws IOException{
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
@@ -740,7 +764,7 @@ public class AreaController {
 		}
 	}
 
-	@RequestMapping(value="/machine/addmachine", method = RequestMethod.GET)
+	@RequestMapping(value="/machine/addmachine", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> addMachine(Machine machine, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -758,7 +782,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/machine/updatemachine", method = RequestMethod.GET)
+	@RequestMapping(value="/machine/updatemachine", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> updateMachine(Machine machine, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -776,7 +800,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/machine/deletemachine", method = RequestMethod.GET)
+	@RequestMapping(value="/machine/deletemachine", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<Object, Object> deleteMachine(Machine machine, int userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
@@ -826,7 +850,7 @@ public class AreaController {
 		return result;
 	}
 
-	@RequestMapping(value="/machine/replace", method = RequestMethod.GET)
+	@RequestMapping(value="/machine/replace", method = RequestMethod.POST)
 	public Map<Object, Object> replaceMachines(String data, int userid) throws IOException{
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
