@@ -224,7 +224,7 @@ public class AreaController {
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			List<Area> areas = areaService.getAllAreas();
+			List<Area> areas = areaService.getAllAailableAreas();
 			result.put("data", parseAreas(areas));
 			result.put("status", "0");
 		} catch(Throwable t){
@@ -252,7 +252,6 @@ public class AreaController {
 			result.put("index", area.getIndex());
 			result.put("image", area.getImage());
 			result.put("parent", area.getParent());
-			result.put("children", parseAreas(area.getChildren()));
 		}
 		return result;
 	}
