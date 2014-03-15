@@ -16,8 +16,7 @@ public class ConfigControllerTest extends TestCase{
 	@Test
 	public void testConfigs(){
 		if(flag){
-			ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
-			ConfigController cs = ac.getBean("configController", ConfigController.class);
+			ConfigController cs = getController();
 			
 			System.out.println(cs.getConfig(Config.TYPE_BACK_INTERVAL_FLAG));
 			System.out.println(cs.getConfig(Config.TYPE_LIFE_TIME_FLAG));
@@ -31,5 +30,23 @@ public class ConfigControllerTest extends TestCase{
 			System.out.println(cs.updateConfig(config, 1));
 			System.out.println(cs.getConfig(Config.TYPE_REFRESH_INTERVAL_FLAG));
 		}
+	}
+	
+	@Test
+	public void testGetLog(){
+		if(flag){
+			ConfigController cs = getController();
+			
+			long userid = -1;
+			String start = "2013-03-15 00:00:00";
+			String end = "2014-03-16 00:00:00";
+			System.out.println(cs.getLogHistory(userid, start, end));
+		}
+	}
+
+	private ConfigController getController() {
+		ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+		ConfigController cs = ac.getBean("configController", ConfigController.class);
+		return cs;
 	}
 }

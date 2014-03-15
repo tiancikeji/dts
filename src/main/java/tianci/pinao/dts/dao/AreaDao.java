@@ -111,4 +111,7 @@ public interface AreaDao {
 	public boolean modifyLevelImage(LevelImage level);
 	
 	public boolean deleteLevelImage(LevelImage level);
+
+	// monitor
+	public List<AreaChannel> getAreaChannelsByAreaids(List<Integer> areaIds);
 }

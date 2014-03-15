@@ -1,6 +1,7 @@
 package tianci.pinao.dts.service;
 
 import java.util.List;
+import java.util.Map;
 
 import tianci.pinao.dts.models.Area;
 import tianci.pinao.dts.models.AreaChannel;
@@ -12,7 +13,9 @@ import tianci.pinao.dts.models.Machine;
 
 public interface AreaService {
 
-	public List<Area> getAllAreas();
+	public List<Area> getAllAreas(long userid);
+
+	public Map<Machine, List<Channel>> getAllChannels(long userid);
 
 	// only for download...
 	public List<Area> getAllAailableAreas();
@@ -48,7 +51,7 @@ public interface AreaService {
 
 	public boolean deleteAreaChannel(AreaChannel channel, int userid);
 
-	public List<Channel> getAllChannels();
+	public List<Channel> getAllAvailableChannels();
 
 	public boolean addChannel(Channel channel, int userid);
 

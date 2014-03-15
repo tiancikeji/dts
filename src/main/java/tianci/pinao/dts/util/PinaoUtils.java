@@ -3,6 +3,11 @@ package tianci.pinao.dts.util;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.apache.commons.lang.StringUtils;
 
 public class PinaoUtils {
 
@@ -29,5 +34,23 @@ public class PinaoUtils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static Date getDate(String date) {
+		if(StringUtils.isNotBlank(date)){
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			try {
+				return sdf.parse(date);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	public static String getDateString(Date date) {
+		if(date != null )
+			return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+		return null;
 	}
 }

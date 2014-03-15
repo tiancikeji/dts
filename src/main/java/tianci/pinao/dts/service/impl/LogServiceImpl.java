@@ -1,5 +1,8 @@
 package tianci.pinao.dts.service.impl;
 
+import java.util.Date;
+import java.util.List;
+
 import tianci.pinao.dts.dao.LogDao;
 import tianci.pinao.dts.models.Log;
 import tianci.pinao.dts.service.LogService;
@@ -11,6 +14,11 @@ public class LogServiceImpl implements LogService {
 	@Override
 	public boolean addLog(Log log) {
 		return logDao.addLog(log);
+	}
+
+	@Override
+	public List<Log> getLogs(Date startDate, Date endDate) {
+		return logDao.getLogs(startDate, endDate);
 	}
 
 	public LogDao getLogDao() {

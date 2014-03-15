@@ -487,6 +487,13 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 				new Object[]{1, level.getLastModUserid(), level.getId()});
 		return count > 0;
 	}
+
+	// monitor
+	@Override
+	public List<AreaChannel> getAreaChannelsByAreaids(List<Integer> areaIds) {
+		return getJdbcTemplate().query("select id, name, area_id, channel_id, start, end, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_CHANNEL + " where isdel = ? and area_id in (" + StringUtils.join(areaIds.toArray(), ",") + ")", 
+				new Object[]{0}, new AreaChannelRowMapper());
+	}
 }
 
 class LevelImageRowMapper implements RowMapper<LevelImage>{

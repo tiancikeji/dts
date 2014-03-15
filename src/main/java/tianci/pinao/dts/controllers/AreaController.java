@@ -685,7 +685,7 @@ public class AreaController {
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			List<Channel> channels = areaService.getAllChannels();
+			List<Channel> channels = areaService.getAllAvailableChannels();
 			result.put("data", parseChannels(channels));
 			result.put("status", "0");
 		} catch(Throwable t){
@@ -744,7 +744,7 @@ public class AreaController {
 			out = response.getOutputStream();
 			out.write((PinaoConstants.FILE_COMMENT_PREFIX + "通道id" + PinaoConstants.TEM_DATA_COL_SEP + "机器ID" + PinaoConstants.TEM_DATA_COL_SEP + "通道长度" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
 			
-			List<Channel> channels = areaService.getAllChannels();
+			List<Channel> channels = areaService.getAllAvailableChannels();
 			if(channels != null && channels.size() > 0)
 				for(Channel channel : channels)
 					out.write((channel.getName() + PinaoConstants.TEM_DATA_COL_SEP + channel.getMachineName() + PinaoConstants.TEM_DATA_COL_SEP + channel.getLength() + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());

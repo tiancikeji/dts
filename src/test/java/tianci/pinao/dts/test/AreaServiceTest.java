@@ -95,7 +95,7 @@ public class AreaServiceTest extends TestCase{
 			channel.setLength(2000);
 			System.out.println(as.addChannel(channel, userid));
 			
-			System.out.println(as.getAllChannels());
+			System.out.println(as.getAllAvailableChannels());
 			
 			channel.setLength(3000);
 			channel.setId(1);
@@ -133,7 +133,7 @@ public class AreaServiceTest extends TestCase{
 			
 			System.out.println(as.addArea(area, userid));
 			
-			System.out.println(as.getAllAreas());
+			System.out.println(as.getAllAreas(-1));
 			
 			area = new Area();
 			area.setName("test16");

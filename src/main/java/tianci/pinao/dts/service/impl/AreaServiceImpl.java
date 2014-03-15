@@ -87,37 +87,6 @@ public class AreaServiceImpl implements AreaService {
 	}
 
 	@Override
-	public List<Area> getAllAreas() {
-		List<Area> areas = areaDao.getAllAreas();
-		
-		List<Area> result = new ArrayList<Area>();
-		Map<Integer, Area> tmps = new HashMap<Integer, Area>();
-		if(areas != null && areas.size() > 0){
-			for(Area area : areas){
-				if(area.getParent() <= 0)
-					result.add(area);
-				tmps.put(area.getId(), area);
-			}
-			
-			for(Area area : areas)
-				if(area.getParent() > 0 && tmps.containsKey(area.getParent())){
-					Area tmp = tmps.get(area.getParent());
-					if(tmp != null){
-						List<Area> children = tmp.getChildren();
-						if(children == null){
-							children = new ArrayList<Area>();
-							tmp.setChildren(children);
-						}
-						children.add(area);
-					}
-				}
-		}
-			
-		
-		return result;
-	}
-
-	@Override
 	public List<Area> getAllAailableAreas() {
 		return areaDao.getAllAreas();
 	}
@@ -270,7 +239,7 @@ public class AreaServiceImpl implements AreaService {
 						for(AreaChannel channel : areaids.get(area.getId()))
 							channel.setAreaName(area.getName());
 			
-			List<Channel> channels = getAllChannels();
+			List<Channel> channels = getAllAvailableChannels();
 			if(channels != null && channels.size() > 0)
 				for(Channel channel : channels)
 					if(channelids.keySet().contains(channel.getId()))
@@ -312,7 +281,7 @@ public class AreaServiceImpl implements AreaService {
 	}
 
 	@Override
-	public List<Channel> getAllChannels() {
+	public List<Channel> getAllAvailableChannels() {
 		List<Channel> channels = areaDao.getAllChannels();
 		if(channels != null && channels.size() > 0){
 			Map<Integer, List<Channel>> machineids = new HashMap<Integer, List<Channel>>();
@@ -414,7 +383,7 @@ public class AreaServiceImpl implements AreaService {
 				
 				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
 				if(lines != null && lines.length > 0){
-					List<Channel> channels = getAllChannels();
+					List<Channel> channels = getAllAvailableChannels();
 					Map<String, Map<String, Channel>> cMap = new HashMap<String, Map<String, Channel>>();
 					if(channels != null && channels.size() > 0)
 						for(Channel channel : channels){
@@ -634,6 +603,70 @@ public class AreaServiceImpl implements AreaService {
 	
 	private String getContent(String data){
 		return StringUtils.split(data, ";")[1].split(",")[1];
+	}
+
+	@Override
+	public List<Area> getAllAreas(long userid) {
+		List<Area> areas = areaDao.getAllAreas();
+		
+		//TODO filter by userid roles
+		
+		List<Area> result = new ArrayList<Area>();
+		Map<Integer, Area> tmps = new HashMap<Integer, Area>();
+		if(areas != null && areas.size() > 0){
+			for(Area area : areas){
+				if(area.getParent() <= 0)
+					result.add(area);
+				tmps.put(area.getId(), area);
+			}
+			
+			for(Area area : areas)
+				if(area.getParent() > 0 && tmps.containsKey(area.getParent())){
+					Area tmp = tmps.get(area.getParent());
+					if(tmp != null){
+						List<Area> children = tmp.getChildren();
+						if(children == null){
+							children = new ArrayList<Area>();
+							tmp.setChildren(children);
+						}
+						children.add(area);
+					}
+				}
+		}
+			
+		
+		return result;
+	}
+
+	@Override
+	public Map<Machine, List<Channel>> getAllChannels(long userid) {
+		Map<Machine, List<Channel>> result = new HashMap<Machine, List<Channel>>();
+		
+		List<Channel> channels = areaDao.getAllChannels();
+		if(channels != null && channels.size() > 0){
+			Map<Integer, List<Channel>> machineids = new HashMap<Integer, List<Channel>>();
+			for(Channel channel : channels){
+				List<Channel> tmp = machineids.get(channel.getMachineid());
+				if(tmp == null){
+					tmp = new ArrayList<Channel>();
+					machineids.put(channel.getMachineid(), tmp);
+				}
+				tmp.add(channel);
+			}
+			
+			//TODO filter by userid roles
+			
+			List<Machine> machines = getAllMachines();
+			if(machines != null && machines.size() > 0)
+				for(Machine machine : machines)
+					if(machineids.keySet().contains(machine.getId())){
+						result.put(machine, machineids.get(machine.getId()));
+						for(Channel channel : machineids.get(machine.getId()))
+							channel.setMachineName(machine.getName());
+					}
+		}
+		
+		return result;
 	}
 
 	public AreaDao getAreaDao() {

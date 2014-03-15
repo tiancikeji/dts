@@ -186,3 +186,17 @@ CREATE TABLE `temperature_log` (
 	`date` datetime NOT NULL,
   KEY `tm_key` (`channel`,`date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+
+--用户
+create table user (
+	id bigint(20) not null auto_increment comment "自增id",
+	name varchar(50) not null comment "名字&登录名",
+	password varchar(50) not null comment "密码",
+	role int(10) not null comment "角色：1 super admin, 2 system admin, 3 super user, 4 normal user",
+	area_ids varchar(255) not null comment "查询厂区id",
+	lastmod_time datetime not null comment "上次修改时间",
+	lastmod_userid bigint(20) not null comment "上次修改人",
+	isdel tinyint(3) not null default 0 comment "是否删除",
+	primary key(id),
+	index uname (name, password)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;

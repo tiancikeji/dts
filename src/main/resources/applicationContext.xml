@@ -119,6 +119,16 @@
 	<beans:bean id="logDao" class="tianci.pinao.dts.dao.impl.LogDaoImpl">
 		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
 	</beans:bean>
+
+	<beans:bean id="temService" class="tianci.pinao.dts.service.impl.TemServiceImpl">
+		<beans:property name="areaDao" ref="areaDao" />
+		<beans:property name="temDao" ref="temDao" />
+	</beans:bean>
+	<beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.DummyTemDaoImpl">
+	</beans:bean>
+	<!-- <beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.TemDaoImpl">
+		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
+	</beans:bean> -->
 	
 	<!-- auto import machine configs on start -->
 	<beans:bean id="autImportMachineConfigTask" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
