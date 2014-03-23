@@ -32,7 +32,7 @@ public class UserController {
 		try{
 			User user = userService.getUser(name, password);
 			
-			if(user != null){
+			if(user != null && request != null){
 				request.getSession().setAttribute("" + user.getId(), user);
 				result.put("data", parseUser(user));
 				result.put("status", "0");
@@ -144,7 +144,7 @@ public class UserController {
 
 	@RequestMapping(value="/user/list", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<Object, Object> getUser(long userid){
+	public Map<Object, Object> getUsers(long userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
 		try{

@@ -138,14 +138,14 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	// area hardware configs
 	@Override
 	public boolean addHardwareConfig(AreaHardwareConfig config) {
-		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + "(area_id, light, relay, voice, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, now(), ?, ?)", 
-				new Object[]{config.getAreaid(), config.getLight(), config.getRelay(), config.getVoice(), config.getLastModUserid(), 0});
+		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + "(area_id, light, relay, relay1, voice, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, ?, now(), ?, ?)", 
+				new Object[]{config.getAreaid(), config.getLight(), config.getRelay(), config.getRelay1(), config.getVoice(), config.getLastModUserid(), 0});
 		return count > 0;
 	}
 
 	@Override
 	public void addHardwareConfigs(final List<AreaHardwareConfig> hardConfigs) {
-		getJdbcTemplate().batchUpdate("insert into " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + "(area_id, light, relay, voice, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, now(), ?, ?)", new BatchPreparedStatementSetter() {
+		getJdbcTemplate().batchUpdate("insert into " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + "(area_id, light, relay, relay1, voice, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, ?, now(), ?, ?)", new BatchPreparedStatementSetter() {
 			
 			@Override
 			public void setValues(PreparedStatement ps, int index) throws SQLException {
@@ -155,9 +155,10 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 						ps.setObject(1, config.getAreaid());
 						ps.setObject(2, config.getLight());
 						ps.setObject(3, config.getRelay());
-						ps.setObject(4, config.getVoice());
-						ps.setObject(5, config.getLastModUserid());
-						ps.setObject(6, 0);
+						ps.setObject(4, config.getRelay1());
+						ps.setObject(5, config.getVoice());
+						ps.setObject(6, config.getLastModUserid());
+						ps.setObject(7, 0);
 					}
 				}
 			}
@@ -171,7 +172,7 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 
 	@Override
 	public AreaHardwareConfig getHardwareConfigByAreaid(int areaid) {
-		List<AreaHardwareConfig> configs = getJdbcTemplate().query("select id, area_id, light, relay, voice, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ? and area_id = ?", 
+		List<AreaHardwareConfig> configs = getJdbcTemplate().query("select id, area_id, light, relay, relay1, voice, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ? and area_id = ?", 
 				new Object[]{0, areaid}, new AreaHardwareConfigRowMapper());
 		if(configs != null && configs.size() > 0)
 			return configs.get(0);
@@ -181,13 +182,13 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 
 	@Override
 	public List<AreaHardwareConfig> getAllHardwareConfigs() {
-		return getJdbcTemplate().query("select id, area_id, light, relay, voice, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ?", new Object[]{0}, new AreaHardwareConfigRowMapper());
+		return getJdbcTemplate().query("select id, area_id, light, relay, relay1, voice, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ?", new Object[]{0}, new AreaHardwareConfigRowMapper());
 	}
 
 	@Override
 	public boolean updateHardwareConfig(AreaHardwareConfig config) {
-		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " set area_id = ?, light = ?, relay = ?, voice = ?, lastmod_time = now(), lastmod_userid = ? where id = ?", 
-				new Object[]{config.getAreaid(), config.getLight(), config.getRelay(), config.getVoice(), config.getLastModUserid(), config.getId()});
+		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " set area_id = ?, light = ?, relay = ?, relay1 = ?, voice = ?, lastmod_time = now(), lastmod_userid = ? where id = ?", 
+				new Object[]{config.getAreaid(), config.getLight(), config.getRelay(), config.getRelay1(), config.getVoice(), config.getLastModUserid(), config.getId()});
 		return count > 0;
 	}
 
@@ -196,6 +197,12 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " set isdel = ?, lastmod_time = now(), lastmod_userid = ? where id = ?", 
 				new Object[]{1, userid, configid});
 		return count > 0;
+	}
+
+	@Override
+	public void deleteAreaHardwareConfigs(int areaid, int userid) {
+		getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " set isdel = ?, lastmod_time = now(), lastmod_userid = ? where area_id = ?", 
+				new Object[]{1, userid, areaid});
 	}
 
 	@Override
@@ -345,6 +352,11 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 		getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_TEMP_CONFIG + " set isdel = ?, lastmod_time = now(), lastmod_userid = ?", new Object[]{1, userid});
 	}
 
+	@Override
+	public void deleteAreaTemConfigs(int areaid, int userid) {
+		getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_TEMP_CONFIG + " set isdel = ?, lastmod_time = now(), lastmod_userid = ? where area_id = ?", new Object[]{1, userid, areaid});
+	}
+
 	// channels
 	@Override
 	public List<Channel> getAllChannels() {
@@ -395,6 +407,13 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	public boolean deleteChannel(Channel channel) {
 		int count = getJdbcTemplate().update("update " +  SqlConstants.TABLE_CHANNEL + " set isdel = ?, lastmod_time = now(), lastmod_userid = ? where id = ?", 
 				new Object[]{1, channel.getLastModUserid(), channel.getId()});
+		return count > 0;
+	}
+
+	@Override
+	public boolean deleteChannels(int machineid, int userid) {
+		int count = getJdbcTemplate().update("update " +  SqlConstants.TABLE_CHANNEL + " set isdel = ?, lastmod_time = now(), lastmod_userid = ? where machine_id = ?", 
+				new Object[]{1, userid, machineid});
 		return count > 0;
 	}
 
@@ -464,20 +483,20 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	// level images
 	@Override
 	public List<LevelImage> getAllLevels() {
-		return getJdbcTemplate().query("select id, level, name, image, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_LEVEL + " where isdel = 0", new LevelImageRowMapper());
+		return getJdbcTemplate().query("select id, name, image, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_LEVEL + " where isdel = 0", new LevelImageRowMapper());
 	}
 
 	@Override
 	public boolean addLevelImage(LevelImage level) {
-		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_LEVEL + "(level, name, image, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, now(), ?, ?)", 
-				new Object[]{level.getLevel(), level.getName(), level.getImage(), level.getLastModUserid(), 0});
+		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_LEVEL + "(name, image, lastmod_time, lastmod_userid, isdel) values(?, ?, now(), ?, ?)", 
+				new Object[]{level.getName(), level.getImage(), level.getLastModUserid(), 0});
 		return count > 0;
 	}
 
 	@Override
 	public boolean modifyLevelImage(LevelImage level) {
-		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_LEVEL + " set level = ?, name = ?, image = ?, lastmod_time = now(), lastmod_userid = ? where id = ? and isdel = ?", 
-				new Object[]{level.getLevel(), level.getName(), level.getImage(), level.getLastModUserid(), level.getId(), 0});
+		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_LEVEL + " set name = ?, image = ?, lastmod_time = now(), lastmod_userid = ? where id = ? and isdel = ?", 
+				new Object[]{level.getName(), level.getImage(), level.getLastModUserid(), level.getId(), 0});
 		return count > 0;
 	}
 
@@ -502,7 +521,6 @@ class LevelImageRowMapper implements RowMapper<LevelImage>{
 	public LevelImage mapRow(ResultSet rs, int index) throws SQLException {
 		LevelImage image = new LevelImage();
 		image.setId(rs.getInt("id"));
-		image.setLevel(rs.getInt("level"));
 		image.setName(rs.getString("name"));
 		image.setImage(rs.getString("image"));
 		Timestamp ts = rs.getTimestamp("lastmod_time");
@@ -600,6 +618,7 @@ class AreaHardwareConfigRowMapper implements RowMapper<AreaHardwareConfig>{
 		config.setAreaid(rs.getInt("area_id"));
 		config.setLight(rs.getString("light"));
 		config.setRelay(rs.getString("relay"));
+		config.setRelay1(rs.getString("relay1"));
 		config.setVoice(rs.getString("voice"));
 		Timestamp ts = rs.getTimestamp("lastmod_time");
 		if(ts != null)

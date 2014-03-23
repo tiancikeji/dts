@@ -8,20 +8,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import tianci.pinao.dts.models.Alarm;
+import tianci.pinao.dts.models.AlarmHistory;
 import tianci.pinao.dts.models.Area;
 import tianci.pinao.dts.models.AreaMonitorData;
 import tianci.pinao.dts.models.Channel;
 import tianci.pinao.dts.models.ChannelMonitorData;
+import tianci.pinao.dts.models.Config;
 import tianci.pinao.dts.models.Machine;
 import tianci.pinao.dts.models.ReportData;
 import tianci.pinao.dts.models.TemData;
 import tianci.pinao.dts.service.AreaService;
+import tianci.pinao.dts.service.ConfigService;
 import tianci.pinao.dts.service.TemService;
 import tianci.pinao.dts.util.PinaoUtils;
 
@@ -33,6 +38,135 @@ public class TemperatureController {
 	
 	@Autowired
 	private TemService temService;
+	
+	@Autowired
+	private ConfigService configService;
+
+	@RequestMapping(value="/alarm/notify", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> notifyAlarm(long userid, long id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			// TODO check user role
+			
+			if(temService.updateAlarm(id, Alarm.STATUS_NOTIFY, userid))
+				result.put("status", "0");
+			else
+				result.put("status", "400");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/alarm/mute", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> muteAlarm(long userid, long id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			// TODO check user role
+			
+			if(temService.updateAlarm(id, Alarm.STATUS_MUTE, userid))
+				result.put("status", "0");
+			else
+				result.put("status", "400");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/alarm/reset", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> resetAlarm(long userid, long id, String loginname, String password){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			// TODO check user role
+			
+			long adminid = userid;
+			if(temService.updateAlarm(id, Alarm.STATUS_RESET, adminid))
+				result.put("status", "0");
+			else
+				result.put("status", "400");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/alarm/check", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> checkAlarms(long userid, long time){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			// TODO check user role
+			List<Area> areas = areaService.getAllAreas(userid);
+
+			List<Map<String, Object>> tmp = null;
+			if(areas != null && areas.size() > 0)
+				tmp = parseCheckAlarmData(temService.getAreasAlarmData(areas, time));
+			else
+				tmp = new ArrayList<Map<String,Object>>();
+			
+			result.put("data", tmp);
+			result.put("time", System.currentTimeMillis());
+			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+			result.put("status", "0");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	private List<Map<String, Object>> parseCheckAlarmData(List<Alarm> data) {
+		List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+		
+		if(data != null && data.size() > 0)
+			for(Alarm alarm : data){
+				Map<String, Object> tmp = new HashMap<String, Object>();
+				
+				tmp.put("id", alarm.getId());
+				tmp.put("type", alarm.getType());
+				tmp.put("areaName", alarm.getAreaName());
+				tmp.put("alarmName", alarm.getAlarmName());
+				
+				result.add(tmp);
+			}
+		
+		return result;
+	}
+
+	@RequestMapping(value="/report/area/alarm", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> getAreaAlarmReportData(long userid, int id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			// TODO check user role
+			Area area = searchArea(areaService.getAllAreas(userid), id);
+
+			List<Map<String, Object>> tmp = null;
+			if(area != null)
+				tmp = parseAlarmData(temService.getAreaAlarmReportData(area));
+			else
+				tmp = new ArrayList<Map<String,Object>>();
+			
+			result.put("data", tmp);
+			result.put("status", "0");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
 
 	@RequestMapping(value="/report/area/data", method = RequestMethod.GET)
 	@ResponseBody
@@ -148,6 +282,83 @@ public class TemperatureController {
 		return dates;
 	}
 
+	@RequestMapping(value="/monitor/area/alarm", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> getAreaAlarmData(long userid, int id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			// TODO check user role
+			Area area = searchArea(areaService.getAllAreas(userid), id);
+
+			List<Map<String, Object>> tmp = null;
+			if(area != null)
+				tmp = parseAlarmData(temService.getAreaAlarmData(area));
+			else
+				tmp = new ArrayList<Map<String,Object>>();
+			
+			result.put("data", tmp);
+			result.put("status", "0");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	private List<Map<String, Object>> parseAlarmData(List<Alarm> data) {
+		List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+		
+		if(data != null && data.size() > 0)
+			for(Alarm alarm : data){
+				Map<String, Object> tmp = new HashMap<String, Object>();
+				
+				tmp.put("id", alarm.getId());
+				tmp.put("type", alarm.getType());
+				tmp.put("machineName", alarm.getMachineName());
+				tmp.put("channelName", alarm.getChannelName());
+				tmp.put("areaName", alarm.getAreaName());
+				tmp.put("length", alarm.getLength());
+				tmp.put("alarmName", alarm.getAlarmName());
+				tmp.put("light", alarm.getLight());
+				tmp.put("relay", alarm.getRelay());
+				tmp.put("relay1", alarm.getRelay1());
+				tmp.put("voice", alarm.getVoice());
+				tmp.put("temperature", alarm.getTemperatureCurr());
+				tmp.put("temperaturePre", alarm.getTemperaturePre());
+				tmp.put("status", alarm.getStatus());
+				tmp.put("addTime", PinaoUtils.getDateString(alarm.getAddTime()));
+				tmp.put("lastModTime", PinaoUtils.getDateString(alarm.getLastModTime()));
+				if(alarm.getLastModUserid() > 0)
+					tmp.put("lastModUserid", alarm.getLastModUserid());
+				else
+					tmp.put("lastModUserid", StringUtils.EMPTY);
+				
+				tmp.put("history", parseAlarmHistory(alarm.getHistory()));
+				
+				result.add(tmp);
+			}
+		
+		return result;
+	}
+
+	private List<Map<String, Object>> parseAlarmHistory(List<AlarmHistory> historys) {
+		List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+		
+		if(historys != null && historys.size() > 0)
+			for(AlarmHistory history : historys){
+				Map<String, Object> tmp = new HashMap<String, Object>();
+				
+				tmp.put("operation", history.getOperation());
+				tmp.put("lastModTime", PinaoUtils.getDateString(history.getAddTime()));
+				tmp.put("lastModUserid", history.getAddUserid());
+				
+				result.add(tmp);
+			}
+		
+		return result;
+	}
+
 	@RequestMapping(value="/monitor/area/data", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<Object, Object> getAreaData(long userid, int id, long time){
@@ -164,6 +375,7 @@ public class TemperatureController {
 				tmp = new HashMap<String, Object>();
 			
 			result.put("data", tmp);
+			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
 			result.put("status", "0");
 		} catch(Throwable t){
 			t.printStackTrace();
@@ -194,11 +406,12 @@ public class TemperatureController {
 			result.put("min", data.getMin());
 			result.put("avg", data.getAvg());
 			result.put("time", data.getTime());
-			if(data.getAlarmIds() != null && data.getAlarmIdx() != null){
+			if(data.getAlarmIds() != null && data.getAlarmIdx() != null
+					&& data.getAlarmIds().size() > 0 && data.getAlarmIdx().size() > 0){
 				result.put("alarmIdxs", data.getAlarmIdx());
 				result.put("alarmIds", data.getAlarmIds());
 			}
-			if(data.getAlarmName() != null && data.getAlarmType() > -1){
+			if(StringUtils.isNotBlank(data.getAlarmName()) && data.getAlarmType() > 0){
 				result.put("alarmName", data.getAlarmName());
 				result.put("alarmType", data.getAlarmType());
 			}
@@ -253,6 +466,37 @@ public class TemperatureController {
 		return result;
 	}
 
+	@RequestMapping(value="/report/channel/alarm", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> getChannelAlarmReportData(long userid, int id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			//TODO check user role
+			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+			List<Channel> channels = new ArrayList<Channel>();
+			if(machines != null && machines.size() > 0)
+				for(Machine machine : machines.keySet())
+					for(Channel channel : machines.get(machine))
+						if(channel.getId() == id){
+							channels.add(channel);
+							break;
+						}
+				
+			List<Map<String, Object>> data = null;
+			if(channels != null && channels.size() > 0)
+				data = parseAlarmData(temService.getChannelAlarmReportData(channels));
+			else
+				data = new ArrayList<Map<String,Object>>();
+			result.put("data", data);
+			result.put("status", "0");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
 	@RequestMapping(value="/report/channel/data", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<Object, Object> getChannelReportData(long userid, int id, String start, String end){
@@ -286,6 +530,37 @@ public class TemperatureController {
 		return result;
 	}
 
+	@RequestMapping(value="/monitor/channel/alarm", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> getChannelAlarmData(long userid, int id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			//TODO check user role
+			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+			List<Channel> channels = new ArrayList<Channel>();
+			if(machines != null && machines.size() > 0)
+				for(Machine machine : machines.keySet())
+					for(Channel channel : machines.get(machine))
+						if(channel.getId() == id){
+							channels.add(channel);
+							break;
+						}
+				
+			List<Map<String, Object>> data = null;
+			if(channels != null && channels.size() > 0)
+				data = parseAlarmData(temService.getChannelAlarmData(channels));
+			else
+				data = new ArrayList<Map<String,Object>>();
+			result.put("data", data);
+			result.put("status", "0");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
 	@RequestMapping(value="/monitor/channel/data", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<Object, Object> getChannelData(long userid, int id, long time){
@@ -308,6 +583,37 @@ public class TemperatureController {
 				data = parseChannelData(temService.getChannelData(channels, time));
 			else
 				data = new HashMap<String, Object>();
+			result.put("data", data);
+			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+			result.put("status", "0");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/report/machine/alarm", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> getMachineAlarmReportData(long userid, int id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			//TODO check user role
+			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+			List<Channel> channels = null;
+			if(machines != null && machines.size() > 0)
+				for(Machine machine : machines.keySet())
+					if(machine.getId() == id){
+						channels = machines.get(machine);
+						break;
+					}
+				
+			List<Map<String, Object>> data = null;
+			if(channels != null && channels.size() > 0)
+				data = parseAlarmData(temService.getChannelAlarmReportData(channels));
+			else
+				data = new ArrayList<Map<String,Object>>();
 			result.put("data", data);
 			result.put("status", "0");
 		} catch(Throwable t){
@@ -349,6 +655,36 @@ public class TemperatureController {
 		return result;
 	}
 
+	@RequestMapping(value="/monitor/machine/alarm", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> getMachineAlarmData(long userid, int id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			//TODO check user role
+			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+			List<Channel> channels = null;
+			if(machines != null && machines.size() > 0)
+				for(Machine machine : machines.keySet())
+					if(machine.getId() == id){
+						channels = machines.get(machine);
+						break;
+					}
+				
+			List<Map<String, Object>> data = null;
+			if(channels != null && channels.size() > 0)
+				data = parseAlarmData(temService.getChannelAlarmData(channels));
+			else
+				data = new ArrayList<Map<String,Object>>();
+			result.put("data", data);
+			result.put("status", "0");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
 	@RequestMapping(value="/monitor/machine/data", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<Object, Object> getMachineData(long userid, int id, long time){
@@ -371,6 +707,7 @@ public class TemperatureController {
 			else
 				data = new HashMap<String, Object>();
 			result.put("data", data);
+			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
 			result.put("status", "0");
 		} catch(Throwable t){
 			t.printStackTrace();

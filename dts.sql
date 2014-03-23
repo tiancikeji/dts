@@ -22,7 +22,6 @@ create table area (
 
 create table level (
 	id int(10) not null auto_increment comment "自增id",
-	level tinyint(3) not null default 0 comment "第几层：0-厂区，1-电缆沟，2-桥架，3-配电室，4-区段，5-电缆夹层，6-开关柜",
 	name varchar(50) not null comment "分区名字：0-厂区，1-电缆沟，2-桥架，3-配电室，4-区段，5-电缆夹层，6-开关柜",
 	image varchar(1024) comment "自定义背景图片",
 	lastmod_time datetime not null comment "上次修改时间",
@@ -34,9 +33,10 @@ create table level (
 create table area_hardware_config (
 	id int(10) not null auto_increment comment "自增id",
 	area_id int(10) not null comment "分区id",
+	relay1 varchar(10) not null comment "预警继电器号",
 	light varchar(10) not null comment "灯号",
 	relay varchar(10) not null comment "继电器号",
-	voice varchar(10) not null comment "声音地址",
+	voice varchar(10) comment "声音地址",
 	lastmod_time datetime not null comment "上次修改时间",
 	lastmod_userid int(10) not null comment "上次修改人",
 	isdel tinyint(3) not null default 0 comment "是否删除",
@@ -66,7 +66,7 @@ create table area_temp_config (
 	temperature_low int(10) not null default 99999 comment "定温1",
 	temperature_high int(10) not null default 99999 comment "定温2",
 	exotherm int(10) not null default 99999 comment "温升",
-	temperature_diff int(10) not null default 99999 comment "差温",
+	temperature_diff int(10) not null default 15 comment "差温",
 	lastmod_time datetime not null comment "上次修改时间",
 	lastmod_userid int(10) not null comment "上次修改人",
 	isdel tinyint(3) not null default 0 comment "是否删除",
@@ -135,6 +135,16 @@ insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) value
 insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(4, 1, "备份数据间隔", now(), 1, 0);
 --前后端更新频率：以秒为单位
 insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(5, 10, "前后端更新频率", now(), 1, 0);
+--斯托克斯报警值
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(6, 0, "斯托克斯报警值", now(), 1, 0);
+--反斯托克斯报警值
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(7, 0, "反斯托克斯报警值", now(), 1, 0);
+--高温故障值
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(8, 120, "高温故障值", now(), 1, 0);
+--低温故障值
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(9, -40, "低温故障值", now(), 1, 0);
+--硬盘剩余容量百分比
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(10, 10, "硬盘剩余容量百分比", now(), 1, 0);
 
 --日志：type：1-web系统启动，2-web系统关闭，3-用户登录，4-用户登出，5-数据采集启动，6-数据采集关闭
 create table log (
@@ -199,4 +209,40 @@ create table user (
 	isdel tinyint(3) not null default 0 comment "是否删除",
 	primary key(id),
 	index uname (name, password)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm
+create table alarm (
+	id bigint(20) not null auto_increment comment "自增id",
+	type tinyint(3) not null comment "报警类型：1预警，2火警，3差温报警，4温升速率报警，5低温故障，6高温故障，7斯托克斯故障，8反斯托克斯故障，9数据存储溢出",
+	machine_id int(10) default 0 comment "机器唯一id",
+	machine_name varchar(50) default 0 comment "机器名称",
+	channel_id int(10) default 0 comment "通道数据库唯一id",
+	channel_name varchar(50) default 0 comment "通道名称",
+	length int(10) comment "报警距离",
+	area_id int(10) default 0 comment "区域唯一id",
+	area_name varchar(50) default 0 comment "区域名称",
+	alarm_name varchar(50) default 0 comment "报警区域名称",
+	light varchar(10) comment "灯号",
+	relay varchar(10) comment "继电器号",
+	relay1 varchar(10) comment "继电器号",
+	voice varchar(10) comment "声音地址",
+	temperature double(10,2) comment "目前温度",
+	temperature_pre int(10) comment "设置温度",
+	status tinyint(3) not null default 0 comment '状态：0新增，1报警，2确认，3消音，4消音过，5复位，6复位过',
+	add_time datetime not null comment "添加时间",
+	lastmod_time datetime not null comment "上次修改时间",
+	lastmod_userid bigint(20) not null comment "上次修改人",
+	isdel tinyint(3) not null default 0 comment "是否删除",
+	primary key(id),
+	index acid (channel_id),
+	index aaid (area_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table alarm_history (
+	alarm_id bigint(20) not null default 0 comment "alarm唯一id",
+	operation tinyint(3) not null default 0 comment '2确认，3消音，5复位',
+	add_time datetime not null comment "修改时间",
+	add_userid bigint(20) not null comment "修改人",
+	index ahaid (alarm_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;

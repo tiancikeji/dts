@@ -21,10 +21,26 @@ public class TemperatureControllerTest extends TestCase {
 	public void testGetAreaData(){
 		if(flag){
 			TemperatureController tc = getController();
+			/*long userid = -1;
+			int id = 15;
+			long time = 1395562918064l;
+			System.out.println(tc.getAreaData(userid, id, time));*/
+			long userid = -1;
+			int id = 13;
+			long time = 1395562918064l;
+			System.out.println(tc.getAreaData(userid, id, time));
+		}
+	}
+	
+	public void testGetAreaAlarmData(){
+		if(flag){
+			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 15;
-			long time = -1;
-			System.out.println(tc.getAreaData(userid, id, time));
+			System.out.println(tc.getAreaAlarmData(userid, id));
+			/*long userid = -1;
+			int id = 13;
+			System.out.println(tc.getAreaAlarmData(userid, id));*/
 		}
 	}
 	
@@ -49,6 +65,15 @@ public class TemperatureControllerTest extends TestCase {
 		}
 	}
 	
+	public void testGetMachineAlarmData(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+			int id = 3;
+			System.out.println(tc.getMachineAlarmData(userid, id));
+		}
+	}
+	
 	public void testGetMachineReportData(){
 		if(flag){
 			TemperatureController tc = getController();
@@ -57,6 +82,15 @@ public class TemperatureControllerTest extends TestCase {
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
 			System.out.println(tc.getMachineReportData(userid, id, start, end));
+		}
+	}
+	
+	public void testGetMachineAlarmReportData(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+			int id = 3;
+			System.out.println(tc.getMachineAlarmReportData(userid, id));
 		}
 	}
 	
@@ -86,6 +120,61 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 2;
 			long time = -1;
 			System.out.println(tc.getChannelData(userid, id, time));
+		}
+	}
+	
+	public void testGetChannelAlarmData(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+			int id = 1;
+			System.out.println(tc.getChannelAlarmData(userid, id));
+		}
+	}
+	
+	public void testGetChannelAlarmReportData(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+			int id = 1;
+			System.out.println(tc.getChannelAlarmReportData(userid, id));
+		}
+	}
+	
+	public void testCheckAlarm(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+//			long time = -1;
+			long time = 1395562918064l;
+			System.out.println(tc.checkAlarms(userid, time));
+		}
+	}
+	
+	public void testNotifyAlarm(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+			long id= 2;
+			System.out.println(tc.notifyAlarm(userid, id));
+		}
+	}
+	
+	public void testMuteAlarm(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+			long id= 2;
+			System.out.println(tc.muteAlarm(userid, id));
+		}
+	}
+	
+	public void testResetAlarm(){
+		if(flag){
+			TemperatureController tc = getController();
+			long userid = -1;
+			long id= 2;
+			System.out.println(tc.resetAlarm(userid, id, "", ""));
 		}
 	}
 	

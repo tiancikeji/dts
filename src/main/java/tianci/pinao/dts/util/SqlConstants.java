@@ -24,7 +24,13 @@ public interface SqlConstants {
 
 	public static final String TABLE_LOG = DATABASE + ".`log`";
 
+	public static final String TABLE_USER = DATABASE + ".`user`";
+
 	public static final String TABLE_TEMPERATURE = DATABASE + ".`temperature`";
 
-	public static final String TABLE_USER = DATABASE + ".`user`";
+	public static final String TABLE_TEMPERATURE_LOG = DATABASE + ".`temperature_log`";
+
+	public static final String TABLE_ALARM = DATABASE + ".`alarm`";
+
+	public static final String TABLE_ALARM_HISTORY = DATABASE + ".`alarm_history`";
 }

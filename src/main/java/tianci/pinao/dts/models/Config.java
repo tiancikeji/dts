@@ -17,6 +17,18 @@ public class Config {
 	public static final int TYPE_BACK_INTERVAL_FLAG = 4;
 	
 	public static final int TYPE_REFRESH_INTERVAL_FLAG = 5;
+	
+	public static final int TYPE_STOCK_THRELHOLD = 6;
+	
+	public static final int TYPE_UNSTOCK_THRELHOLD = 7;
+	
+	public static final int TYPE_TEMPERATURE_EXTREME_HIGH = 8;
+	
+	public static final int TYPE_TEMPERATURE_EXTREME_LOW = 9;
+	
+	public static final int TYPE_FREE_SPACE_RATE = 10;
+	
+	public static final int VALUE_SAVE = 1;
 
 	private int id;
 	

@@ -130,7 +130,6 @@ public class AreaController {
 				Map<String, Object> tmp = new HashMap<String, Object>();
 				
 				tmp.put("id", level.getId());
-				tmp.put("level", level.getLevel());
 				tmp.put("name", level.getName());
 				tmp.put("image", level.getImage());
 				

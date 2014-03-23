@@ -123,8 +123,19 @@
 	<beans:bean id="temService" class="tianci.pinao.dts.service.impl.TemServiceImpl">
 		<beans:property name="areaDao" ref="areaDao" />
 		<beans:property name="temDao" ref="temDao" />
+		<beans:property name="alarmDao" ref="alarmDao" />
+	</beans:bean>
+	<beans:bean id="alarmDao" class="tianci.pinao.dts.dao.impl.AlarmDaoImpl">
+		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
 	</beans:bean>
 	<beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.DummyTemDaoImpl">
+	</beans:bean>
+
+	<beans:bean id="userService" class="tianci.pinao.dts.service.impl.UserServiceImpl">
+		<beans:property name="userDao" ref="userDao" />
+	</beans:bean>
+	<beans:bean id="userDao" class="tianci.pinao.dts.dao.impl.UserDaoImpl">
+		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
 	</beans:bean>
 	<!-- <beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.TemDaoImpl">
 		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />

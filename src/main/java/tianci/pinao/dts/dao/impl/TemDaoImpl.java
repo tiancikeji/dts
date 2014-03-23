@@ -32,7 +32,7 @@ public class TemDaoImpl extends JdbcDaoSupport implements TemDao {
 
 	@Override
 	public List<Temperature> getTemsByChannel(ArrayList<Integer> channels, Date start, Date end) {
-		return getJdbcTemplate().query("select channel, tem, stock, unstock, date from " + SqlConstants.TABLE_TEMPERATURE + " where channel in (" + StringUtils.join(channels.toArray()) + ") and date between ? and ?",
+		return getJdbcTemplate().query("select channel, tem, stock, unstock, date from " + SqlConstants.TABLE_TEMPERATURE_LOG + " where channel in (" + StringUtils.join(channels.toArray()) + ") and date between ? and ?",
 				new Object[]{start, end}, new TemperatureRowMapper());
 	}
 
@@ -51,7 +51,7 @@ public class TemDaoImpl extends JdbcDaoSupport implements TemDao {
 
 	@Override
 	public List<Temperature> getTemNStocksByChannel(List<Integer> channels, Date startDate, Date endDate) {
-		return getJdbcTemplate().query("select channel, tem, stock, unstock, date from " + SqlConstants.TABLE_TEMPERATURE + " where channel in (" + StringUtils.join(channels.toArray()) + ") and date between ? and ?",
+		return getJdbcTemplate().query("select channel, tem, stock, unstock, date from " + SqlConstants.TABLE_TEMPERATURE_LOG + " where channel in (" + StringUtils.join(channels.toArray()) + ") and date between ? and ?",
 				new Object[]{startDate, endDate}, new TemperatureRowMapper());
 	}
 }

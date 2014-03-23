@@ -61,11 +61,18 @@ public class AreaServiceImpl implements AreaService {
 
 	// area
 	@Override
+	@Transactional(rollbackFor=Exception.class, value="txManager")
 	public boolean deleteArea(Area area, int userid) {
 		if(area != null && area.getId() > 0){
-			return areaDao.deleteArea(area.getId(), userid);
+			if(areaDao.deleteArea(area.getId(), userid)){
+				areaDao.deleteAreaChannelsByAreaid(area.getId(), userid);
+				areaDao.deleteAreaTemConfigs(area.getId(), userid);
+				areaDao.deleteAreaHardwareConfigs(area.getId(), userid);
+			} else
+				return false;
 		}
-		return false;
+		
+		return true;
 	}
 
 	@Override
@@ -330,12 +337,17 @@ public class AreaServiceImpl implements AreaService {
 	}
 
 	@Override
+	@Transactional(rollbackFor=Exception.class, value="txManager")
 	public boolean deleteMachine(Machine machine, int userid) {
 		if(machine != null){
 			machine.setLastModUserid(userid);
-			return areaDao.deleteMachine(machine);
-		} else
-			return true;
+			if(areaDao.deleteMachine(machine))
+				areaDao.deleteChannels(machine.getId(), userid);
+			else
+				return false;
+		}
+			
+		return true;
 	}
 	
 	public List<Machine> getAllMachines() {

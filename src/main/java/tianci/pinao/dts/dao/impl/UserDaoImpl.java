@@ -29,7 +29,7 @@ public class UserDaoImpl extends JdbcDaoSupport implements UserDao {
 
 	@Override
 	public void addUser(User user) {
-		getJdbcTemplate().update("insert into " + SqlConstants.TABLE_USER + "(name, password, role, area_ids, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, now(), ?, ?)", 
+		getJdbcTemplate().update("insert into " + SqlConstants.TABLE_USER + "(name, password, role, area_ids, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, now(), ?, ?)", 
 				new Object[]{user.getName(), user.getPassword(), user.getRole(), StringUtils.join(user.getAreaIds(), ","), user.getLastModUserid(), 0});
 	}
 

@@ -18,6 +18,8 @@ public class AreaHardwareConfig {
 	
 	private String relay;
 	
+	private String relay1;
+	
 	private String voice;
 	
 	private Date lastModTime;
@@ -101,5 +103,13 @@ public class AreaHardwareConfig {
 
 	public void setAreaName(String areaName) {
 		this.areaName = areaName;
+	}
+
+	public String getRelay1() {
+		return relay1;
+	}
+
+	public void setRelay1(String relay1) {
+		this.relay1 = relay1;
 	}
 }

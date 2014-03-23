@@ -43,6 +43,8 @@ public interface AreaDao {
 	
 	public boolean deleteHardwareConfig(int configid, int userid);
 
+	public void deleteAreaHardwareConfigs(int areaid, int userid);
+
 	public void deleteAllHardwareConfigs(int userid);
 
 	public void addHardwareConfigs(List<AreaHardwareConfig> hardConfigs);
@@ -75,6 +77,8 @@ public interface AreaDao {
 
 	public void deleteAllTempConfigs(int userid);
 
+	public void deleteAreaTemConfigs(int areaid, int userid);
+
 	public void addTempConfigs(List<AreaTempConfig> tempConfigs);
 
 	// channels
@@ -82,13 +86,15 @@ public interface AreaDao {
 
 	public boolean addChannel(Channel channel);
 
+	public boolean addChannels(List<Channel> channels);
+
 	public boolean updateChannel(Channel channel);
 
 	public boolean deleteChannel(Channel channel);
 
 	public void deleteAllChannels(int userid);
 
-	public boolean addChannels(List<Channel> channels);
+	public boolean deleteChannels(int machineid, int userid);
 
 	// machines
 	public List<Machine> getAllMachines();

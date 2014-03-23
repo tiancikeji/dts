@@ -5,14 +5,20 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.transaction.annotation.Transactional;
 
+import tianci.pinao.dts.dao.AlarmDao;
 import tianci.pinao.dts.dao.AreaDao;
 import tianci.pinao.dts.dao.TemDao;
+import tianci.pinao.dts.models.Alarm;
+import tianci.pinao.dts.models.AlarmHistory;
 import tianci.pinao.dts.models.Area;
 import tianci.pinao.dts.models.AreaChannel;
 import tianci.pinao.dts.models.AreaMonitorData;
@@ -30,6 +36,83 @@ public class TemServiceImpl implements TemService {
 	private AreaDao areaDao;
 	
 	private TemDao temDao;
+	
+	private AlarmDao alarmDao;
+
+	@Override
+	@Transactional(rollbackFor=Exception.class, value="txManager")
+	public boolean updateAlarm(long id, int status, long userid) {
+		if(alarmDao.updateAlarm(id, status, userid))
+			if(alarmDao.addAlarmHistory(id, status, userid))
+				return true;
+			else
+				throw new RuntimeException("exception in add alarm history, so rollback...");
+		return true;
+	}
+
+	@Override
+	public List<Alarm> getChannelAlarmReportData(List<Channel> channels) {
+		if(channels != null && channels.size() > 0){
+			List<Integer> ids = new ArrayList<Integer>();
+			for(Channel channel : channels)
+				ids.add(channel.getId());
+			
+			// get alarm data
+			List<Alarm> alarms = alarmDao.getAlarmsByChannelIds(ids, new Object[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}); 
+			
+			if(alarms != null && alarms.size() > 0){
+				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
+				Set<Long> alarmIds = new HashSet<Long>();
+				for(Alarm alarm : alarms){
+					alarmIds.add(alarm.getId());
+					alarmMaps.put(alarm.getId(), alarm);
+				}
+
+				List<AlarmHistory> historys = alarmDao.getAlarmHistorysByAlarmIds(alarmIds);
+				
+				if(historys != null && historys.size() > 0){
+					for(AlarmHistory history : historys)
+						alarmMaps.get(history.getAlarmId()).getHistory().add(history);
+				}
+			}
+			
+			return alarms;
+		}
+		
+		return null;
+	}
+
+	@Override
+	public List<Alarm> getChannelAlarmData(List<Channel> channels) {
+		if(channels != null && channels.size() > 0){
+			List<Integer> ids = new ArrayList<Integer>();
+			for(Channel channel : channels)
+				ids.add(channel.getId());
+			
+			// get alarm data
+			List<Alarm> alarms = alarmDao.getAlarmsByChannelIds(ids, new Object[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}); 
+			
+			if(alarms != null && alarms.size() > 0){
+				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
+				Set<Long> alarmIds = new HashSet<Long>();
+				for(Alarm alarm : alarms){
+					alarmIds.add(alarm.getId());
+					alarmMaps.put(alarm.getId(), alarm);
+				}
+
+				List<AlarmHistory> historys = alarmDao.getAlarmHistorysByAlarmIds(alarmIds);
+				
+				if(historys != null && historys.size() > 0){
+					for(AlarmHistory history : historys)
+						alarmMaps.get(history.getAlarmId()).getHistory().add(history);
+				}
+			}
+			
+			return alarms;
+		}
+		
+		return null;
+	}
 
 	@Override
 	public ChannelMonitorData getChannelData(List<Channel> channels, long time) {
@@ -214,9 +297,11 @@ public class TemServiceImpl implements TemService {
 	public ReportData getAreaReportData(Area area, Date startDate, Date endDate) {
 		if(area != null){
 			// get sub-area ids
-			List<Integer> areaIds = new ArrayList<Integer>();
-			areaIds.add(area.getId());
-			getAreaIds(area.getChildren(), areaIds);
+			Map<Integer, Area> areaMaps = new HashMap<Integer, Area>();
+			areaMaps.put(area.getId(), area);
+			getAreaMaps(area.getChildren(), areaMaps);
+			
+			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
 			
 			// get area channel
 			List<AreaChannel> areaChannels = areaDao.getAreaChannelsByAreaids(areaIds);
@@ -372,24 +457,142 @@ public class TemServiceImpl implements TemService {
 	}
 
 	@Override
+	public List<Alarm> getAreaAlarmReportData(Area area) {
+		if(area != null){
+			// get sub-area ids
+			Map<Integer, Area> areaMaps = new HashMap<Integer, Area>();
+			areaMaps.put(area.getId(), area);
+			getAreaMaps(area.getChildren(), areaMaps);
+			
+			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
+				
+			// get alarm data
+			List<Alarm> alarms = alarmDao.getAlarmsByAreaIds(areaIds, new Object[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}); 
+			
+			if(alarms != null && alarms.size() > 0){
+				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
+				Set<Long> alarmIds = new HashSet<Long>();
+				for(Alarm alarm : alarms){
+					alarmIds.add(alarm.getId());
+					alarmMaps.put(alarm.getId(), alarm);
+				}
+
+				List<AlarmHistory> historys = alarmDao.getAlarmHistorysByAlarmIds(alarmIds);
+				
+				if(historys != null && historys.size() > 0){
+					for(AlarmHistory history : historys)
+						alarmMaps.get(history.getAlarmId()).getHistory().add(history);
+				}
+			}
+			
+			return alarms;
+		}
+		
+		return null;
+	}
+
+	@Override
+	public List<Alarm> getAreasAlarmData(List<Area> areas, long time) {
+		if(areas != null && areas.size() > 0){
+			// get sub-area ids
+			Map<Integer, Area> areaMaps = new HashMap<Integer, Area>();
+			getAreaMaps(areas, areaMaps);
+			
+			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
+			
+			Date date = null;
+			if(time > 0)
+				date = new Date(time);
+			else
+				date = new Date();
+			
+			// get alarm data
+			return alarmDao.getAlarms(areaIds, date); 
+		}
+		
+		return null;
+	}
+
+	@Override
+	public List<Alarm> getAreaAlarmData(Area area) {
+		if(area != null){
+			// get sub-area ids
+			Map<Integer, Area> areaMaps = new HashMap<Integer, Area>();
+			areaMaps.put(area.getId(), area);
+			getAreaMaps(area.getChildren(), areaMaps);
+			
+			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
+				
+			// get alarm data
+			List<Alarm> alarms = alarmDao.getAlarmsByAreaIds(areaIds, new Object[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}); 
+			
+			if(alarms != null && alarms.size() > 0){
+				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
+				Set<Long> alarmIds = new HashSet<Long>();
+				for(Alarm alarm : alarms){
+					alarmIds.add(alarm.getId());
+					alarmMaps.put(alarm.getId(), alarm);
+				}
+
+				List<AlarmHistory> historys = alarmDao.getAlarmHistorysByAlarmIds(alarmIds);
+				
+				if(historys != null && historys.size() > 0){
+					for(AlarmHistory history : historys)
+						alarmMaps.get(history.getAlarmId()).getHistory().add(history);
+				}
+			}
+			
+			return alarms;
+		}
+		
+		return null;
+	}
+
+	@Override
 	public AreaMonitorData getAreaData(Area area, long time) {
 		if(area != null){
 			// get sub-area ids
-			List<Integer> areaIds = new ArrayList<Integer>();
-			areaIds.add(area.getId());
-			getAreaIds(area.getChildren(), areaIds);
+			Map<Integer, Area> areaMaps = new HashMap<Integer, Area>();
+			areaMaps.put(area.getId(), area);
+			getAreaMaps(area.getChildren(), areaMaps);
+			
+			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
 			
 			AreaMonitorData data = new AreaMonitorData();
 			
 			// get tem
 			getAreasLatestTem(time, areaIds, data);
 			
-			if(data.getTime() > 0){
-				// TODO get alarm data
+			if(area.getParent() <= 0 || (areaIds.size() == 1 && areaIds.get(0) == area.getId())){
+				Date date = null;
+				if(time > 0)
+					date = new Date(time);
+				else
+					date = new Date();
 				
-				// get alarmIdx
+				// get alarm data
+				List<Alarm> alarms = alarmDao.getAlarms(areaIds, date); 
 				
-				// get alarmName
+				if(alarms != null && alarms.size() > 0){
+					// get alarmIdx
+					// get alarmIds
+					if(area.getParent() <= 0){
+						Map<Integer, Long> tmpMaps = new HashMap<Integer, Long>();
+						for(Alarm alarm : alarms){
+							Area tmp = areaMaps.get(alarm.getAreaId());
+							if(tmp != null)
+								tmpMaps.put(tmp.getIndex(), new Long(tmp.getId()));
+						}
+						
+						for(Integer key : tmpMaps.keySet()){
+							data.getAlarmIdx().add(key);
+							data.getAlarmIds().add(tmpMaps.get(key));
+						}
+					} else{
+						data.setAlarmName(alarms.get(0).getAlarmName());
+						data.setAlarmType(alarms.get(0).getType());
+					}
+				}
 				
 				return data;
 			}
@@ -471,11 +674,11 @@ public class TemServiceImpl implements TemService {
 		}
 	}
 
-	private void getAreaIds(List<Area> areas, List<Integer> areaIds) {
+	private void getAreaMaps(List<Area> areas, Map<Integer, Area> areaMaps) {
 		if(areas != null && areas.size() > 0)
 			for(Area area : areas){
-				areaIds.add(area.getId());
-				getAreaIds(area.getChildren(), areaIds);
+				areaMaps.put(area.getId(), area);
+				getAreaMaps(area.getChildren(), areaMaps);
 			}
 	}
 
@@ -493,6 +696,14 @@ public class TemServiceImpl implements TemService {
 
 	public void setTemDao(TemDao temDao) {
 		this.temDao = temDao;
+	}
+
+	public AlarmDao getAlarmDao() {
+		return alarmDao;
+	}
+
+	public void setAlarmDao(AlarmDao alarmDao) {
+		this.alarmDao = alarmDao;
 	}
 
 }

@@ -41,7 +41,6 @@ public class AreaServiceTest extends TestCase{
 			System.out.println(as.getAllLevels());
 			
 			LevelImage level = new LevelImage();
-			level.setLevel(0);
 			level.setName("厂区");
 			level.setImage("0.jpg");
 			
@@ -50,7 +49,6 @@ public class AreaServiceTest extends TestCase{
 			System.out.println(as.addLevelImage(level, userid));
 			
 			level.setId(1);
-			level.setLevel(2);
 			System.out.println(as.modifyLevelImage(level, userid));
 			
 			System.out.println(as.getAllLevels());

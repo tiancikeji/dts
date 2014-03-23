@@ -8,9 +8,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class LevelImage {
 	
-	private  int id;
-	
-	private int level;
+	private int id;
 	
 	private String name;
 	
@@ -26,14 +24,6 @@ public class LevelImage {
 
 	public void setId(int id) {
 		this.id = id;
-	}
-
-	public int getLevel() {
-		return level;
-	}
-
-	public void setLevel(int level) {
-		this.level = level;
 	}
 
 	public String getName() {

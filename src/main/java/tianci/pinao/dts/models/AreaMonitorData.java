@@ -1,5 +1,6 @@
 package tianci.pinao.dts.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -16,13 +17,13 @@ public class AreaMonitorData {
 	
 	private long time;
 	
-	private List<Integer> alarmIdx;
+	private List<Integer> alarmIdx = new ArrayList<Integer>();
 	
-	private List<Long> alarmIds;
+	private List<Long> alarmIds = new ArrayList<Long>();;
 	
 	private String alarmName;
 	
-	private int alarmType = -1;
+	private int alarmType;
 
 	public double getMax() {
 		return max;
