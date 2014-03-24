@@ -201,7 +201,9 @@ CREATE TABLE `temperature_log` (
 create table user (
 	id bigint(20) not null auto_increment comment "自增id",
 	name varchar(50) not null comment "名字&登录名",
-	password varchar(50) not null comment "密码",
+	password_login varchar(50) not null comment "登录密码",
+	password_reset varchar(50) not null comment "复位密码",
+	password_logout varchar(50) not null comment "退出密码",
 	role int(10) not null comment "角色：1 super admin, 2 system admin, 3 super user, 4 normal user",
 	area_ids varchar(255) not null comment "查询厂区id",
 	lastmod_time datetime not null comment "上次修改时间",
@@ -228,7 +230,8 @@ create table alarm (
 	relay1 varchar(10) comment "继电器号",
 	voice varchar(10) comment "声音地址",
 	temperature double(10,2) comment "目前温度",
-	temperature_pre int(10) comment "设置温度",
+	temperature_pre double(10,2) comment "设置温度",
+	temperature_max double(10,2) comment "最大温度",
 	status tinyint(3) not null default 0 comment '状态：0新增，1报警，2确认，3消音，4消音过，5复位，6复位过',
 	add_time datetime not null comment "添加时间",
 	lastmod_time datetime not null comment "上次修改时间",
@@ -236,6 +239,7 @@ create table alarm (
 	isdel tinyint(3) not null default 0 comment "是否删除",
 	primary key(id),
 	index acid (channel_id),
+	index amid (machine_id),
 	index aaid (area_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -245,4 +249,24 @@ create table alarm_history (
 	add_time datetime not null comment "修改时间",
 	add_userid bigint(20) not null comment "修改人",
 	index ahaid (alarm_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table `check` (
+	id bigint(20) not null auto_increment comment "自增id",
+	machine_id int(10) default 0 comment "机器唯一id",
+	channel_id int(10) default 0 comment "通道数据库唯一id",
+	area_id int(10) default 0 comment "区域唯一id",
+	light varchar(10) comment "灯号",
+	relay varchar(10) comment "继电器号",
+	relay1 varchar(10) comment "继电器号",
+	voice varchar(10) comment "声音地址",
+	status tinyint(3) not null default 0 comment '状态：0新增，1自检',
+	add_time datetime not null comment "添加时间",
+	lastmod_time datetime not null comment "上次修改时间",
+	lastmod_userid bigint(20) not null comment "上次修改人",
+	isdel tinyint(3) not null default 0 comment "是否删除",
+	primary key(id),
+	index ccid (channel_id),
+	index cmid (machine_id),
+	index caid (area_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;

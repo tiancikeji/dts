@@ -18,7 +18,18 @@ public class UserDaoImpl extends JdbcDaoSupport implements UserDao {
 
 	@Override
 	public User getUser(String name, String password) {
-		List<User> users = getJdbcTemplate().query("select id, name, password, role, area_ids from " + SqlConstants.TABLE_USER + " where isdel = ? and name = ? and password = ?", 
+		List<User> users = getJdbcTemplate().query("select id, name, password_login, password_reset, password_logout, role, area_ids from " + SqlConstants.TABLE_USER + " where isdel = ? and name = ? and password_login = ?", 
+				new Object[]{0, name, password}, new UserRowMapper());
+		
+		if(users != null && users.size() > 0)
+			return users.get(0);
+		else
+			return null;
+	}
+
+	@Override
+	public User getResetUser(String name, String password) {
+		List<User> users = getJdbcTemplate().query("select id, name, password_login, password_reset, password_logout, role, area_ids from " + SqlConstants.TABLE_USER + " where isdel = ? and name = ? and password_reset = ?", 
 				new Object[]{0, name, password}, new UserRowMapper());
 		
 		if(users != null && users.size() > 0)
@@ -29,8 +40,8 @@ public class UserDaoImpl extends JdbcDaoSupport implements UserDao {
 
 	@Override
 	public void addUser(User user) {
-		getJdbcTemplate().update("insert into " + SqlConstants.TABLE_USER + "(name, password, role, area_ids, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, now(), ?, ?)", 
-				new Object[]{user.getName(), user.getPassword(), user.getRole(), StringUtils.join(user.getAreaIds(), ","), user.getLastModUserid(), 0});
+		getJdbcTemplate().update("insert into " + SqlConstants.TABLE_USER + "(name, password_login, password_reset, password_logout, role, area_ids, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, ?, ?, now(), ?, ?)", 
+				new Object[]{user.getName(), user.getPasswordLogin(), user.getPasswordReset(), user.getPasswordLogout(), user.getRole(), StringUtils.join(user.getAreaIds(), ","), user.getLastModUserid(), 0});
 	}
 
 	@Override
@@ -41,9 +52,17 @@ public class UserDaoImpl extends JdbcDaoSupport implements UserDao {
 		params.add(user.getRole());
 		params.add(StringUtils.join(user.getAreaIds(), ","));
 		params.add(user.getLastModUserid());
-		if(StringUtils.isNotBlank(user.getPassword())){
-			sql += ", password = ?";
-			params.add(user.getPassword());
+		if(StringUtils.isNotBlank(user.getPasswordLogin())){
+			sql += ", password_login = ?";
+			params.add(user.getPasswordLogin());
+		}
+		if(StringUtils.isNotBlank(user.getPasswordLogout())){
+			sql += ", password_logout = ?";
+			params.add(user.getPasswordLogout());
+		}
+		if(StringUtils.isNotBlank(user.getPasswordReset())){
+			sql += ", password_reset = ?";
+			params.add(user.getPasswordReset());
 		}
 		sql+= " where id = ? and isdel = ?";
 		params.add(user.getId());
@@ -59,8 +78,19 @@ public class UserDaoImpl extends JdbcDaoSupport implements UserDao {
 
 	@Override
 	public List<User> getUser(int role) {
-		return getJdbcTemplate().query("select id, name, password, role, area_ids from " + SqlConstants.TABLE_USER + " where isdel = ? and role > ?", 
+		return getJdbcTemplate().query("select id, name, password_login, password_reset, password_logout, role, area_ids from " + SqlConstants.TABLE_USER + " where isdel = ? and role > ?", 
 				new Object[]{0, role}, new UserRowMapper());
+	}
+
+	@Override
+	public User getUserById(long id) {
+		List<User> users = getJdbcTemplate().query("select id, name, password_login, password_reset, password_logout, role, area_ids from " + SqlConstants.TABLE_USER + " where isdel = ? and id = ?", 
+				new Object[]{0, id}, new UserRowMapper());
+		
+		if(users != null && users.size() > 0)
+			return users.get(0);
+		else
+			return null;
 	}
 
 }
@@ -73,7 +103,9 @@ class UserRowMapper implements RowMapper<User>{
 		
 		user.setId(rs.getLong("id"));
 		user.setName(rs.getString("name"));
-		user.setPassword(rs.getString("password"));
+		user.setPasswordLogin(rs.getString("password_login"));
+		user.setPasswordReset(rs.getString("password_reset"));
+		user.setPasswordLogout(rs.getString("password_logout"));
 		user.setRole(rs.getInt("role"));
 		String[] tmp = StringUtils.split(rs.getString("area_ids"), ",");
 		List<Integer> areaIds = new ArrayList<Integer>();

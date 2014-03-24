@@ -130,6 +130,9 @@
 	</beans:bean>
 	<beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.DummyTemDaoImpl">
 	</beans:bean>
+	<!-- <beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.TemDaoImpl">
+		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
+	</beans:bean> -->
 
 	<beans:bean id="userService" class="tianci.pinao.dts.service.impl.UserServiceImpl">
 		<beans:property name="userDao" ref="userDao" />
@@ -137,9 +140,6 @@
 	<beans:bean id="userDao" class="tianci.pinao.dts.dao.impl.UserDaoImpl">
 		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
 	</beans:bean>
-	<!-- <beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.TemDaoImpl">
-		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
-	</beans:bean> -->
 	
 	<!-- auto import machine configs on start -->
 	<beans:bean id="autImportMachineConfigTask" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

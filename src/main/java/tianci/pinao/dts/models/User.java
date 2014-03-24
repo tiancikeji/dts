@@ -20,7 +20,11 @@ public class User {
 	
 	private String name;
 	
-	private String password;
+	private String passwordLogin;
+	
+	private String passwordLogout;
+	
+	private String passwordReset;
 	
 	// 1 super admin
 	// 2 system admin
@@ -65,14 +69,6 @@ public class User {
 		this.name = name;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
 	public int getRole() {
 		return role;
 	}
@@ -115,6 +111,30 @@ public class User {
 
 	public static String getRight(int role) {
 		return RIGHTS.get(role);
+	}
+
+	public String getPasswordLogin() {
+		return passwordLogin;
+	}
+
+	public void setPasswordLogin(String passwordLogin) {
+		this.passwordLogin = passwordLogin;
+	}
+
+	public String getPasswordLogout() {
+		return passwordLogout;
+	}
+
+	public void setPasswordLogout(String passwordLogout) {
+		this.passwordLogout = passwordLogout;
+	}
+
+	public String getPasswordReset() {
+		return passwordReset;
+	}
+
+	public void setPasswordReset(String passwordReset) {
+		this.passwordReset = passwordReset;
 	}
 
 }

@@ -16,7 +16,7 @@ public class UserControllerTest extends TestCase{
 		if(flag){
 			UserController uc = getController();
 			
-			System.out.println(uc.getUsers(-1));
+			System.out.println(uc.getUsers(null, -1));
 		}
 	}
 	
@@ -25,7 +25,7 @@ public class UserControllerTest extends TestCase{
 		if(flag){
 			UserController uc = getController();
 			
-			System.out.println(uc.addUser(-1, "test", "123456", 2, "1,2,3,4,5,6,7,8"));
+			System.out.println(uc.addUser(null, -1, "test", "123456", "123456", "123456", 2, "1,2,3,4,5,6,7,8"));
 		}
 	}
 	
@@ -34,7 +34,7 @@ public class UserControllerTest extends TestCase{
 		if(flag){
 			UserController uc = getController();
 			
-			System.out.println(uc.modifyUser(-1, 1, "test1", "", 2, "1,2,3,4,5,6,7,8"));
+			System.out.println(uc.modifyUser(null, -1, 1, "test1", "123456", "123456", "", 2, "1,2,3,4,5,6,7,8"));
 		}
 	}
 	
@@ -43,7 +43,7 @@ public class UserControllerTest extends TestCase{
 		if(flag){
 			UserController uc = getController();
 			
-			System.out.println(uc.delUser(-1, 1));
+			System.out.println(uc.delUser(null, -1, 1));
 		}
 	}
 	
@@ -52,8 +52,8 @@ public class UserControllerTest extends TestCase{
 		if(flag){
 			UserController uc = getController();
 			
-			System.out.println(uc.login(null, "test1", "123456"));
-			System.out.println(uc.login(null, "test1", "2123456"));
+			System.out.println(uc.login(null, null, "test1", "123456"));
+			System.out.println(uc.login(null, null, "test1", "2123456"));
 		}
 	}
 

@@ -33,4 +33,6 @@ public interface SqlConstants {
 	public static final String TABLE_ALARM = DATABASE + ".`alarm`";
 
 	public static final String TABLE_ALARM_HISTORY = DATABASE + ".`alarm_history`";
+
+	public static final String TABLE_CHECK = DATABASE + ".`check`";
 }

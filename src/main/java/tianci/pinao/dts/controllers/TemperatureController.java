@@ -1,5 +1,7 @@
 package tianci.pinao.dts.controllers;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -7,6 +9,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +30,12 @@ import tianci.pinao.dts.models.Config;
 import tianci.pinao.dts.models.Machine;
 import tianci.pinao.dts.models.ReportData;
 import tianci.pinao.dts.models.TemData;
+import tianci.pinao.dts.models.User;
 import tianci.pinao.dts.service.AreaService;
 import tianci.pinao.dts.service.ConfigService;
 import tianci.pinao.dts.service.TemService;
+import tianci.pinao.dts.service.UserService;
+import tianci.pinao.dts.util.PinaoConstants;
 import tianci.pinao.dts.util.PinaoUtils;
 
 @Controller
@@ -41,19 +49,52 @@ public class TemperatureController {
 	
 	@Autowired
 	private ConfigService configService;
+	
+	@Autowired
+	private UserService userService;
 
-	@RequestMapping(value="/alarm/notify", method = RequestMethod.GET)
+	@RequestMapping(value="/check/hardware", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> notifyAlarm(long userid, long id){
+	public Map<Object, Object> checkHardware(HttpServletRequest request, long userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			
-			if(temService.updateAlarm(id, Alarm.STATUS_NOTIFY, userid))
-				result.put("status", "0");
-			else
-				result.put("status", "400");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					temService.checkHardware(userid);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/alarm/notify", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<Object, Object> notifyAlarm(HttpServletRequest request, long userid, long id){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){			
+				if(temService.updateAlarm(id, Alarm.STATUS_NOTIFY, userid))
+					result.put("status", "0");
+				else
+					result.put("status", "400");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -63,16 +104,20 @@ public class TemperatureController {
 
 	@RequestMapping(value="/alarm/mute", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> muteAlarm(long userid, long id){
+	public Map<Object, Object> muteAlarm(HttpServletRequest request, long userid, long id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			
-			if(temService.updateAlarm(id, Alarm.STATUS_MUTE, userid))
-				result.put("status", "0");
-			else
-				result.put("status", "400");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){			
+				if(temService.updateAlarm(id, Alarm.STATUS_MUTE, userid))
+					result.put("status", "0");
+				else
+					result.put("status", "400");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -82,17 +127,27 @@ public class TemperatureController {
 
 	@RequestMapping(value="/alarm/reset", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> resetAlarm(long userid, long id, String loginname, String password){
+	public Map<Object, Object> resetAlarm(HttpServletRequest request, long userid, long id, String loginname, String password){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			
-			long adminid = userid;
-			if(temService.updateAlarm(id, Alarm.STATUS_RESET, adminid))
-				result.put("status", "0");
-			else
-				result.put("status", "400");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				User user = userService.getResetUser(loginname, password);
+				if(user != null && StringUtils.equals(user.getPasswordReset(), password)){
+					if(user.getRole() < 4){
+						if(temService.updateAlarm(id, Alarm.STATUS_RESET, userid))
+							result.put("status", "0");
+						else
+							result.put("status", "400");
+					} else
+						result.put("status", "700");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -102,23 +157,28 @@ public class TemperatureController {
 
 	@RequestMapping(value="/alarm/check", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> checkAlarms(long userid, long time){
+	public Map<Object, Object> checkAlarms(HttpServletRequest request, long userid, long time){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			List<Area> areas = areaService.getAllAreas(userid);
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				List<Area> areas = areaService.getAllAreas(userid);
 
-			List<Map<String, Object>> tmp = null;
-			if(areas != null && areas.size() > 0)
-				tmp = parseCheckAlarmData(temService.getAreasAlarmData(areas, time));
-			else
-				tmp = new ArrayList<Map<String,Object>>();
-			
-			result.put("data", tmp);
-			result.put("time", System.currentTimeMillis());
-			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
-			result.put("status", "0");
+				List<Map<String, Object>> tmp = null;
+				if(areas != null && areas.size() > 0)
+					tmp = parseCheckAlarmData(temService.getAreasAlarmData(areas, time));
+				else
+					tmp = new ArrayList<Map<String,Object>>();
+				
+				result.put("data", tmp);
+				result.put("time", System.currentTimeMillis());
+				result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+				result.put("status", "0");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -146,21 +206,31 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/area/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaAlarmReportData(long userid, int id){
+	public Map<Object, Object> getAreaAlarmReportData(HttpServletRequest request, long userid, int id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			Area area = searchArea(areaService.getAllAreas(userid), id);
-
-			List<Map<String, Object>> tmp = null;
-			if(area != null)
-				tmp = parseAlarmData(temService.getAreaAlarmReportData(area));
-			else
-				tmp = new ArrayList<Map<String,Object>>();
-			
-			result.put("data", tmp);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() < 4){
+					Area area = searchArea(areaService.getAllAreas(userid), id);
+	
+					List<Map<String, Object>> tmp = null;
+					if(area != null)
+						tmp = parseAlarmData(temService.getAreaAlarmReportData(area));
+					else
+						tmp = new ArrayList<Map<String,Object>>();
+					
+					result.put("data", tmp);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -170,28 +240,107 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/area/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaReportData(long userid, int id, String start, String end){
+	public Map<Object, Object> getAreaReportData(HttpServletRequest request, long userid, int id, String start, String end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			Area area = searchArea(areaService.getAllAreas(userid), id);
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				Area area = searchArea(areaService.getAllAreas(userid), id);
 
-			Map<String, Object> tmp = null;
-			Date startDate = PinaoUtils.getDate(start);
-			Date endDate = PinaoUtils.getDate(end);
-			if(area != null && startDate != null && endDate != null && !endDate.before(startDate))
-				tmp = parseReportData(temService.getAreaReportData(area, startDate, endDate));
-			else
-				tmp = new HashMap<String, Object>();
-			
-			result.put("data", tmp);
-			result.put("status", "0");
+				Map<String, Object> tmp = null;
+				Date startDate = PinaoUtils.getDate(start);
+				Date endDate = PinaoUtils.getDate(end);
+				if(area != null && startDate != null && endDate != null && !endDate.before(startDate))
+					tmp = parseReportData(temService.getAreaReportData(area, startDate, endDate));
+				else
+					tmp = new HashMap<String, Object>();
+				
+				result.put("data", tmp);
+				result.put("status", "0");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
 		}
 		return result;
+	}
+	
+	@RequestMapping(value="/report/area/download", method = RequestMethod.GET)
+	public void downloadAllAreas(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end) throws IOException{
+		OutputStream out = null;
+		try{
+			// check user role
+			userid = PinaoUtils.getUserid(request, userid);
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				User user = (User) obj;
+				if(user.getRole() < 4){
+					response.setContentType("text/plain");
+					String oriFileName = "历史厂区趋势数据.txt";
+					String agent = request.getHeader("USER-AGENT");
+					if (null != agent && -1 != agent.indexOf("Firefox")) {
+						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+					} else {
+						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+					}
+					out = response.getOutputStream();
+					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					
+					Area area = searchArea(areaService.getAllAreas(userid), id);
+
+					Date startDate = PinaoUtils.getDate(start);
+					Date endDate = PinaoUtils.getDate(end);
+					if(area != null && startDate != null && endDate != null && !endDate.before(startDate)){
+						ReportData data = temService.getAreaReportData(area, startDate, endDate);
+						if(data != null){
+							Map<String, Map<Date, Double>> tems = data.getTems();
+							Map<String, Map<Date, Double>> stocks = data.getStocks();
+							Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
+							
+							for(String key : tems.keySet()){
+								Map<Date, Double> _temps = data.getTems().get(key);
+								Map<Date, Double> _stocks = null;
+								if(stocks.containsKey(key))
+									_stocks = stocks.get(key);
+								Map<Date, Double> _unstocks = null;
+								if(unstocks.containsKey(key))
+									_unstocks = unstocks.get(key);
+								
+								for(Date _key : _temps.keySet()){
+									out.write(key.getBytes());
+									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+									if(_stocks != null && _stocks.containsKey(_key))
+										out.write(_stocks.get(_key).toString().getBytes());
+									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+									if(_unstocks != null && _unstocks.containsKey(_key))
+										out.write(_unstocks.get(_key).toString().getBytes());
+									out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+								}
+							}
+						}
+					}
+				} else
+					response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			} else
+				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+		} catch(Throwable t){
+			t.printStackTrace();
+			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+		} finally {
+			try {
+				if (out != null) {
+					out.flush();
+					out.close();
+				}
+			} catch (Exception e) {
+				// 文件已下载完毕，不需要处理
+			}
+		}
 	}
 
 	private Map<String, Object> parseReportData(ReportData data) {
@@ -284,21 +433,27 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/area/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaAlarmData(long userid, int id){
+	public Map<Object, Object> getAreaAlarmData(HttpServletRequest request, long userid, int id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			Area area = searchArea(areaService.getAllAreas(userid), id);
-
-			List<Map<String, Object>> tmp = null;
-			if(area != null)
-				tmp = parseAlarmData(temService.getAreaAlarmData(area));
-			else
-				tmp = new ArrayList<Map<String,Object>>();
-			
-			result.put("data", tmp);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				Area area = searchArea(areaService.getAllAreas(userid), id);
+	
+				List<Map<String, Object>> tmp = null;
+				if(area != null)
+					tmp = parseAlarmData(temService.getAreaAlarmData(area));
+				else
+					tmp = new ArrayList<Map<String,Object>>();
+				
+				result.put("data", tmp);
+				result.put("status", "0");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -361,22 +516,28 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/area/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaData(long userid, int id, long time){
+	public Map<Object, Object> getAreaData(HttpServletRequest request, long userid, int id, long time){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			// TODO check user role
-			Area area = searchArea(areaService.getAllAreas(userid), id);
-
-			Map<String, Object> tmp = null;
-			if(area != null)
-				tmp = parseAreaData(temService.getAreaData(area, time));
-			else
-				tmp = new HashMap<String, Object>();
-			
-			result.put("data", tmp);
-			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				Area area = searchArea(areaService.getAllAreas(userid), id);
+	
+				Map<String, Object> tmp = null;
+				if(area != null)
+					tmp = parseAreaData(temService.getAreaData(area, time));
+				else
+					tmp = new HashMap<String, Object>();
+				
+				result.put("data", tmp);
+				result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+				result.put("status", "0");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -422,19 +583,26 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/areas", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getReportAreas(long userid){
-		return getAreas(userid);
+	public Map<Object, Object> getReportAreas(HttpServletRequest request, long userid){
+		return getAreas(request, userid);
 	}
 
 	@RequestMapping(value="/monitor/areas", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreas(long userid){
+	public Map<Object, Object> getAreas(HttpServletRequest request, long userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			List<Area> areas = areaService.getAllAreas(userid);
-			result.put("data", parseAreas(areas));
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				List<Area> areas = areaService.getAllAreas(userid);
+				result.put("data", parseAreas(areas));
+				result.put("status", "0");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -468,28 +636,38 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/channel/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelAlarmReportData(long userid, int id){
+	public Map<Object, Object> getChannelAlarmReportData(HttpServletRequest request, long userid, int id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = new ArrayList<Channel>();
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					for(Channel channel : machines.get(machine))
-						if(channel.getId() == id){
-							channels.add(channel);
-							break;
-						}
-				
-			List<Map<String, Object>> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseAlarmData(temService.getChannelAlarmReportData(channels));
-			else
-				data = new ArrayList<Map<String,Object>>();
-			result.put("data", data);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = new ArrayList<Channel>();
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							for(Channel channel : machines.get(machine))
+								if(channel.getId() == id){
+									channels.add(channel);
+									break;
+								}
+						
+					List<Map<String, Object>> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseAlarmData(temService.getChannelAlarmReportData(channels));
+					else
+						data = new ArrayList<Map<String,Object>>();
+					result.put("data", data);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -499,61 +677,162 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/channel/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelReportData(long userid, int id, String start, String end){
+	public Map<Object, Object> getChannelReportData(HttpServletRequest request, long userid, int id, String start, String end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = new ArrayList<Channel>();
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					for(Channel channel : machines.get(machine))
-						if(channel.getId() == id){
-							channels.add(channel);
-							break;
-						}
-				
-			Date startDate = PinaoUtils.getDate(start);
-			Date endDate = PinaoUtils.getDate(end);
-			Map<String, Object> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseReportData(temService.getChannelReportlData(channels, startDate, endDate));
-			else
-				data = new HashMap<String, Object>();
-			result.put("data", data);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = new ArrayList<Channel>();
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							for(Channel channel : machines.get(machine))
+								if(channel.getId() == id){
+									channels.add(channel);
+									break;
+								}
+						
+					Date startDate = PinaoUtils.getDate(start);
+					Date endDate = PinaoUtils.getDate(end);
+					Map<String, Object> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseReportData(temService.getChannelReportData(channels, startDate, endDate));
+					else
+						data = new HashMap<String, Object>();
+					result.put("data", data);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
 		}
 		return result;
 	}
+	
+	@RequestMapping(value="/report/channel/download", method = RequestMethod.GET)
+	public void downloadAllChannels(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end) throws IOException{
+		OutputStream out = null;
+		try{
+			// check user role
+			userid = PinaoUtils.getUserid(request, userid);
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				User user = (User) obj;
+				if(user.getRole() == 1){
+					response.setContentType("text/plain");
+					String oriFileName = "历史通道趋势数据.txt";
+					String agent = request.getHeader("USER-AGENT");
+					if (null != agent && -1 != agent.indexOf("Firefox")) {
+						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+					} else {
+						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+					}
+					out = response.getOutputStream();
+					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = new ArrayList<Channel>();
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							for(Channel channel : machines.get(machine))
+								if(channel.getId() == id){
+									channels.add(channel);
+									break;
+								}
+
+					Date startDate = PinaoUtils.getDate(start);
+					Date endDate = PinaoUtils.getDate(end);
+					if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
+						ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+						if(data != null){
+							Map<String, Map<Date, Double>> tems = data.getTems();
+							Map<String, Map<Date, Double>> stocks = data.getStocks();
+							Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
+							
+							for(String key : tems.keySet()){
+								Map<Date, Double> _temps = data.getTems().get(key);
+								Map<Date, Double> _stocks = null;
+								if(stocks.containsKey(key))
+									_stocks = stocks.get(key);
+								Map<Date, Double> _unstocks = null;
+								if(unstocks.containsKey(key))
+									_unstocks = unstocks.get(key);
+								
+								for(Date _key : _temps.keySet()){
+									out.write(key.getBytes());
+									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+									if(_stocks != null && _stocks.containsKey(_key))
+										out.write(_stocks.get(_key).toString().getBytes());
+									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+									if(_unstocks != null && _unstocks.containsKey(_key))
+										out.write(_unstocks.get(_key).toString().getBytes());
+									out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+								}
+							}
+						}
+					}
+				} else
+					response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			} else
+				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+		} catch(Throwable t){
+			t.printStackTrace();
+			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+		} finally {
+			try {
+				if (out != null) {
+					out.flush();
+					out.close();
+				}
+			} catch (Exception e) {
+				// 文件已下载完毕，不需要处理
+			}
+		}
+	}
 
 	@RequestMapping(value="/monitor/channel/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelAlarmData(long userid, int id){
+	public Map<Object, Object> getChannelAlarmData(HttpServletRequest request, long userid, int id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = new ArrayList<Channel>();
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					for(Channel channel : machines.get(machine))
-						if(channel.getId() == id){
-							channels.add(channel);
-							break;
-						}
-				
-			List<Map<String, Object>> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseAlarmData(temService.getChannelAlarmData(channels));
-			else
-				data = new ArrayList<Map<String,Object>>();
-			result.put("data", data);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = new ArrayList<Channel>();
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							for(Channel channel : machines.get(machine))
+								if(channel.getId() == id){
+									channels.add(channel);
+									break;
+								}
+						
+					List<Map<String, Object>> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseAlarmData(temService.getChannelAlarmData(channels));
+					else
+						data = new ArrayList<Map<String,Object>>();
+					result.put("data", data);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -563,29 +842,39 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/channel/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelData(long userid, int id, long time){
+	public Map<Object, Object> getChannelData(HttpServletRequest request, long userid, int id, long time){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = new ArrayList<Channel>();
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					for(Channel channel : machines.get(machine))
-						if(channel.getId() == id){
-							channels.add(channel);
-							break;
-						}
-				
-			Map<String, Object> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseChannelData(temService.getChannelData(channels, time));
-			else
-				data = new HashMap<String, Object>();
-			result.put("data", data);
-			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = new ArrayList<Channel>();
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							for(Channel channel : machines.get(machine))
+								if(channel.getId() == id){
+									channels.add(channel);
+									break;
+								}
+						
+					Map<String, Object> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseChannelData(temService.getChannelData(channels, time));
+					else
+						data = new HashMap<String, Object>();
+					result.put("data", data);
+					result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -595,27 +884,37 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/machine/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineAlarmReportData(long userid, int id){
+	public Map<Object, Object> getMachineAlarmReportData(HttpServletRequest request, long userid, int id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = null;
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					if(machine.getId() == id){
-						channels = machines.get(machine);
-						break;
-					}
-				
-			List<Map<String, Object>> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseAlarmData(temService.getChannelAlarmReportData(channels));
-			else
-				data = new ArrayList<Map<String,Object>>();
-			result.put("data", data);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = null;
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							if(machine.getId() == id){
+								channels = machines.get(machine);
+								break;
+							}
+						
+					List<Map<String, Object>> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseAlarmData(temService.getChannelAlarmReportData(channels));
+					else
+						data = new ArrayList<Map<String,Object>>();
+					result.put("data", data);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -625,59 +924,161 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/machine/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineReportData(long userid, int id, String start, String end){
+	public Map<Object, Object> getMachineReportData(HttpServletRequest request, long userid, int id, String start, String end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = null;
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					if(machine.getId() == id){
-						channels = machines.get(machine);
-						break;
-					}
-			
-			Date startDate = PinaoUtils.getDate(start);
-			Date endDate = PinaoUtils.getDate(end);
-			Map<String, Object> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseReportData(temService.getChannelReportlData(channels, startDate, endDate));
-			else
-				data = new HashMap<String, Object>();
-			result.put("data", data);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = null;
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							if(machine.getId() == id){
+								channels = machines.get(machine);
+								break;
+							}
+					
+					Date startDate = PinaoUtils.getDate(start);
+					Date endDate = PinaoUtils.getDate(end);
+					Map<String, Object> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseReportData(temService.getChannelReportData(channels, startDate, endDate));
+					else
+						data = new HashMap<String, Object>();
+					result.put("data", data);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
 		}
 		return result;
 	}
+	
+
+	
+	@RequestMapping(value="/report/machine/download", method = RequestMethod.GET)
+	public void downloadAllMachines(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end) throws IOException{
+		OutputStream out = null;
+		try{
+			// check user role
+			userid = PinaoUtils.getUserid(request, userid);
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				User user = (User) obj;
+				if(user.getRole() == 1){
+					response.setContentType("text/plain");
+					String oriFileName = "历史机器趋势数据.txt";
+					String agent = request.getHeader("USER-AGENT");
+					if (null != agent && -1 != agent.indexOf("Firefox")) {
+						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+					} else {
+						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+					}
+					out = response.getOutputStream();
+					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = null;
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							if(machine.getId() == id){
+								channels = machines.get(machine);
+								break;
+							}
+
+					Date startDate = PinaoUtils.getDate(start);
+					Date endDate = PinaoUtils.getDate(end);
+					if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
+						ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+						if(data != null){
+							Map<String, Map<Date, Double>> tems = data.getTems();
+							Map<String, Map<Date, Double>> stocks = data.getStocks();
+							Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
+							
+							for(String key : tems.keySet()){
+								Map<Date, Double> _temps = data.getTems().get(key);
+								Map<Date, Double> _stocks = null;
+								if(stocks.containsKey(key))
+									_stocks = stocks.get(key);
+								Map<Date, Double> _unstocks = null;
+								if(unstocks.containsKey(key))
+									_unstocks = unstocks.get(key);
+								
+								for(Date _key : _temps.keySet()){
+									out.write(key.getBytes());
+									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+									if(_stocks != null && _stocks.containsKey(_key))
+										out.write(_stocks.get(_key).toString().getBytes());
+									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+									if(_unstocks != null && _unstocks.containsKey(_key))
+										out.write(_unstocks.get(_key).toString().getBytes());
+									out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+								}
+							}
+						}
+					}
+				} else
+					response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			} else
+				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+		} catch(Throwable t){
+			t.printStackTrace();
+			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+		} finally {
+			try {
+				if (out != null) {
+					out.flush();
+					out.close();
+				}
+			} catch (Exception e) {
+				// 文件已下载完毕，不需要处理
+			}
+		}
+	}
 
 	@RequestMapping(value="/monitor/machine/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineAlarmData(long userid, int id){
+	public Map<Object, Object> getMachineAlarmData(HttpServletRequest request, long userid, int id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = null;
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					if(machine.getId() == id){
-						channels = machines.get(machine);
-						break;
-					}
-				
-			List<Map<String, Object>> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseAlarmData(temService.getChannelAlarmData(channels));
-			else
-				data = new ArrayList<Map<String,Object>>();
-			result.put("data", data);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = null;
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							if(machine.getId() == id){
+								channels = machines.get(machine);
+								break;
+							}
+						
+					List<Map<String, Object>> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseAlarmData(temService.getChannelAlarmData(channels));
+					else
+						data = new ArrayList<Map<String,Object>>();
+					result.put("data", data);
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -687,28 +1088,38 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/machine/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineData(long userid, int id, long time){
+	public Map<Object, Object> getMachineData(HttpServletRequest request, long userid, int id, long time){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			//TODO check user role
-			Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-			List<Channel> channels = null;
-			if(machines != null && machines.size() > 0)
-				for(Machine machine : machines.keySet())
-					if(machine.getId() == id){
-						channels = machines.get(machine);
-						break;
-					}
-				
-			Map<String, Object> data = null;
-			if(channels != null && channels.size() > 0)
-				data = parseChannelData(temService.getChannelData(channels, time));
-			else
-				data = new HashMap<String, Object>();
-			result.put("data", data);
-			result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+					List<Channel> channels = null;
+					if(machines != null && machines.size() > 0)
+						for(Machine machine : machines.keySet())
+							if(machine.getId() == id){
+								channels = machines.get(machine);
+								break;
+							}
+						
+					Map<String, Object> data = null;
+					if(channels != null && channels.size() > 0)
+						data = parseChannelData(temService.getChannelData(channels, time));
+					else
+						data = new HashMap<String, Object>();
+					result.put("data", data);
+					result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -804,19 +1215,30 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/channels", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getReportChannels(long userid){
-		return getChannels(userid);
+	public Map<Object, Object> getReportChannels(HttpServletRequest request, long userid){
+		return getChannels(request, userid);
 	}
 
 	@RequestMapping(value="/monitor/channels", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannels(long userid){
+	public Map<Object, Object> getChannels(HttpServletRequest request, long userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
-			Map<Machine, List<Channel>> channels = areaService.getAllChannels(userid);
-			result.put("data", parseMachines(channels));
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			// check user role
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(user.getRole() == 1){
+					Map<Machine, List<Channel>> channels = areaService.getAllChannels(userid);
+					result.put("data", parseMachines(channels));
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -856,5 +1278,4 @@ public class TemperatureController {
 		
 		return data;
 	}
-
 }

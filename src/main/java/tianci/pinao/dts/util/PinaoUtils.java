@@ -7,7 +7,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+
+import tianci.pinao.dts.models.User;
 
 public class PinaoUtils {
 
@@ -52,5 +58,28 @@ public class PinaoUtils {
 		if(date != null )
 			return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
 		return null;
+	}
+
+	public static long getUserid(HttpServletRequest request, long userid) {
+		if(request != null){
+			Cookie[] cookies = request.getCookies();
+			if(cookies != null && cookies.length > 0)
+				for(Cookie cookie : cookies)
+					if(StringUtils.equals("userid", cookie.getName())){
+						return NumberUtils.toLong(cookie.getValue(), 0);
+					}
+		}
+		
+		// TODO change userid to 0
+		return userid;
+	}
+
+	public static Object getUserFromSession(HttpServletRequest request, long userid) {
+		/*Object obj = request.getSession().getAttribute("" + userid);
+		return obj;*/
+		//TODO change this code
+		User user = new User();
+		user.setRole(1);
+		return user;
 	}
 }

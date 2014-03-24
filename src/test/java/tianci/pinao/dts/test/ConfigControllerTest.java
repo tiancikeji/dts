@@ -18,17 +18,17 @@ public class ConfigControllerTest extends TestCase{
 		if(flag){
 			ConfigController cs = getController();
 			
-			System.out.println(cs.getConfig(Config.TYPE_BACK_INTERVAL_FLAG));
-			System.out.println(cs.getConfig(Config.TYPE_LIFE_TIME_FLAG));
-			System.out.println(cs.getConfig(Config.TYPE_REFER_TEM_FLAG));
-			System.out.println(cs.getConfig(Config.TYPE_REFRESH_INTERVAL_FLAG));
-			System.out.println(cs.getConfig(Config.TYPE_STOCK_FLAG));
+			System.out.println(cs.getConfig(null, Config.TYPE_BACK_INTERVAL_FLAG));
+			System.out.println(cs.getConfig(null, Config.TYPE_LIFE_TIME_FLAG));
+			System.out.println(cs.getConfig(null, Config.TYPE_REFER_TEM_FLAG));
+			System.out.println(cs.getConfig(null, Config.TYPE_REFRESH_INTERVAL_FLAG));
+			System.out.println(cs.getConfig(null, Config.TYPE_STOCK_FLAG));
 			
 			Config config = new Config();
 			config.setType(Config.TYPE_REFRESH_INTERVAL_FLAG);
 			config.setValue(20);
-			System.out.println(cs.updateConfig(config, 1));
-			System.out.println(cs.getConfig(Config.TYPE_REFRESH_INTERVAL_FLAG));
+			System.out.println(cs.updateConfig(null, config, 1));
+			System.out.println(cs.getConfig(null, Config.TYPE_REFRESH_INTERVAL_FLAG));
 		}
 	}
 	
@@ -40,7 +40,7 @@ public class ConfigControllerTest extends TestCase{
 			long userid = -1;
 			String start = "2013-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(cs.getLogHistory(userid, start, end));
+			System.out.println(cs.getLogHistory(null, userid, start, end));
 		}
 	}
 

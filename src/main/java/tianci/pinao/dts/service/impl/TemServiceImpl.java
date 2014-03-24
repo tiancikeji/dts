@@ -21,9 +21,11 @@ import tianci.pinao.dts.models.Alarm;
 import tianci.pinao.dts.models.AlarmHistory;
 import tianci.pinao.dts.models.Area;
 import tianci.pinao.dts.models.AreaChannel;
+import tianci.pinao.dts.models.AreaHardwareConfig;
 import tianci.pinao.dts.models.AreaMonitorData;
 import tianci.pinao.dts.models.Channel;
 import tianci.pinao.dts.models.ChannelMonitorData;
+import tianci.pinao.dts.models.Check;
 import tianci.pinao.dts.models.Machine;
 import tianci.pinao.dts.models.ReportData;
 import tianci.pinao.dts.models.TemData;
@@ -38,6 +40,44 @@ public class TemServiceImpl implements TemService {
 	private TemDao temDao;
 	
 	private AlarmDao alarmDao;
+
+	@Override
+	public void checkHardware(long userid) {
+		List<Channel> channels = areaDao.getAllChannels();
+		Map<Integer, Channel> channelMaps = new HashMap<Integer, Channel>();
+		if(channels != null && channels.size() > 0)
+			for(Channel channel : channels)
+				channelMaps.put(channel.getId(), channel);
+		
+		List<AreaHardwareConfig> ahwcs = areaDao.getAllHardwareConfigs();
+		Map<Integer, AreaHardwareConfig> ahwcMaps = new HashMap<Integer, AreaHardwareConfig>();
+		if(ahwcs != null && ahwcs.size() > 0)
+			for(AreaHardwareConfig ahwc : ahwcs)
+				ahwcMaps.put(ahwc.getAreaid(), ahwc);
+		
+		List<Check> checks = new ArrayList<Check>();
+		
+		List<AreaChannel> acs = areaDao.getAllAreaChannels();
+		if(acs != null && acs.size() > 0)
+			for(AreaChannel ac : acs)
+				if(channelMaps.containsKey(ac.getChannelid()) && ahwcMaps.containsKey(ac.getAreaid())){
+					Check check = new Check();
+					check.setMachineId(channelMaps.get(ac.getChannelid()).getMachineid());
+					check.setAreaId(ac.getAreaid());
+					check.setChannelId(ac.getChannelid());
+					
+					AreaHardwareConfig config = ahwcMaps.get(ac.getAreaid());
+					check.setLight(config.getLight());
+					check.setRelay(config.getRelay());
+					check.setRelay1(config.getRelay1());
+					check.setVoice(config.getVoice());
+					
+					checks.add(check);
+				}
+		
+		if(checks != null && checks.size() > 0)
+			alarmDao.addChecks(checks, userid);
+	}
 
 	@Override
 	@Transactional(rollbackFor=Exception.class, value="txManager")
@@ -209,7 +249,7 @@ public class TemServiceImpl implements TemService {
 	}
 
 	@Override
-	public ReportData getChannelReportlData(List<Channel> channels, Date startDate, Date endDate) {
+	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate) {
 		if(channels != null && channels.size() > 0){
 			List<Integer> ids = new ArrayList<Integer>();
 			Map<Integer, String> names = new HashMap<Integer, String>();

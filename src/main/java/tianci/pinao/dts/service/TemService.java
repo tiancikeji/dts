@@ -26,10 +26,12 @@ public interface TemService {
 
 	public List<Alarm> getChannelAlarmData(List<Channel> channels);
 
-	public ReportData getChannelReportlData(List<Channel> channels, Date startDate, Date endDate);
+	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate);
 
 	public List<Alarm> getChannelAlarmReportData(List<Channel> channels);
 
 	public boolean updateAlarm(long id, int status, long userid);
+
+	public void checkHardware(long userid);
 
 }

@@ -1,5 +1,6 @@
 package tianci.pinao.dts.dao.impl;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -8,12 +9,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import tianci.pinao.dts.dao.AlarmDao;
 import tianci.pinao.dts.models.Alarm;
 import tianci.pinao.dts.models.AlarmHistory;
+import tianci.pinao.dts.models.Check;
 import tianci.pinao.dts.util.SqlConstants;
 
 public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
@@ -72,6 +75,36 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_ALARM_HISTORY + "(alarm_id, operation, add_time, add_userid) values(?, ?, now(), ?)", 
 				new Object[]{id, status, userid});
 		return count > 0;
+	}
+
+	@Override
+	public void addChecks(final List<Check> checks, final long userid) {
+		getJdbcTemplate().batchUpdate("insert into " + SqlConstants.TABLE_CHECK + "(machine_id, channel_id, area_id, light, relay, relay1, voice, status, add_time, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, ?, ?, ?, ?, now(), now(), ?, 0)", new BatchPreparedStatementSetter() {
+			
+			@Override
+			public void setValues(PreparedStatement ps, int index) throws SQLException {
+				if(checks.size() > index){
+					Check check = checks.get(index);
+					if(check != null){
+						int column = 1;
+						ps.setObject(column ++, check.getMachineId());
+						ps.setObject(column ++, check.getChannelId());
+						ps.setObject(column ++, check.getAreaId());
+						ps.setObject(column ++, check.getLight());
+						ps.setObject(column ++, check.getRelay());
+						ps.setObject(column ++, check.getRelay1());
+						ps.setObject(column ++, check.getVoice());
+						ps.setObject(column ++, Check.STATUS_NEW);
+						ps.setObject(column ++ , userid);
+					}
+				}
+			}
+			
+			@Override
+			public int getBatchSize() {
+				return checks.size();
+			}
+		});
 	}
 
 }

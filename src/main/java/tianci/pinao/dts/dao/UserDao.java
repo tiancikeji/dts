@@ -16,4 +16,8 @@ public interface UserDao {
 
 	public List<User> getUser(int role);
 
+	public User getResetUser(String name, String password);
+
+	public User getUserById(long id);
+
 }

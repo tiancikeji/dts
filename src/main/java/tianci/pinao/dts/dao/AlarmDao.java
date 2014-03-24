@@ -6,6 +6,7 @@ import java.util.Set;
 
 import tianci.pinao.dts.models.Alarm;
 import tianci.pinao.dts.models.AlarmHistory;
+import tianci.pinao.dts.models.Check;
 
 public interface AlarmDao {
 
@@ -20,5 +21,7 @@ public interface AlarmDao {
 	public boolean updateAlarm(long id, int status, long userid);
 
 	public boolean addAlarmHistory(long id, int status, long userid);
+
+	public void addChecks(List<Check> checks, long userid);
 
 }

@@ -16,8 +16,18 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public User getResetUser(String name, String password) {
+		return userDao.getResetUser(name, password);
+	}
+
+	@Override
 	public void addUser(User user) {
 		userDao.addUser(user);
+	}
+
+	@Override
+	public User getUserById(long id) {
+		return userDao.getUserById(id);
 	}
 
 	@Override

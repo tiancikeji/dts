@@ -4,6 +4,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import tianci.pinao.dts.controllers.TemperatureController;
+import tianci.pinao.dts.service.TemService;
 import junit.framework.TestCase;
 
 public class TemperatureControllerTest extends TestCase {
@@ -14,7 +15,7 @@ public class TemperatureControllerTest extends TestCase {
 		if(flag){
 			TemperatureController tc = getController();
 			long userid = -1;
-			System.out.println(tc.getAreas(userid));
+			System.out.println(tc.getAreas(null, userid));
 		}
 	}
 	
@@ -28,7 +29,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 			int id = 13;
 			long time = 1395562918064l;
-			System.out.println(tc.getAreaData(userid, id, time));
+			System.out.println(tc.getAreaData(null, userid, id, time));
 		}
 	}
 	
@@ -37,7 +38,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 15;
-			System.out.println(tc.getAreaAlarmData(userid, id));
+			System.out.println(tc.getAreaAlarmData(null, userid, id));
 			/*long userid = -1;
 			int id = 13;
 			System.out.println(tc.getAreaAlarmData(userid, id));*/
@@ -51,7 +52,7 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 15;
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(tc.getAreaReportData(userid, id, start, end));
+			System.out.println(tc.getAreaReportData(null, userid, id, start, end));
 		}
 	}
 	
@@ -61,7 +62,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 			int id = 3;
 			long time = -1;
-			System.out.println(tc.getMachineData(userid, id, time));
+			System.out.println(tc.getMachineData(null, userid, id, time));
 		}
 	}
 	
@@ -70,7 +71,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 3;
-			System.out.println(tc.getMachineAlarmData(userid, id));
+			System.out.println(tc.getMachineAlarmData(null, userid, id));
 		}
 	}
 	
@@ -81,7 +82,7 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 3;
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(tc.getMachineReportData(userid, id, start, end));
+			System.out.println(tc.getMachineReportData(null, userid, id, start, end));
 		}
 	}
 	
@@ -90,7 +91,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 3;
-			System.out.println(tc.getMachineAlarmReportData(userid, id));
+			System.out.println(tc.getMachineAlarmReportData(null, userid, id));
 		}
 	}
 	
@@ -98,7 +99,7 @@ public class TemperatureControllerTest extends TestCase {
 		if(flag){
 			TemperatureController tc = getController();
 			long userid = -1;
-			System.out.println(tc.getChannels(userid));
+			System.out.println(tc.getChannels(null, userid));
 		}
 	}
 	
@@ -109,7 +110,7 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 2;
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(tc.getChannelReportData(userid, id, start, end));
+			System.out.println(tc.getChannelReportData(null, userid, id, start, end));
 		}
 	}
 	
@@ -119,7 +120,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 			int id = 2;
 			long time = -1;
-			System.out.println(tc.getChannelData(userid, id, time));
+			System.out.println(tc.getChannelData(null, userid, id, time));
 		}
 	}
 	
@@ -128,7 +129,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 1;
-			System.out.println(tc.getChannelAlarmData(userid, id));
+			System.out.println(tc.getChannelAlarmData(null, userid, id));
 		}
 	}
 	
@@ -137,7 +138,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 1;
-			System.out.println(tc.getChannelAlarmReportData(userid, id));
+			System.out.println(tc.getChannelAlarmReportData(null, userid, id));
 		}
 	}
 	
@@ -147,7 +148,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 //			long time = -1;
 			long time = 1395562918064l;
-			System.out.println(tc.checkAlarms(userid, time));
+			System.out.println(tc.checkAlarms(null, userid, time));
 		}
 	}
 	
@@ -156,7 +157,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			long id= 2;
-			System.out.println(tc.notifyAlarm(userid, id));
+			System.out.println(tc.notifyAlarm(null, userid, id));
 		}
 	}
 	
@@ -165,7 +166,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			long id= 2;
-			System.out.println(tc.muteAlarm(userid, id));
+			System.out.println(tc.muteAlarm(null, userid, id));
 		}
 	}
 	
@@ -174,7 +175,15 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			long id= 2;
-			System.out.println(tc.resetAlarm(userid, id, "", ""));
+			System.out.println(tc.resetAlarm(null, userid, id, "", ""));
+		}
+	}
+	
+	public void testCheck(){
+		if(flag){
+			ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+			
+			ac.getBean("temService", TemService.class).checkHardware(1);
 		}
 	}
 	

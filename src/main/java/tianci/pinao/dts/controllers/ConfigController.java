@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import tianci.pinao.dts.models.Config;
 import tianci.pinao.dts.models.Log;
+import tianci.pinao.dts.models.User;
 import tianci.pinao.dts.service.ConfigService;
 import tianci.pinao.dts.service.LogService;
 import tianci.pinao.dts.util.PinaoUtils;
@@ -37,19 +38,25 @@ public class ConfigController {
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
 		try{
-			StringBuilder sb = new StringBuilder();
-			Scanner sc = new Scanner(new FileInputStream(request.getSession().getServletContext().getRealPath("/") + "/assets/project.txt"), "utf-8");
-			while(sc.hasNextLine()){
-				sb.append(sc.nextLine());
-				sb.append("\n");
-			}
-			
-			Map<String, String> data = new HashMap<String, String>();
-			data.put("content", sb.toString());
-			data.put("image", "/assets/project.jpg");
-			
-			result.put("data", data);
-			result.put("status", "0");
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){		
+				StringBuilder sb = new StringBuilder();
+				Scanner sc = new Scanner(new FileInputStream(request.getSession().getServletContext().getRealPath("/") + "/assets/project.txt"), "utf-8");
+				while(sc.hasNextLine()){
+					sb.append(sc.nextLine());
+					sb.append("\n");
+				}
+				
+				Map<String, String> data = new HashMap<String, String>();
+				data.put("content", sb.toString());
+				data.put("image", "/assets/project.jpg");
+				
+				result.put("data", data);
+				result.put("status", "0");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -59,20 +66,26 @@ public class ConfigController {
 
 	@RequestMapping(value="/log/history", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getLogHistory(long userid, String start, String end){
+	public Map<Object, Object> getLogHistory(HttpServletRequest request, long userid, String start, String end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
 		try{
 			// check user role
-			Date startDate = PinaoUtils.getDate(start);
-			Date endDate = PinaoUtils.getDate(end);
-			List<Map<String, Object>> data = null;
-			if(startDate != null && endDate != null && !endDate.before(startDate)){
-				data = parseLog(logService.getLogs(startDate, endDate));
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){		
+				Date startDate = PinaoUtils.getDate(start);
+				Date endDate = PinaoUtils.getDate(end);
+				List<Map<String, Object>> data = null;
+				if(startDate != null && endDate != null && !endDate.before(startDate)){
+					data = parseLog(logService.getLogs(startDate, endDate));
+				} else
+					data = new ArrayList<Map<String,Object>>();
+				result.put("data", data);
+				result.put("status", "0");
 			} else
-				data = new ArrayList<Map<String,Object>>();
-			result.put("data", data);
-			result.put("status", "0");
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -101,13 +114,24 @@ public class ConfigController {
 
 	@RequestMapping(value="/config/get", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getConfig(int type){
+	public Map<Object, Object> getConfig(HttpServletRequest request, int type){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
 		try{
-			Config config = configService.getConfigByType(type);
-			result.put("data", parseConfig(config));
-			result.put("status", "0");
+			// check user role
+			long userid = PinaoUtils.getUserid(request, 0);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				User user = (User) obj;
+				if(user.getRole() == 1){
+					Config config = configService.getConfigByType(type);
+					result.put("data", parseConfig(config));
+					result.put("status", "0");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
@@ -117,15 +141,26 @@ public class ConfigController {
 
 	@RequestMapping(value="/config/update", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<Object, Object> updateConfig(Config config, int userid){
+	public Map<Object, Object> updateConfig(HttpServletRequest request, Config config, long userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
 		try{
-			boolean success = configService.updateConfig(config, userid);
-			if(success)
-				result.put("status", "0");
-			else
-				result.put("status", "400");
+			// check user role
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				User user = (User) obj;
+				if(user.getRole() == 1){
+					boolean success = configService.updateConfig(config, new Long(userid).intValue());
+					if(success)
+						result.put("status", "0");
+					else
+						result.put("status", "400");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");
