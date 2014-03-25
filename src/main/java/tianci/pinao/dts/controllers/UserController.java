@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import tianci.pinao.dts.models.Log;
 import tianci.pinao.dts.models.User;
+import tianci.pinao.dts.service.ConfigService;
 import tianci.pinao.dts.service.LogService;
 import tianci.pinao.dts.service.UserService;
 import tianci.pinao.dts.util.PinaoUtils;
@@ -31,6 +32,9 @@ public class UserController {
 	
 	@Autowired
 	private LogService logService;
+	
+	@Autowired
+	private ConfigService configService;
 
 	@RequestMapping(value="/login", method = RequestMethod.POST)
 	@ResponseBody
@@ -101,26 +105,29 @@ public class UserController {
 				User admin = (User) obj;
 				if(admin.getRole() < 4){
 					if(role > admin.getRole()){
-						User user = new User();
-						user.setName(name);
-						user.setPasswordLogin(passwordLogin);
-						user.setPasswordReset(passwordReset);
-						user.setPasswordLogout(passwordLogout);
-						user.setRole(role);
-						user.setLastModUserid(userid);
-						String[] tmp = StringUtils.split(areaIds, ",");
-						List<Integer> areaList = new ArrayList<Integer>();
-						if(tmp != null && tmp.length > 0)
-							for(String tt : tmp){
-								int _tmp = NumberUtils.toInt(tt, -1);
-								if(_tmp > 0)
-									areaList.add(_tmp);
-							}
-						
-						user.setAreaIds(areaList);
-						userService.addUser(user);
-						
-						result.put("status", "0");
+						if(configService.checkLifeTime() || admin.getRole() == 1){
+							User user = new User();
+							user.setName(name);
+							user.setPasswordLogin(passwordLogin);
+							user.setPasswordReset(passwordReset);
+							user.setPasswordLogout(passwordLogout);
+							user.setRole(role);
+							user.setLastModUserid(userid);
+							String[] tmp = StringUtils.split(areaIds, ",");
+							List<Integer> areaList = new ArrayList<Integer>();
+							if(tmp != null && tmp.length > 0)
+								for(String tt : tmp){
+									int _tmp = NumberUtils.toInt(tt, -1);
+									if(_tmp > 0)
+										areaList.add(_tmp);
+								}
+							
+							user.setAreaIds(areaList);
+							userService.addUser(user);
+							
+							result.put("status", "0");
+						} else
+							result.put("status", "1000");
 					} else
 						result.put("status", "600");
 				} else
@@ -148,26 +155,29 @@ public class UserController {
 				if(admin.getRole() < 4){
 					User user = userService.getUserById(id);
 					if(user != null && user.getRole() > admin.getRole() && role > admin.getRole()){
-						user.setId(id);
-						user.setName(name);
-						user.setPasswordLogin(passwordLogin);
-						user.setPasswordReset(passwordReset);
-						user.setPasswordLogout(passwordLogout);
-						user.setRole(role);
-						user.setLastModUserid(userid);
-						String[] tmp = StringUtils.split(areaIds, ",");
-						List<Integer> areaList = new ArrayList<Integer>();
-						if(tmp != null && tmp.length > 0)
-							for(String tt : tmp){
-								int _tmp = NumberUtils.toInt(tt, -1);
-								if(_tmp > 0)
-									areaList.add(_tmp);
-							}
-						
-						user.setAreaIds(areaList);
-						userService.modifyUser(user);
-						
-						result.put("status", "0");
+						if(configService.checkLifeTime() || admin.getRole() == 1){
+							user.setId(id);
+							user.setName(name);
+							user.setPasswordLogin(passwordLogin);
+							user.setPasswordReset(passwordReset);
+							user.setPasswordLogout(passwordLogout);
+							user.setRole(role);
+							user.setLastModUserid(userid);
+							String[] tmp = StringUtils.split(areaIds, ",");
+							List<Integer> areaList = new ArrayList<Integer>();
+							if(tmp != null && tmp.length > 0)
+								for(String tt : tmp){
+									int _tmp = NumberUtils.toInt(tt, -1);
+									if(_tmp > 0)
+										areaList.add(_tmp);
+								}
+							
+							user.setAreaIds(areaList);
+							userService.modifyUser(user);
+							
+							result.put("status", "0");
+						} else
+							result.put("status", "1000");
 					} else
 						result.put("status", "600");
 				} else
@@ -195,8 +205,11 @@ public class UserController {
 				if(user.getRole() < 4){
 					User tmp = userService.getUserById(id);
 					if(tmp != null && tmp.getRole() > user.getRole()){
-						userService.delUser(id, userid);
-						result.put("status", "0");
+						if(configService.checkLifeTime() || user.getRole() == 1){
+							userService.delUser(id, userid);
+							result.put("status", "0");
+						} else
+							result.put("status", "1000");
 					} else
 						result.put("status", "600");
 				} else
@@ -222,10 +235,13 @@ public class UserController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() < 4){
-					List<User> users = userService.getUser(user.getRole());
-					
-					result.put("data", parseUsers(users));
-					result.put("status", "0");
+					if(configService.checkLifeTime() || user.getRole() == 1){
+						List<User> users = userService.getUser(user.getRole());
+						
+						result.put("data", parseUsers(users));
+						result.put("status", "0");
+					} else
+						result.put("status", "1000");
 				} else
 					result.put("status", "600");
 			} else

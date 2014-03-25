@@ -20,6 +20,7 @@ import tianci.pinao.dts.models.AreaTempConfig;
 import tianci.pinao.dts.models.Channel;
 import tianci.pinao.dts.models.LevelImage;
 import tianci.pinao.dts.models.Machine;
+import tianci.pinao.dts.models.User;
 import tianci.pinao.dts.service.AreaService;
 import tianci.pinao.dts.util.PinaoConstants;
 
@@ -437,27 +438,29 @@ public class AreaServiceImpl implements AreaService {
 									if(cols.length > 5 && StringUtils.isNotBlank(cols[5]))
 										config.setLight(StringUtils.trimToEmpty(cols[6]));
 									if(cols.length > 6 && StringUtils.isNotBlank(cols[6]))
-										config.setRelay(StringUtils.trimToEmpty(cols[6]));
+										config.setRelay1(StringUtils.trimToEmpty(cols[6]));
 									if(cols.length > 7 && StringUtils.isNotBlank(cols[7]))
-										config.setVoice(StringUtils.trimToEmpty(cols[7]));
+										config.setRelay(StringUtils.trimToEmpty(cols[7]));
+									if(cols.length > 8 && StringUtils.isNotBlank(cols[8]))
+										config.setVoice(StringUtils.trimToEmpty(cols[8]));
 									
 									config.setLastModUserid(userid);
 									hardConfigs.put(area.getName(), config);
 								}
 								
-								if((cols.length > 8 && NumberUtils.isNumber(cols[8]))
-										|| (cols.length > 9 && NumberUtils.isNumber(cols[9]))
+								if((cols.length > 9 && NumberUtils.isNumber(cols[9]))
 										|| (cols.length > 10 && NumberUtils.isNumber(cols[10]))
-												|| (cols.length > 11 && NumberUtils.isNumber(cols[11]))){
+										|| (cols.length > 11 && NumberUtils.isNumber(cols[11]))
+												|| (cols.length > 12 && NumberUtils.isNumber(cols[12]))){
 									AreaTempConfig config = new AreaTempConfig();
-									if(cols.length > 8 && NumberUtils.isNumber(cols[8]))
-										config.setTemperatureLow(NumberUtils.toInt(cols[8], Integer.MAX_VALUE));
 									if(cols.length > 9 && NumberUtils.isNumber(cols[9]))
-										config.setTemperatureHigh(NumberUtils.toInt(cols[10], Integer.MAX_VALUE));
+										config.setTemperatureLow(NumberUtils.toInt(cols[9], Integer.MAX_VALUE));
 									if(cols.length > 10 && NumberUtils.isNumber(cols[10]))
-										config.setTemperatureDiff(NumberUtils.toInt(cols[10], Integer.MAX_VALUE));
+										config.setTemperatureHigh(NumberUtils.toInt(cols[10], Integer.MAX_VALUE));
 									if(cols.length > 11 && NumberUtils.isNumber(cols[11]))
-										config.setExotherm(NumberUtils.toInt(cols[11], Integer.MAX_VALUE));
+										config.setTemperatureDiff(NumberUtils.toInt(cols[11], Integer.MAX_VALUE));
+									if(cols.length > 12 && NumberUtils.isNumber(cols[12]))
+										config.setExotherm(NumberUtils.toInt(cols[12], Integer.MAX_VALUE));
 									
 									config.setLastModUserid(userid);
 									tempConfigs.put(area.getName(), config);
@@ -618,10 +621,15 @@ public class AreaServiceImpl implements AreaService {
 	}
 
 	@Override
-	public List<Area> getAllAreas(long userid) {
-		List<Area> areas = areaDao.getAllAreas();
+	public List<Area> getAllAreas(long userid, User user) {
+		List<Area> _areas = areaDao.getAllAreas();
 		
-		//TODO filter by userid roles
+		List<Area> areas = new ArrayList<Area>();
+		//filter by userid roles
+		if(_areas != null && _areas.size() > 0)
+			for(Area area : _areas)
+				if(user.getRole() == 1 || (user.getAreaIds() != null && user.getAreaIds().contains(area.getId())))
+					areas.add(area);
 		
 		List<Area> result = new ArrayList<Area>();
 		Map<Integer, Area> tmps = new HashMap<Integer, Area>();

@@ -10,10 +10,11 @@ import tianci.pinao.dts.models.AreaTempConfig;
 import tianci.pinao.dts.models.Channel;
 import tianci.pinao.dts.models.LevelImage;
 import tianci.pinao.dts.models.Machine;
+import tianci.pinao.dts.models.User;
 
 public interface AreaService {
 
-	public List<Area> getAllAreas(long userid);
+	public List<Area> getAllAreas(long userid, User user);
 
 	public Map<Machine, List<Channel>> getAllChannels(long userid);
 

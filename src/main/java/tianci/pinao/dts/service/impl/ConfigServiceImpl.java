@@ -69,6 +69,20 @@ public class ConfigServiceImpl implements ConfigService{
 		else
 			return configDao.addLifeTime(mac, time);
 	}
+	
+	@Override
+	public boolean checkLifeTime() {
+		Config config = getLicenseConfig();
+		if(config != null){
+			List<License> licenses = getAllLicenses();
+			if(licenses != null && licenses.size() > 0)
+				for(License license : licenses)
+					if(license != null && license.getUseTime() >= config.getValue())
+						return false;
+			return true;
+		} else
+			return false;
+	}
 
 	public ConfigDao getConfigDao() {
 		return configDao;

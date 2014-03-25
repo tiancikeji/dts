@@ -26,6 +26,7 @@ import tianci.pinao.dts.models.LevelImage;
 import tianci.pinao.dts.models.Machine;
 import tianci.pinao.dts.models.User;
 import tianci.pinao.dts.service.AreaService;
+import tianci.pinao.dts.service.ConfigService;
 import tianci.pinao.dts.util.PinaoConstants;
 import tianci.pinao.dts.util.PinaoUtils;
 
@@ -34,6 +35,9 @@ public class AreaController {
 	
 	@Autowired
 	private AreaService areaService;
+	
+	@Autowired
+	private ConfigService configService;
 
 	@RequestMapping(value="/file/addFile", method = RequestMethod.POST)
 	@ResponseBody
@@ -331,9 +335,13 @@ public class AreaController {
 			result.put("status", "400");
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
 			if(obj != null && obj instanceof User){
-				List<Area> areas = areaService.getAllAailableAreas();
-				result.put("data", parseAreas(areas));
-				result.put("status", "0");
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){
+					List<Area> areas = areaService.getAllAailableAreas();
+					result.put("data", parseAreas(areas));
+					result.put("status", "0");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -412,7 +420,7 @@ public class AreaController {
 						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
 					}
 					out = response.getOutputStream();
-					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "名称" + PinaoConstants.TEM_DATA_COL_SEP + "分类" + PinaoConstants.TEM_DATA_COL_SEP + "报警区域" + PinaoConstants.TEM_DATA_COL_SEP + "父级厂区" + PinaoConstants.TEM_DATA_COL_SEP + "图片" + PinaoConstants.TEM_DATA_COL_SEP + "灯号" + PinaoConstants.TEM_DATA_COL_SEP + "继电器号" + PinaoConstants.TEM_DATA_COL_SEP + "声音地址" + PinaoConstants.TEM_DATA_COL_SEP + "低温报警" + PinaoConstants.TEM_DATA_COL_SEP + "高温报警" + PinaoConstants.TEM_DATA_COL_SEP + "差温报警" + PinaoConstants.TEM_DATA_COL_SEP + "温升报警" + PinaoConstants.TEM_DATA_COL_SEP + "报警显示名称" + PinaoConstants.TEM_DATA_COL_SEP + "通道名称" + PinaoConstants.TEM_DATA_COL_SEP + "机器名称" + PinaoConstants.TEM_DATA_COL_SEP + "开始距离" + PinaoConstants.TEM_DATA_COL_SEP + "结束距离" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "名称" + PinaoConstants.TEM_DATA_COL_SEP + "分类" + PinaoConstants.TEM_DATA_COL_SEP + "报警区域" + PinaoConstants.TEM_DATA_COL_SEP + "父级厂区" + PinaoConstants.TEM_DATA_COL_SEP + "图片" + PinaoConstants.TEM_DATA_COL_SEP + "灯号" + PinaoConstants.TEM_DATA_COL_SEP + "预警继电器号" + PinaoConstants.TEM_DATA_COL_SEP + "火警继电器号" + PinaoConstants.TEM_DATA_COL_SEP + "声音地址" + PinaoConstants.TEM_DATA_COL_SEP + "低温报警" + PinaoConstants.TEM_DATA_COL_SEP + "高温报警" + PinaoConstants.TEM_DATA_COL_SEP + "差温报警" + PinaoConstants.TEM_DATA_COL_SEP + "温升报警" + PinaoConstants.TEM_DATA_COL_SEP + "报警显示名称" + PinaoConstants.TEM_DATA_COL_SEP + "通道名称" + PinaoConstants.TEM_DATA_COL_SEP + "机器名称" + PinaoConstants.TEM_DATA_COL_SEP + "开始距离" + PinaoConstants.TEM_DATA_COL_SEP + "结束距离" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
 					
 					Map<Integer, AreaHardwareConfig> hMap = new HashMap<Integer, AreaHardwareConfig>();
 					List<AreaHardwareConfig> hardConfigs = areaService.getAllHardwareConfigs();
@@ -447,7 +455,7 @@ public class AreaController {
 							out.write((area.getName() + PinaoConstants.TEM_DATA_COL_SEP + area.getLevel() + PinaoConstants.TEM_DATA_COL_SEP + area.getIndex() + PinaoConstants.TEM_DATA_COL_SEP + (parent != null ? parent.getName() : StringUtils.EMPTY) + PinaoConstants.TEM_DATA_COL_SEP + StringUtils.trimToEmpty(area.getImage()) + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							
 							if(hc != null)
-								out.write((hc.getLight() + PinaoConstants.TEM_DATA_COL_SEP + hc.getRelay() + PinaoConstants.TEM_DATA_COL_SEP + hc.getVoice() + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
+								out.write((hc.getLight() + PinaoConstants.TEM_DATA_COL_SEP + hc.getRelay1() + PinaoConstants.TEM_DATA_COL_SEP + hc.getRelay() + PinaoConstants.TEM_DATA_COL_SEP + hc.getVoice() + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							else
 								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							if(temp != null)
@@ -520,11 +528,14 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() < 3){
-					boolean success = areaService.updateHardwareConfig(config, new Long(userid).intValue());
-					if(success)
-						result.put("status", "0");
-					else
-						result.put("status", "400");
+					if(configService.checkLifeTime() || user.getRole() == 1){
+						boolean success = areaService.updateHardwareConfig(config, new Long(userid).intValue());
+						if(success)
+							result.put("status", "0");
+						else
+							result.put("status", "400");
+					} else
+						result.put("status", "1000");
 				} else
 					result.put("status", "600");
 			} else
@@ -576,9 +587,20 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() < 3){
-					List<AreaHardwareConfig> configs = areaService.getAllHardwareConfigs();
-					result.put("data", parseHardwareConfigs(configs));
-					result.put("status", "0");
+					if(configService.checkLifeTime() || user.getRole() == 1){
+						List<AreaHardwareConfig> _configs = areaService.getAllHardwareConfigs();
+						
+						List<AreaHardwareConfig> configs = new ArrayList<AreaHardwareConfig>();
+						//filter by userid roles
+						if(_configs != null && _configs.size() > 0)
+							for(AreaHardwareConfig config : _configs)
+								if(user.getRole() == 1 || (user.getAreaIds() != null && user.getAreaIds().contains(config.getAreaid())))
+									configs.add(config);
+						
+						result.put("data", parseHardwareConfigs(configs));
+						result.put("status", "0");
+					} else
+						result.put("status", "1000");
 				} else
 					result.put("status", "600");
 			} else

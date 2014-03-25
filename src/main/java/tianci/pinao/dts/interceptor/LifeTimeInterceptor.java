@@ -20,7 +20,7 @@ public class LifeTimeInterceptor extends HandlerInterceptorAdapter {
 		if(checkLifeTime())
 			return super.preHandle(request, response, handler);
 		else{
-			request.getRequestDispatcher("/lifetime.jsp").forward(request, response);  
+			request.getRequestDispatcher("/expire.html").forward(request, response);  
             return false; 
 		}
 	}

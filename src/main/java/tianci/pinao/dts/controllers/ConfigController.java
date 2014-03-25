@@ -41,20 +41,24 @@ public class ConfigController {
 			userid = PinaoUtils.getUserid(request, userid);
 			result.put("status", "400");
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
-			if(obj != null && obj instanceof User){		
-				StringBuilder sb = new StringBuilder();
-				Scanner sc = new Scanner(new FileInputStream(request.getSession().getServletContext().getRealPath("/") + "/assets/project.txt"), "utf-8");
-				while(sc.hasNextLine()){
-					sb.append(sc.nextLine());
-					sb.append("\n");
-				}
-				
-				Map<String, String> data = new HashMap<String, String>();
-				data.put("content", sb.toString());
-				data.put("image", "/assets/project.jpg");
-				
-				result.put("data", data);
-				result.put("status", "0");
+			if(obj != null && obj instanceof User){
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){
+					StringBuilder sb = new StringBuilder();
+					Scanner sc = new Scanner(new FileInputStream(request.getSession().getServletContext().getRealPath("/") + "/assets/project.txt"), "utf-8");
+					while(sc.hasNextLine()){
+						sb.append(sc.nextLine());
+						sb.append("\n");
+					}
+					
+					Map<String, String> data = new HashMap<String, String>();
+					data.put("content", sb.toString());
+					data.put("image", "/assets/project.jpg");
+					
+					result.put("data", data);
+					result.put("status", "0");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -74,16 +78,20 @@ public class ConfigController {
 			userid = PinaoUtils.getUserid(request, userid);
 			result.put("status", "400");
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
-			if(obj != null && obj instanceof User){		
-				Date startDate = PinaoUtils.getDate(start);
-				Date endDate = PinaoUtils.getDate(end);
-				List<Map<String, Object>> data = null;
-				if(startDate != null && endDate != null && !endDate.before(startDate)){
-					data = parseLog(logService.getLogs(startDate, endDate));
+			if(obj != null && obj instanceof User){	
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){	
+					Date startDate = PinaoUtils.getDate(start);
+					Date endDate = PinaoUtils.getDate(end);
+					List<Map<String, Object>> data = null;
+					if(startDate != null && endDate != null && !endDate.before(startDate)){
+						data = parseLog(logService.getLogs(startDate, endDate));
+					} else
+						data = new ArrayList<Map<String,Object>>();
+					result.put("data", data);
+					result.put("status", "0");
 				} else
-					data = new ArrayList<Map<String,Object>>();
-				result.put("data", data);
-				result.put("status", "0");
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){

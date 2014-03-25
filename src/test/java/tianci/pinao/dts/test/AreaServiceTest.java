@@ -131,7 +131,7 @@ public class AreaServiceTest extends TestCase{
 			
 			System.out.println(as.addArea(area, userid));
 			
-			System.out.println(as.getAllAreas(-1));
+			System.out.println(as.getAllAreas(-1, null));
 			
 			area = new Area();
 			area.setName("test16");

@@ -88,11 +88,15 @@ public class TemperatureController {
 			userid = PinaoUtils.getUserid(request, userid);
 			result.put("status", "400");
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
-			if(obj != null && obj instanceof User){			
-				if(temService.updateAlarm(id, Alarm.STATUS_NOTIFY, userid))
-					result.put("status", "0");
-				else
-					result.put("status", "400");
+			if(obj != null && obj instanceof User){	
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){
+					if(temService.updateAlarm(id, Alarm.STATUS_NOTIFY, userid))
+						result.put("status", "0");
+					else
+						result.put("status", "400");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -111,11 +115,15 @@ public class TemperatureController {
 			userid = PinaoUtils.getUserid(request, userid);
 			result.put("status", "400");
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
-			if(obj != null && obj instanceof User){			
-				if(temService.updateAlarm(id, Alarm.STATUS_MUTE, userid))
-					result.put("status", "0");
-				else
-					result.put("status", "400");
+			if(obj != null && obj instanceof User){	
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){		
+					if(temService.updateAlarm(id, Alarm.STATUS_MUTE, userid))
+						result.put("status", "0");
+					else
+						result.put("status", "400");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -138,10 +146,13 @@ public class TemperatureController {
 				User user = userService.getResetUser(loginname, password);
 				if(user != null && StringUtils.equals(user.getPasswordReset(), password)){
 					if(user.getRole() < 4){
-						if(temService.updateAlarm(id, Alarm.STATUS_RESET, userid))
-							result.put("status", "0");
-						else
-							result.put("status", "400");
+						if(configService.checkLifeTime() || user.getRole() == 1){	
+							if(temService.updateAlarm(id, Alarm.STATUS_RESET, userid))
+								result.put("status", "0");
+							else
+								result.put("status", "400");
+						} else
+							result.put("status", "1000");
 					} else
 						result.put("status", "700");
 				} else
@@ -165,18 +176,22 @@ public class TemperatureController {
 			result.put("status", "400");
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
 			if(obj != null && obj instanceof User){
-				List<Area> areas = areaService.getAllAreas(userid);
-
-				List<Map<String, Object>> tmp = null;
-				if(areas != null && areas.size() > 0)
-					tmp = parseCheckAlarmData(temService.getAreasAlarmData(areas, time));
-				else
-					tmp = new ArrayList<Map<String,Object>>();
-				
-				result.put("data", tmp);
-				result.put("time", System.currentTimeMillis());
-				result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
-				result.put("status", "0");
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){	
+					List<Area> areas = areaService.getAllAreas(userid, user);
+	
+					List<Map<String, Object>> tmp = null;
+					if(areas != null && areas.size() > 0)
+						tmp = parseCheckAlarmData(temService.getAreasAlarmData(areas, time));
+					else
+						tmp = new ArrayList<Map<String,Object>>();
+					
+					result.put("data", tmp);
+					result.put("time", System.currentTimeMillis());
+					result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+					result.put("status", "0");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -217,16 +232,19 @@ public class TemperatureController {
 			if(obj != null && obj instanceof User){
 				User user = (User)obj;
 				if(user.getRole() < 4){
-					Area area = searchArea(areaService.getAllAreas(userid), id);
-	
-					List<Map<String, Object>> tmp = null;
-					if(area != null)
-						tmp = parseAlarmData(temService.getAreaAlarmReportData(area));
-					else
-						tmp = new ArrayList<Map<String,Object>>();
-					
-					result.put("data", tmp);
-					result.put("status", "0");
+					if(configService.checkLifeTime() || user.getRole() == 1){
+						Area area = searchArea(areaService.getAllAreas(userid, user), id);
+		
+						List<Map<String, Object>> tmp = null;
+						if(area != null)
+							tmp = parseAlarmData(temService.getAreaAlarmReportData(area));
+						else
+							tmp = new ArrayList<Map<String,Object>>();
+						
+						result.put("data", tmp);
+						result.put("status", "0");
+					} else
+						result.put("status", "1000");
 				} else
 					result.put("status", "600");
 			} else
@@ -249,18 +267,22 @@ public class TemperatureController {
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
 			// check user role
 			if(obj != null && obj instanceof User){
-				Area area = searchArea(areaService.getAllAreas(userid), id);
-
-				Map<String, Object> tmp = null;
-				Date startDate = PinaoUtils.getDate(start);
-				Date endDate = PinaoUtils.getDate(end);
-				if(area != null && startDate != null && endDate != null && !endDate.before(startDate))
-					tmp = parseReportData(temService.getAreaReportData(area, startDate, endDate));
-				else
-					tmp = new HashMap<String, Object>();
-				
-				result.put("data", tmp);
-				result.put("status", "0");
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){
+					Area area = searchArea(areaService.getAllAreas(userid, user), id);
+	
+					Map<String, Object> tmp = null;
+					Date startDate = PinaoUtils.getDate(start);
+					Date endDate = PinaoUtils.getDate(end);
+					if(area != null && startDate != null && endDate != null && !endDate.before(startDate))
+						tmp = parseReportData(temService.getAreaReportData(area, startDate, endDate));
+					else
+						tmp = new HashMap<String, Object>();
+					
+					result.put("data", tmp);
+					result.put("status", "0");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -280,50 +302,53 @@ public class TemperatureController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() < 4){
-					response.setContentType("text/plain");
-					String oriFileName = "历史厂区趋势数据.txt";
-					String agent = request.getHeader("USER-AGENT");
-					if (null != agent && -1 != agent.indexOf("Firefox")) {
-						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
-					} else {
-						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
-					}
-					out = response.getOutputStream();
-					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
-					
-					Area area = searchArea(areaService.getAllAreas(userid), id);
-
-					Date startDate = PinaoUtils.getDate(start);
-					Date endDate = PinaoUtils.getDate(end);
-					if(area != null && startDate != null && endDate != null && !endDate.before(startDate)){
-						ReportData data = temService.getAreaReportData(area, startDate, endDate);
-						if(data != null){
-							Map<String, Map<Date, Double>> tems = data.getTems();
-							Map<String, Map<Date, Double>> stocks = data.getStocks();
-							Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
-							
-							for(String key : tems.keySet()){
-								Map<Date, Double> _temps = data.getTems().get(key);
-								Map<Date, Double> _stocks = null;
-								if(stocks.containsKey(key))
-									_stocks = stocks.get(key);
-								Map<Date, Double> _unstocks = null;
-								if(unstocks.containsKey(key))
-									_unstocks = unstocks.get(key);
+					if(configService.checkLifeTime() || user.getRole() == 1){
+						response.setContentType("text/plain");
+						String oriFileName = "历史厂区趋势数据.txt";
+						String agent = request.getHeader("USER-AGENT");
+						if (null != agent && -1 != agent.indexOf("Firefox")) {
+							response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+						} else {
+							response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+						}
+						out = response.getOutputStream();
+						out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+						
+						Area area = searchArea(areaService.getAllAreas(userid, user), id);
+	
+						Date startDate = PinaoUtils.getDate(start);
+						Date endDate = PinaoUtils.getDate(end);
+						if(area != null && startDate != null && endDate != null && !endDate.before(startDate)){
+							ReportData data = temService.getAreaReportData(area, startDate, endDate);
+							if(data != null){
+								Map<String, Map<Date, Double>> tems = data.getTems();
+								Map<String, Map<Date, Double>> stocks = data.getStocks();
+								Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
 								
-								for(Date _key : _temps.keySet()){
-									out.write(key.getBytes());
-									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-									if(_stocks != null && _stocks.containsKey(_key))
-										out.write(_stocks.get(_key).toString().getBytes());
-									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-									if(_unstocks != null && _unstocks.containsKey(_key))
-										out.write(_unstocks.get(_key).toString().getBytes());
-									out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+								for(String key : tems.keySet()){
+									Map<Date, Double> _temps = data.getTems().get(key);
+									Map<Date, Double> _stocks = null;
+									if(stocks.containsKey(key))
+										_stocks = stocks.get(key);
+									Map<Date, Double> _unstocks = null;
+									if(unstocks.containsKey(key))
+										_unstocks = unstocks.get(key);
+									
+									for(Date _key : _temps.keySet()){
+										out.write(key.getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										if(_stocks != null && _stocks.containsKey(_key))
+											out.write(_stocks.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										if(_unstocks != null && _unstocks.containsKey(_key))
+											out.write(_unstocks.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+									}
 								}
 							}
 						}
-					}
+					} else
+						response.sendRedirect(request.getContextPath() + "/" + "expire.html");
 				} else
 					response.sendRedirect(request.getContextPath() + "/" + "error.html");
 			} else
@@ -442,16 +467,20 @@ public class TemperatureController {
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
 			// check user role
 			if(obj != null && obj instanceof User){
-				Area area = searchArea(areaService.getAllAreas(userid), id);
-	
-				List<Map<String, Object>> tmp = null;
-				if(area != null)
-					tmp = parseAlarmData(temService.getAreaAlarmData(area));
-				else
-					tmp = new ArrayList<Map<String,Object>>();
-				
-				result.put("data", tmp);
-				result.put("status", "0");
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){
+					Area area = searchArea(areaService.getAllAreas(userid, user), id);
+		
+					List<Map<String, Object>> tmp = null;
+					if(area != null)
+						tmp = parseAlarmData(temService.getAreaAlarmData(area));
+					else
+						tmp = new ArrayList<Map<String,Object>>();
+					
+					result.put("data", tmp);
+					result.put("status", "0");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -525,17 +554,21 @@ public class TemperatureController {
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
 			// check user role
 			if(obj != null && obj instanceof User){
-				Area area = searchArea(areaService.getAllAreas(userid), id);
-	
-				Map<String, Object> tmp = null;
-				if(area != null)
-					tmp = parseAreaData(temService.getAreaData(area, time));
-				else
-					tmp = new HashMap<String, Object>();
-				
-				result.put("data", tmp);
-				result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
-				result.put("status", "0");
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){
+					Area area = searchArea(areaService.getAllAreas(userid, user), id);
+		
+					Map<String, Object> tmp = null;
+					if(area != null)
+						tmp = parseAreaData(temService.getAreaData(area, time));
+					else
+						tmp = new HashMap<String, Object>();
+					
+					result.put("data", tmp);
+					result.put("interval", configService.getConfigByType(Config.TYPE_REFRESH_INTERVAL_FLAG).getValue());
+					result.put("status", "0");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){
@@ -598,9 +631,13 @@ public class TemperatureController {
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
 			// check user role
 			if(obj != null && obj instanceof User){
-				List<Area> areas = areaService.getAllAreas(userid);
-				result.put("data", parseAreas(areas));
-				result.put("status", "0");
+				User user = (User)obj;
+				if(configService.checkLifeTime() || user.getRole() == 1){
+					List<Area> areas = areaService.getAllAreas(userid, user);
+					result.put("data", parseAreas(areas));
+					result.put("status", "0");
+				} else
+					result.put("status", "1000");
 			} else
 				result.put("status", "500");
 		} catch(Throwable t){

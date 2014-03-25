@@ -12,6 +12,8 @@ public interface ConfigService {
 	
 	public boolean addLifeTimeByLocalMac(String mac, long time);
 
+	public boolean checkLifeTime();
+
 	// config
 	public Config getLicenseConfig();
 
