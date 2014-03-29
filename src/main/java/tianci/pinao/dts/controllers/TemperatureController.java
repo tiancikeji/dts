@@ -29,7 +29,6 @@ import tianci.pinao.dts.models.ChannelMonitorData;
 import tianci.pinao.dts.models.Config;
 import tianci.pinao.dts.models.Machine;
 import tianci.pinao.dts.models.ReportData;
-import tianci.pinao.dts.models.TemData;
 import tianci.pinao.dts.models.User;
 import tianci.pinao.dts.service.AreaService;
 import tianci.pinao.dts.service.ConfigService;
@@ -221,7 +220,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/area/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaAlarmReportData(HttpServletRequest request, long userid, int id){
+	public Map<Object, Object> getAreaAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -234,14 +233,19 @@ public class TemperatureController {
 				if(user.getRole() < 4){
 					if(configService.checkLifeTime() || user.getRole() == 1){
 						Area area = searchArea(areaService.getAllAreas(userid, user), id);
-		
+
+						if(start == null || start < 0)
+							start = 0;
+						if(step == null || step <= 0)
+							step = 100;
 						List<Map<String, Object>> tmp = null;
 						if(area != null)
-							tmp = parseAlarmData(temService.getAreaAlarmReportData(area));
+							tmp = parseAlarmData(temService.getAreaAlarmReportData(area, start, step));
 						else
 							tmp = new ArrayList<Map<String,Object>>();
 						
 						result.put("data", tmp);
+						result.put("count", temService.getAreaAlarmReportCount(area));
 						result.put("status", "0");
 					} else
 						result.put("status", "1000");
@@ -270,7 +274,6 @@ public class TemperatureController {
 				User user = (User)obj;
 				if(configService.checkLifeTime() || user.getRole() == 1){
 					Area area = searchArea(areaService.getAllAreas(userid, user), id);
-	
 					Map<String, Object> tmp = null;
 					Date startDate = PinaoUtils.getDate(start);
 					Date endDate = PinaoUtils.getDate(end);
@@ -458,7 +461,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/area/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaAlarmData(HttpServletRequest request, long userid, int id){
+	public Map<Object, Object> getAreaAlarmData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -470,14 +473,19 @@ public class TemperatureController {
 				User user = (User)obj;
 				if(configService.checkLifeTime() || user.getRole() == 1){
 					Area area = searchArea(areaService.getAllAreas(userid, user), id);
-		
+
+					if(start == null || start < 0)
+						start = 0;
+					if(step == null || step <= 0)
+						step = 100;
 					List<Map<String, Object>> tmp = null;
 					if(area != null)
-						tmp = parseAlarmData(temService.getAreaAlarmData(area));
+						tmp = parseAlarmData(temService.getAreaAlarmData(area, start, step));
 					else
 						tmp = new ArrayList<Map<String,Object>>();
 					
 					result.put("data", tmp);
+					result.put("count", temService.getAreaAlarmCount(area));
 					result.put("status", "0");
 				} else
 					result.put("status", "1000");
@@ -673,7 +681,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/channel/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelAlarmReportData(HttpServletRequest request, long userid, int id){
+	public Map<Object, Object> getChannelAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -693,13 +701,18 @@ public class TemperatureController {
 									channels.add(channel);
 									break;
 								}
-						
+
+					if(start == null || start < 0)
+						start = 0;
+					if(step == null || step <= 0)
+						step = 100;
 					List<Map<String, Object>> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseAlarmData(temService.getChannelAlarmReportData(channels));
+						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step));
 					else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
+					result.put("count", temService.getChannelAlarmReportCount(channels));
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -714,7 +727,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/channel/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelReportData(HttpServletRequest request, long userid, int id, String start, String end){
+	public Map<Object, Object> getChannelReportData(HttpServletRequest request, long userid, int id, String startDate, String endDate, Integer start, Integer end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -734,12 +747,18 @@ public class TemperatureController {
 									channels.add(channel);
 									break;
 								}
-						
-					Date startDate = PinaoUtils.getDate(start);
-					Date endDate = PinaoUtils.getDate(end);
+
+					if(start == null || start == 0)
+						start = 1;
+					if(end == null || end == -1)
+						end = Integer.MAX_VALUE;
+					if(end < start)
+						end = start;
+					Date _startDate = PinaoUtils.getDate(startDate);
+					Date _endDate = PinaoUtils.getDate(endDate);
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseReportData(temService.getChannelReportData(channels, startDate, endDate));
+						data = parseReportData(temService.getChannelReportData(channels, _startDate, _endDate, start, end));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -789,7 +808,7 @@ public class TemperatureController {
 					Date startDate = PinaoUtils.getDate(start);
 					Date endDate = PinaoUtils.getDate(end);
 					if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
-						ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+						ReportData data = temService.getChannelReportData(channels, startDate, endDate, 1, Integer.MAX_VALUE);
 						if(data != null){
 							Map<String, Map<Date, Double>> tems = data.getTems();
 							Map<String, Map<Date, Double>> stocks = data.getStocks();
@@ -838,7 +857,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/channel/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelAlarmData(HttpServletRequest request, long userid, int id){
+	public Map<Object, Object> getChannelAlarmData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -858,13 +877,18 @@ public class TemperatureController {
 									channels.add(channel);
 									break;
 								}
-						
+
+					if(start == null || start < 0)
+						start = 0;
+					if(step == null || step <= 0)
+						step = 100;
 					List<Map<String, Object>> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseAlarmData(temService.getChannelAlarmData(channels));
+						data = parseAlarmData(temService.getChannelAlarmData(channels, start, step));
 					else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
+					result.put("count", temService.getChannelAlarmCount(channels));
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -879,7 +903,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/channel/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelData(HttpServletRequest request, long userid, int id, long time){
+	public Map<Object, Object> getChannelData(HttpServletRequest request, long userid, int id, long time, Integer start, Integer end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -899,10 +923,16 @@ public class TemperatureController {
 									channels.add(channel);
 									break;
 								}
-						
+
+					if(start == null || start == 0)
+						start = 1;
+					if(end == null || end == -1)
+						end = Integer.MAX_VALUE;
+					if(end < start)
+						end = start;
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseChannelData(temService.getChannelData(channels, time));
+						data = parseChannelData(temService.getChannelData(channels, time, start, end));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -921,7 +951,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/machine/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineAlarmReportData(HttpServletRequest request, long userid, int id){
+	public Map<Object, Object> getMachineAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -940,13 +970,18 @@ public class TemperatureController {
 								channels = machines.get(machine);
 								break;
 							}
-						
+
+					if(start == null || start < 0)
+						start = 0;
+					if(step == null || step <= 0)
+						step = 100;
 					List<Map<String, Object>> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseAlarmData(temService.getChannelAlarmReportData(channels));
+						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step));
 					else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
+					result.put("count", temService.getChannelAlarmReportCount(channels));
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -961,7 +996,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/machine/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineReportData(HttpServletRequest request, long userid, int id, String start, String end){
+	public Map<Object, Object> getMachineReportData(HttpServletRequest request, long userid, int id, String startDate, String endDate, Integer start, Integer end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -980,12 +1015,18 @@ public class TemperatureController {
 								channels = machines.get(machine);
 								break;
 							}
-					
-					Date startDate = PinaoUtils.getDate(start);
-					Date endDate = PinaoUtils.getDate(end);
+
+					if(start == null || start == 0)
+						start = 1;
+					if(end == null || end == -1)
+						end = Integer.MAX_VALUE;
+					if(end < start)
+						end = start;
+					Date _startDate = PinaoUtils.getDate(startDate);
+					Date _endDate = PinaoUtils.getDate(endDate);
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseReportData(temService.getChannelReportData(channels, startDate, endDate));
+						data = parseReportData(temService.getChannelReportData(channels, _startDate, _endDate, start, end));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -1036,7 +1077,7 @@ public class TemperatureController {
 					Date startDate = PinaoUtils.getDate(start);
 					Date endDate = PinaoUtils.getDate(end);
 					if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
-						ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+						ReportData data = temService.getChannelReportData(channels, startDate, endDate, 1, Integer.MAX_VALUE);
 						if(data != null){
 							Map<String, Map<Date, Double>> tems = data.getTems();
 							Map<String, Map<Date, Double>> stocks = data.getStocks();
@@ -1085,7 +1126,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/machine/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineAlarmData(HttpServletRequest request, long userid, int id){
+	public Map<Object, Object> getMachineAlarmData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -1104,13 +1145,17 @@ public class TemperatureController {
 								channels = machines.get(machine);
 								break;
 							}
-						
+					if(start == null || start < 0)
+						start = 0;
+					if(step == null || step <= 0)
+						step = 100;
 					List<Map<String, Object>> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseAlarmData(temService.getChannelAlarmData(channels));
+						data = parseAlarmData(temService.getChannelAlarmData(channels, start, step));
 					else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
+					result.put("count", temService.getChannelAlarmCount(channels));
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -1125,7 +1170,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/machine/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineData(HttpServletRequest request, long userid, int id, long time){
+	public Map<Object, Object> getMachineData(HttpServletRequest request, long userid, int id, long time, Integer start, Integer end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -1144,10 +1189,15 @@ public class TemperatureController {
 								channels = machines.get(machine);
 								break;
 							}
-						
+					if(start == null || start == 0)
+						start = 1;
+					if(end == null || end == -1)
+						end = Integer.MAX_VALUE;
+					if(end < start)
+						end = start;
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseChannelData(temService.getChannelData(channels, time));
+						data = parseChannelData(temService.getChannelData(channels, time, start, end));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -1167,87 +1217,15 @@ public class TemperatureController {
 	private Map<String, Object> parseChannelData(ChannelMonitorData data) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		if(data != null){
+		if(data != null && data.getData() != null && data.getData().size() > 0){
 			result.put("max", data.getMax());
 			result.put("min", data.getMin());
 			result.put("avg", data.getAvg());
 			result.put("time", data.getTime());
-			
-			List<Map<String, Object>> tmp = new ArrayList<Map<String,Object>>();
-			if(data.getTems() != null && data.getTems().size() > 0)
-				for(TemData temData : data.getTems()){
-					Map<String, Object> _tmp = new HashMap<String, Object>();
-					_tmp.put("name", temData.getName());
-					
-					List<Map<String, Object>> _list = new ArrayList<Map<String,Object>>();
-					if(temData.getData() != null && temData.getData().size() > 0)
-						for(Integer key : sortLength(new ArrayList<Integer>(temData.getData().keySet()))){
-							Map<String, Object> _tmp2 = new HashMap<String, Object>();
-							_tmp2.put("length", key);
-							_tmp2.put("temp", temData.getData().get(key));
-							_list.add(_tmp2);
-						}
-					_tmp.put("data", _list);
-					
-					tmp.add(_tmp);
-				}
-			result.put("tems", tmp);
-			
-			tmp = new ArrayList<Map<String,Object>>();
-			if(data.getStocks() != null && data.getStocks().size() > 0)
-				for(TemData stockData : data.getStocks()){
-					Map<String, Object> _tmp = new HashMap<String, Object>();
-					_tmp.put("name", stockData.getName());
-					
-					List<Map<String, Object>> _list = new ArrayList<Map<String,Object>>();
-					if(stockData.getData() != null && stockData.getData().size() > 0)
-						for(Integer key : sortLength(new ArrayList<Integer>(stockData.getData().keySet()))){
-							Map<String, Object> _tmp2 = new HashMap<String, Object>();
-							_tmp2.put("length", key);
-							_tmp2.put("stock", stockData.getData().get(key));
-							_list.add(_tmp2);
-						}
-					_tmp.put("data", _list);
-					
-					tmp.add(_tmp);
-				}
-			result.put("stocks", tmp);
-			
-			tmp = new ArrayList<Map<String,Object>>();
-			if(data.getUnstocks() != null && data.getUnstocks().size() > 0)
-				for(TemData unstockData : data.getUnstocks()){
-					Map<String, Object> _tmp = new HashMap<String, Object>();
-					_tmp.put("name", unstockData.getName());
-					
-					List<Map<String, Object>> _list = new ArrayList<Map<String,Object>>();
-					if(unstockData.getData() != null && unstockData.getData().size() > 0)
-						for(Integer key : sortLength(new ArrayList<Integer>(unstockData.getData().keySet()))){
-							Map<String, Object> _tmp2 = new HashMap<String, Object>();
-							_tmp2.put("length", key);
-							_tmp2.put("unstock", unstockData.getData().get(key));
-							_list.add(_tmp2);
-						}
-					_tmp.put("data", _list);
-					
-					tmp.add(_tmp);
-				}
-			result.put("unstocks", tmp);
+			result.put("data", data.getData());
 		}
 		
 		return result;
-	}
-
-	private List<Integer> sortLength(List<Integer> tmp) {
-		if(tmp != null && tmp.size() > 0)
-			Collections.sort(tmp, new Comparator<Integer>() {
-	
-				@Override
-				public int compare(Integer o1, Integer o2) {
-					return o1 - o2;
-				}
-			});
-		
-		return tmp;
 	}
 
 	@RequestMapping(value="/report/channels", method = RequestMethod.GET)

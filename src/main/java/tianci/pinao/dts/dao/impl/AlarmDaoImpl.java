@@ -1,8 +1,10 @@
 package tianci.pinao.dts.dao.impl;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -10,8 +12,11 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import tianci.pinao.dts.dao.AlarmDao;
 import tianci.pinao.dts.models.Alarm;
@@ -22,23 +27,71 @@ import tianci.pinao.dts.util.SqlConstants;
 public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 
 	@Override
+	public void addAlarm(final Alarm alarm) {
+		KeyHolder holder = new GeneratedKeyHolder();
+		int count = getJdbcTemplate().update(new PreparedStatementCreator() {
+			
+			@Override
+			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+				PreparedStatement ps = con.prepareStatement("insert into " + SqlConstants.TABLE_ALARM + "(type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, temperature_max, status, add_time, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), now(), ?, 0)", Statement.RETURN_GENERATED_KEYS);
+				ps.setObject(1, alarm.getType());
+				ps.setObject(2, alarm.getMachineId());
+				ps.setObject(3, alarm.getMachineName());
+				ps.setObject(4, alarm.getChannelId());
+				ps.setObject(5, alarm.getChannelName());
+				ps.setObject(6, alarm.getLength());
+				ps.setObject(7, alarm.getAreaId());
+				ps.setObject(8, alarm.getAreaName());
+				ps.setObject(9, alarm.getAlarmName());
+				ps.setObject(10, alarm.getLight());
+				ps.setObject(11, alarm.getRelay());
+				ps.setObject(12, alarm.getRelay1());
+				ps.setObject(13, alarm.getVoice());
+				ps.setObject(14, alarm.getTemperatureCurr());
+				ps.setObject(15, alarm.getTemperaturePre());
+				ps.setObject(16, alarm.getTemperatureMax());
+				ps.setObject(17, alarm.getStatus());
+				ps.setObject(18, alarm.getLastModUserid());
+				return ps;
+			}
+		}, holder);
+		
+		if(count > 0 && holder.getKey() != null)
+			alarm.setId(holder.getKey().longValue());
+	}
+
+	@Override
 	public List<Alarm> getAlarms(List<Integer> ids, Date date) {
 		return getJdbcTemplate().query("select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM + " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and add_time > ?",  
 				new Object[]{0, date}, new AlarmRowMapper());
 	}
 
 	@Override
-	public List<Alarm> getAlarmsByAreaIds(List<Integer> ids, Object[] status) {
+	public List<Alarm> getAlarmsByAreaIds(List<Integer> ids, Integer[] status, int start, int step) {
 		return getJdbcTemplate().query("select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM 
+				+ " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ") limit ?, ?",  
+				new Object[]{0, start, step}, new AlarmRowMapper());
+	}
+
+	@Override
+	public int getAlarmCountByAreaIds(List<Integer> ids, Integer[] status){
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_ALARM 
 				+ " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ")",  
 				new Object[]{0}, new AlarmRowMapper());
 	}
 
 	@Override
-	public List<Alarm> getAlarmsByChannelIds(List<Integer> ids, Object[] status) {
+	public List<Alarm> getAlarmsByChannelIds(List<Integer> ids, Integer[] status, int start, int step) {
 		return getJdbcTemplate().query("select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM 
+				+ " where isdel = ? and channel_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ") limit ?, ?",  
+				new Object[]{0, start, step}, new AlarmRowMapper());
+	}
+
+	@Override
+	public int getAlarmCountByChannelIds(List<Integer> ids, Integer[] status){
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_ALARM 
 				+ " where isdel = ? and channel_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ")",  
-				new Object[]{0}, new AlarmRowMapper());
+				new Object[]{0});
 	}
 
 	@Override

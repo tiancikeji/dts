@@ -1,6 +1,7 @@
 package tianci.pinao.dts.models;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -16,11 +17,7 @@ public class ChannelMonitorData {
 	
 	private long time;
 	
-	private List<TemData> tems;
-	
-	private List<TemData> stocks;
-	
-	private List<TemData> unstocks;
+	private Map<String, Map<String, Object>> data = new HashMap<String, Map<String, Object>>();
 	
 	public double getMax() {
 		return max;
@@ -69,27 +66,12 @@ public class ChannelMonitorData {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public List<TemData> getTems() {
-		return tems;
+	public Map<String, Map<String, Object>> getData() {
+		return data;
 	}
 
-	public void setTems(List<TemData> tems) {
-		this.tems = tems;
+	public void setData(Map<String, Map<String, Object>> data) {
+		this.data = data;
 	}
 
-	public List<TemData> getStocks() {
-		return stocks;
-	}
-
-	public void setStocks(List<TemData> stocks) {
-		this.stocks = stocks;
-	}
-
-	public List<TemData> getUnstocks() {
-		return unstocks;
-	}
-
-	public void setUnstocks(List<TemData> unstocks) {
-		this.unstocks = unstocks;
-	}
 }

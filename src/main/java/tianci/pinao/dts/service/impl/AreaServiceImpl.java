@@ -674,8 +674,6 @@ public class AreaServiceImpl implements AreaService {
 				tmp.add(channel);
 			}
 			
-			//TODO filter by userid roles
-			
 			List<Machine> machines = getAllMachines();
 			if(machines != null && machines.size() > 0)
 				for(Machine machine : machines)

@@ -58,22 +58,22 @@
 	
 	<beans:bean id="dataSourceParent" destroy-method="close" abstract="true">
 		<beans:property name="driverClass">
-			<beans:value>#[jdbc.driverClassName]</beans:value>
+			<beans:value>com.mysql.jdbc.Driver</beans:value>
 		</beans:property>
 		<beans:property name="maxPoolSize">
-			<beans:value>#[default.maxPoolSize]</beans:value>
+			<beans:value>10</beans:value>
 		</beans:property>
 		<beans:property name="minPoolSize">
-			<beans:value>#[default.minPoolSize]</beans:value>
+			<beans:value>5</beans:value>
 		</beans:property>
 		<beans:property name="initialPoolSize">
-			<beans:value>#[default.initialPoolSize]</beans:value>
+			<beans:value>5</beans:value>
 		</beans:property>
 		<beans:property name="idleConnectionTestPeriod">
-			<beans:value>#[default.idleConnectionTestPeriod]</beans:value>
+			<beans:value>600</beans:value>
 		</beans:property>
 		<beans:property name="maxIdleTime">
-			<beans:value>#[default.maxIdleTime]</beans:value>
+			<beans:value>600</beans:value>
 		</beans:property>
 	</beans:bean>
 	
@@ -174,6 +174,21 @@
 	    <beans:property name="repeatCount" value="-1" />
 	</beans:bean>
 	
+	<beans:bean id="dummyAlarmTask" class="tianci.pinao.dts.task.DummyAlarmTask">
+		<beans:property name="areaService" ref="areaService" />
+		<beans:property name="alarmDao" ref="alarmDao" />
+	</beans:bean>
+	<beans:bean id="dummyAlarmTaskJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<beans:property name="targetObject" ref="dummyAlarmTask" />
+		<beans:property name="targetMethod" value="run" />
+	</beans:bean>
+	<beans:bean id="dummyAlarmTaskTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<beans:property name="jobDetail" ref="dummyAlarmTaskJob" />
+	    <beans:property name="startDelay" value="10000" />
+	    <beans:property name="repeatInterval" value="300000" />
+	    <beans:property name="repeatCount" value="-1" />
+	</beans:bean>
+	
 	<beans:bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<beans:property name="taskExecutor">
 			<beans:bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
@@ -186,6 +201,7 @@
 		<beans:property name="triggers">
 			<beans:list>
                 <beans:ref bean="softwareLifeTimeRecordTaskTrigger" />
+                <beans:ref bean="dummyAlarmTaskTrigger" />
 			</beans:list>
 		</beans:property>
 	</beans:bean>

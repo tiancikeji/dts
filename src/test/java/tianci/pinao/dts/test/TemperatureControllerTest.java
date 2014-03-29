@@ -38,7 +38,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 15;
-			System.out.println(tc.getAreaAlarmData(null, userid, id));
+			System.out.println(tc.getAreaAlarmData(null, userid, id, 0, 100));
 			/*long userid = -1;
 			int id = 13;
 			System.out.println(tc.getAreaAlarmData(userid, id));*/
@@ -62,7 +62,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 			int id = 3;
 			long time = -1;
-			System.out.println(tc.getMachineData(null, userid, id, time));
+			System.out.println(tc.getMachineData(null, userid, id, time, 1, 1));
 		}
 	}
 	
@@ -71,7 +71,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 3;
-			System.out.println(tc.getMachineAlarmData(null, userid, id));
+			System.out.println(tc.getMachineAlarmData(null, userid, id, 0, 100));
 		}
 	}
 	
@@ -82,7 +82,7 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 3;
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(tc.getMachineReportData(null, userid, id, start, end));
+			System.out.println(tc.getMachineReportData(null, userid, id, start, end, 0, 100));
 		}
 	}
 	
@@ -91,7 +91,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 3;
-			System.out.println(tc.getMachineAlarmReportData(null, userid, id));
+			System.out.println(tc.getMachineAlarmReportData(null, userid, id, 0, 100));
 		}
 	}
 	
@@ -110,7 +110,7 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 2;
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(tc.getChannelReportData(null, userid, id, start, end));
+			System.out.println(tc.getChannelReportData(null, userid, id, start, end, 0, 100));
 		}
 	}
 	
@@ -120,7 +120,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 			int id = 2;
 			long time = -1;
-			System.out.println(tc.getChannelData(null, userid, id, time));
+			System.out.println(tc.getChannelData(null, userid, id, time, 1, 1));
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 1;
-			System.out.println(tc.getChannelAlarmData(null, userid, id));
+			System.out.println(tc.getChannelAlarmData(null, userid, id, 0, 100));
 		}
 	}
 	
@@ -138,7 +138,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 1;
-			System.out.println(tc.getChannelAlarmReportData(null, userid, id));
+			System.out.println(tc.getChannelAlarmReportData(null, userid, id, 0, 100));
 		}
 	}
 	

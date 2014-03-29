@@ -76,6 +76,8 @@ public class Alarm {
 	
 	private double temperaturePre;
 	
+	private double temperatureMax;
+	
 	private int status;
 	
 	private Date addTime;
@@ -267,5 +269,13 @@ public class Alarm {
 
 	public void setHistory(List<AlarmHistory> history) {
 		this.history = history;
+	}
+
+	public double getTemperatureMax() {
+		return temperatureMax;
+	}
+
+	public void setTemperatureMax(double temperatureMax) {
+		this.temperatureMax = temperatureMax;
 	}
 }

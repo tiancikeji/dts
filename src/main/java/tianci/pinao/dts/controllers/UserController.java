@@ -223,7 +223,7 @@ public class UserController {
 		return result;
 	}
 
-	@RequestMapping(value="/user/list", method = RequestMethod.POST)
+	@RequestMapping(value="/user/list", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<Object, Object> getUsers(HttpServletRequest request, long userid){
 		Map<Object, Object> result = new HashMap<Object, Object>();

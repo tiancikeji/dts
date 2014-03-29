@@ -14,21 +14,29 @@ public interface TemService {
 
 	public AreaMonitorData getAreaData(Area area, long time);
 
-	public List<Alarm> getAreaAlarmData(Area area);
+	public List<Alarm> getAreaAlarmData(Area area, int start, int step);
+
+	public int getAreaAlarmCount(Area area);
 
 	public List<Alarm> getAreasAlarmData(List<Area> areas, long time);
 
 	public ReportData getAreaReportData(Area area, Date startDate, Date endDate);
 
-	public List<Alarm> getAreaAlarmReportData(Area area);
+	public List<Alarm> getAreaAlarmReportData(Area area, int start, int end);
 
-	public ChannelMonitorData getChannelData(List<Channel> channels, long time);
+	public int getAreaAlarmReportCount(Area area);
 
-	public List<Alarm> getChannelAlarmData(List<Channel> channels);
+	public ChannelMonitorData getChannelData(List<Channel> channels, long time, int start, int end);
 
-	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate);
+	public List<Alarm> getChannelAlarmData(List<Channel> channels, int start, int step);
 
-	public List<Alarm> getChannelAlarmReportData(List<Channel> channels);
+	public int getChannelAlarmCount(List<Channel> channels);
+
+	public int getChannelAlarmReportCount(List<Channel> channels);
+
+	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate, int start, int end);
+
+	public List<Alarm> getChannelAlarmReportData(List<Channel> channels, int start, int step);
 
 	public boolean updateAlarm(long id, int status, long userid);
 
