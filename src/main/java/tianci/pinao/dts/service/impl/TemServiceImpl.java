@@ -366,16 +366,10 @@ public class TemServiceImpl implements TemService {
 							channelids.put(areachannel.getChannelid(), tmp);
 						}
 						tmp.add(areachannel);
+						
+						if(areaMaps.containsKey(areachannel.getAreaid()))
+							areachannel.setAreaName(areaMaps.get(areachannel.getAreaid()).getName());
 					}
-					
-					List<Channel> channels = getAllAvailableChannels();
-					if(channels != null && channels.size() > 0)
-						for(Channel channel : channels)
-							if(channelids.keySet().contains(channel.getId()))
-								for(AreaChannel areachannel : channelids.get(channel.getId())){
-									areachannel.setChannelName(channel.getName());
-									areachannel.setMachineName(channel.getMachineName());
-								}
 				
 				// get channel_id, start, end
 				Map<Integer, List<AreaChannel>> acMap = new HashMap<Integer, List<AreaChannel>>();

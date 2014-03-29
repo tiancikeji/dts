@@ -6,9 +6,9 @@ import java.util.List;
 import tianci.pinao.dts.models.Alarm;
 import tianci.pinao.dts.models.Area;
 import tianci.pinao.dts.models.AreaMonitorData;
-import tianci.pinao.dts.models.ReportData;
 import tianci.pinao.dts.models.Channel;
 import tianci.pinao.dts.models.ChannelMonitorData;
+import tianci.pinao.dts.models.ReportData;
 
 public interface TemService {
 

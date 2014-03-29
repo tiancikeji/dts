@@ -77,7 +77,7 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 	public int getAlarmCountByAreaIds(List<Integer> ids, Integer[] status){
 		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_ALARM 
 				+ " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ")",  
-				new Object[]{0}, new AlarmRowMapper());
+				new Object[]{0});
 	}
 
 	@Override

@@ -7,8 +7,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -379,74 +381,94 @@ public class TemperatureController {
 			result.put("min", data.getMin());
 			result.put("avg", data.getAvg());
 			
-			List<Map<String, Object>> tmp = new ArrayList<Map<String,Object>>();
-			if(data.getTems() != null && data.getTems().size() > 0)
+			Map<String, Object> tmp = new HashMap<String, Object>();
+			if(data.getTems() != null && data.getTems().size() > 0){
+				Set<Date> _dates = new HashSet<Date>();
 				for(String name : data.getTems().keySet()){
-					Map<String, Object> _tmp = new HashMap<String, Object>();
-					_tmp.put("name", name);
-					
-					Map<Date, Double> _tems = data.getTems().get(name);
-					List<Map<String, Object>> _list = new ArrayList<Map<String,Object>>();
-					if(_tems != null && _tems.size() > 0)
-						for(Date key : sortDate(new ArrayList<Date>(_tems.keySet()))){
-							Map<String, Object> _tmp2 = new HashMap<String, Object>();
-							_tmp2.put("time", PinaoUtils.getDateString(key));
-							_tmp2.put("temp", _tems.get(key));
-							_list.add(_tmp2);
-						}
-					_tmp.put("data", _list);
-					
-					tmp.add(_tmp);
+					_dates.addAll(data.getTems().get(name).keySet());
 				}
+				List<Date> dates = new ArrayList<Date>(_dates);
+				sortDate(dates);
+				
+				Map<String, Object> _tmp = new HashMap<String, Object>();
+				for(String name : data.getTems().keySet()){
+					Map<Date, Double> _tems = data.getTems().get(name);
+					
+					List<Double> _list = new ArrayList<Double>();
+					for(Date _date : dates)
+						if(_tems.containsKey(_date))
+							_list.add(_tems.get(_date));
+						else
+							_list.add(0d);
+					
+					_tmp.put(name, _list);
+				}
+				
+				tmp.put("dates", dates);
+				tmp.put("data", _tmp);
+			}
 			result.put("tems", tmp);
 			
-			tmp = new ArrayList<Map<String,Object>>();
-			if(data.getStocks() != null && data.getStocks().size() > 0)
-				for(String name : data.getStocks().keySet()){
-					Map<String, Object> _tmp = new HashMap<String, Object>();
-					_tmp.put("name", name);
-					
-					Map<Date, Double> _stocks = data.getStocks().get(name);
-					List<Map<String, Object>> _list = new ArrayList<Map<String,Object>>();
-					if(_stocks != null && _stocks.size() > 0)
-						for(Date key : sortDate(new ArrayList<Date>(_stocks.keySet()))){
-							Map<String, Object> _tmp2 = new HashMap<String, Object>();
-							_tmp2.put("time", PinaoUtils.getDateString(key));
-							_tmp2.put("stock", _stocks.get(key));
-							_list.add(_tmp2);
-						}
-					_tmp.put("data", _list);
-					
-					tmp.add(_tmp);
+			tmp = new HashMap<String, Object>();
+			if(data.getStocks() != null && data.getStocks().size() > 0){
+				Set<Date> _dates = new HashSet<Date>();
+				for(String name : data.getTems().keySet()){
+					_dates.addAll(data.getTems().get(name).keySet());
 				}
+				List<Date> dates = new ArrayList<Date>(_dates);
+				sortDate(dates);
+
+				Map<String, Object> _tmp = new HashMap<String, Object>();
+				for(String name : data.getStocks().keySet()){
+					Map<Date, Double> _stocks = data.getStocks().get(name);
+					
+					List<Double> _list = new ArrayList<Double>();
+					for(Date _date : dates)
+						if(_stocks.containsKey(_date))
+							_list.add(_stocks.get(_date));
+						else
+							_list.add(0d);
+					
+					_tmp.put(name, _list);
+				}
+				
+				tmp.put("dates", dates);
+				tmp.put("data", _tmp);
+			}
 			result.put("stocks", tmp);
 			
-			tmp = new ArrayList<Map<String,Object>>();
-			if(data.getUnstocks() != null && data.getUnstocks().size() > 0)
-				for(String name : data.getUnstocks().keySet()){
-					Map<String, Object> _tmp = new HashMap<String, Object>();
-					_tmp.put("name", name);
-					
-					Map<Date, Double> _unstocks = data.getUnstocks().get(name);
-					List<Map<String, Object>> _list = new ArrayList<Map<String,Object>>();
-					if(_unstocks != null && _unstocks.size() > 0)
-						for(Date key : sortDate(new ArrayList<Date>(_unstocks.keySet()))){
-							Map<String, Object> _tmp2 = new HashMap<String, Object>();
-							_tmp2.put("time", PinaoUtils.getDateString(key));
-							_tmp2.put("unstock", _unstocks.get(key));
-							_list.add(_tmp2);
-						}
-					_tmp.put("data", _list);
-					
-					tmp.add(_tmp);
+			tmp = new HashMap<String, Object>();
+			if(data.getUnstocks() != null && data.getUnstocks().size() > 0){
+				Set<Date> _dates = new HashSet<Date>();
+				for(String name : data.getTems().keySet()){
+					_dates.addAll(data.getTems().get(name).keySet());
 				}
+				List<Date> dates = new ArrayList<Date>(_dates);
+				sortDate(dates);
+
+				Map<String, Object> _tmp = new HashMap<String, Object>();
+				for(String name : data.getUnstocks().keySet()){
+					Map<Date, Double> _unstocks = data.getUnstocks().get(name);
+					
+					List<Double> _list = new ArrayList<Double>();
+					for(Date _date : dates)
+						if(_unstocks.containsKey(_date))
+							_list.add(_unstocks.get(_date));
+						else
+							_list.add(0d);
+					
+					_tmp.put(name, _list);
+				}
+				tmp.put("dates", dates);
+				tmp.put("data", _tmp);
+			}
 			result.put("unstocks", tmp);
 		}
 		
 		return result;
 	}
 
-	private List<Date> sortDate(ArrayList<Date> dates) {
+	private List<Date> sortDate(List<Date> dates) {
 		if(dates != null && dates.size() > 0)
 			Collections.sort(dates, new Comparator<Date>(){
 
