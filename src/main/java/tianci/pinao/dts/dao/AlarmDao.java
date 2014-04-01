@@ -14,11 +14,11 @@ public interface AlarmDao {
 
 	public List<Alarm> getAlarmsByAreaIds(List<Integer> areaIds, Integer[] status, int start, int end, Date startDate, Date endDate);
 
-	public int getAlarmCountByAreaIds(List<Integer> areaIds, Integer[] status);
+	public int getAlarmCountByAreaIds(List<Integer> areaIds, Integer[] status, Date startDate, Date endDate);
 
 	public List<Alarm> getAlarmsByChannelIds(List<Integer> ids, Integer[] status, int start, int step, Date startDate, Date endDate);
 
-	public int getAlarmCountByChannelIds(List<Integer> ids, Integer[] status);
+	public int getAlarmCountByChannelIds(List<Integer> ids, Integer[] status, Date startDate, Date endDate);
 
 	public List<AlarmHistory> getAlarmHistorysByAlarmIds(Set<Long> alarmIds);
 

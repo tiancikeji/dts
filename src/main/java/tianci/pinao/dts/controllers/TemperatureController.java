@@ -292,13 +292,15 @@ public class TemperatureController {
 						List<Map<String, Object>> tmp = null;
 						Date _startDate = PinaoUtils.getDate(startDate);
 						Date _endDate = PinaoUtils.getDate(endDate);
+						int count = 0;
 						if(area != null && _startDate != null && _endDate != null && !_endDate.before(_startDate)){
 							tmp = parseAlarmData(temService.getAreaAlarmReportData(area, start, step, _startDate, _endDate));
+							count = temService.getAreaAlarmReportCount(area, _startDate, _endDate);
 						} else
 							tmp = new ArrayList<Map<String,Object>>();
 						
 						result.put("data", tmp);
-						result.put("count", temService.getAreaAlarmReportCount(area));
+						result.put("count", count);
 						result.put("status", "0");
 					} else
 						result.put("status", "1000");
@@ -835,12 +837,14 @@ public class TemperatureController {
 					List<Map<String, Object>> data = null;
 					Date _startDate = PinaoUtils.getDate(startDate);
 					Date _endDate = PinaoUtils.getDate(endDate);
-					if(channels != null && channels.size() > 0 && _startDate != null && _endDate != null && !_endDate.before(_startDate))
+					int count = 0;
+					if(channels != null && channels.size() > 0 && _startDate != null && _endDate != null && !_endDate.before(_startDate)){
 						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step, _startDate, _endDate));
-					else
+						count = temService.getChannelAlarmReportCount(channels, _startDate, _endDate);
+					} else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
-					result.put("count", temService.getChannelAlarmReportCount(channels));
+					result.put("count", count);
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -1097,12 +1101,14 @@ public class TemperatureController {
 					List<Map<String, Object>> data = null;
 					Date _startDate = PinaoUtils.getDate(startDate);
 					Date _endDate = PinaoUtils.getDate(endDate);
-					if(channels != null && channels.size() > 0 && _startDate != null && _endDate != null && !_endDate.before(_startDate))
+					int count = 0;
+					if(channels != null && channels.size() > 0 && _startDate != null && _endDate != null && !_endDate.before(_startDate)){
 						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step, _startDate, _endDate));
-					else
+						count = temService.getChannelAlarmReportCount(channels, _startDate, _endDate);
+					} else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
-					result.put("count", temService.getChannelAlarmReportCount(channels));
+					result.put("count", count);
 					result.put("status", "0");
 				} else
 					result.put("status", "600");

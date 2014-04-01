@@ -87,10 +87,20 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 	}
 
 	@Override
-	public int getAlarmCountByAreaIds(List<Integer> ids, Integer[] status){
-		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_ALARM 
-				+ " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ")",  
-				new Object[]{0});
+	public int getAlarmCountByAreaIds(List<Integer> ids, Integer[] status, Date startDate, Date endDate){
+		String sql = "select count(1) from " + SqlConstants.TABLE_ALARM 
+				+ " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ") ";
+		
+		List<Object> params = new ArrayList<Object>();
+		params.add(0);
+		
+		if(startDate != null && endDate != null){
+			sql += "and add_time between ? and ?";
+			params.add(startDate);
+			params.add(endDate);
+		}
+		
+		return getJdbcTemplate().queryForInt(sql, params.toArray());
 	}
 
 	@Override
@@ -115,10 +125,20 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 	}
 
 	@Override
-	public int getAlarmCountByChannelIds(List<Integer> ids, Integer[] status){
-		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_ALARM 
-				+ " where isdel = ? and channel_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ")",  
-				new Object[]{0});
+	public int getAlarmCountByChannelIds(List<Integer> ids, Integer[] status, Date startDate, Date endDate){
+		String sql = "select count(1) from " + SqlConstants.TABLE_ALARM 
+				+ " where isdel = ? and channel_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ")";
+
+		List<Object> params = new ArrayList<Object>();
+		params.add(0);
+		
+		if(startDate != null && endDate != null){
+			sql += " and add_time between ? and ? ";
+			params.add(startDate);
+			params.add(endDate);
+		}
+		
+		return getJdbcTemplate().queryForInt(sql, params.toArray());
 	}
 
 	@Override

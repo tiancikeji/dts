@@ -127,18 +127,18 @@ public class TemServiceImpl implements TemService {
 			List<Integer> ids = new ArrayList<Integer>();
 			for(Channel channel : channels)
 				ids.add(channel.getId());
-			return alarmDao.getAlarmCountByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED});
+			return alarmDao.getAlarmCountByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}, null, null);
 		} else
 			return 0;
 	}
 
 	@Override
-	public int getChannelAlarmReportCount(List<Channel> channels){
+	public int getChannelAlarmReportCount(List<Channel> channels, Date startDate, Date endDate){
 		if(channels != null && channels.size() > 0){
 			List<Integer> ids = new ArrayList<Integer>();
 			for(Channel channel : channels)
 				ids.add(channel.getId());
-			return alarmDao.getAlarmCountByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED});
+			return alarmDao.getAlarmCountByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}, startDate, endDate);
 		} else
 			return 0;
 	}
@@ -504,7 +504,7 @@ public class TemServiceImpl implements TemService {
 	}
 
 	@Override
-	public int getAreaAlarmReportCount(Area area){
+	public int getAreaAlarmReportCount(Area area, Date startDate, Date endDate){
 		if(area != null){
 			// get sub-area ids
 			Map<Integer, Area> areaMaps = new HashMap<Integer, Area>();
@@ -514,7 +514,7 @@ public class TemServiceImpl implements TemService {
 			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
 				
 			// get alarm data
-			return alarmDao.getAlarmCountByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}); 
+			return alarmDao.getAlarmCountByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}, startDate, endDate); 
 		}
 		
 		return 0;
@@ -588,7 +588,7 @@ public class TemServiceImpl implements TemService {
 			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
 				
 			// get alarm data
-			return alarmDao.getAlarmCountByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}); 
+			return alarmDao.getAlarmCountByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}, null, null); 
 		}
 		
 		return 0;

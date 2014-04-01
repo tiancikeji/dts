@@ -175,6 +175,7 @@ public class AreaController {
 						step = 100;
 					List<LevelImage> levels = areaService.getAllLevels(start, step);
 					result.put("data", parseLevelImages(levels));
+					result.put("count", areaService.getLevelCount());
 					result.put("status", "0");		
 				} else
 					result.put("status", "600");
@@ -347,6 +348,7 @@ public class AreaController {
 						step = 100;
 					List<Area> areas = areaService.getAllAailableAreas(start, step);
 					result.put("data", parseAreas(areas));
+					result.put("count", areaService.getAreaCount());
 					result.put("status", "0");
 				} else
 					result.put("status", "1000");
@@ -467,7 +469,7 @@ public class AreaController {
 							else
 								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							if(temp != null)
-								out.write((temp.getTemperatureLow() + PinaoConstants.TEM_DATA_COL_SEP + temp.getTemperatureHigh() + PinaoConstants.TEM_DATA_COL_SEP + temp.getTemperatureDiff() + PinaoConstants.TEM_DATA_COL_SEP + temp.getExotherm() + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
+								out.write((temp.getLow() + PinaoConstants.TEM_DATA_COL_SEP + temp.getHigh() + PinaoConstants.TEM_DATA_COL_SEP + temp.getDiff() + PinaoConstants.TEM_DATA_COL_SEP + temp.getExotherm() + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							else
 								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							if(ac != null)
@@ -610,6 +612,12 @@ public class AreaController {
 									configs.add(config);
 						
 						result.put("data", parseHardwareConfigs(configs));
+						int count = 0;
+						if(user.getRole() == 1)
+							count = areaService.getHardwareConfigCount();
+						else
+							count = areaService.getHardwareConfigCount(user.getAreaIds());
+						result.put("count", count);
 						result.put("status", "0");
 					} else
 						result.put("status", "1000");
@@ -745,6 +753,7 @@ public class AreaController {
 						step = 100;
 					List<AreaTempConfig> configs = areaService.getAllTempConfigs(start, step);
 					result.put("data", parseTempConfigs(configs));
+					result.put("count", areaService.getTempConfigCount());
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -766,10 +775,10 @@ public class AreaController {
 				tmp.put("id", config.getId());
 				tmp.put("areaid", config.getAreaid());
 				tmp.put("areaname", config.getAreaName());
-				tmp.put("low", config.getTemperatureLow());
-				tmp.put("high", config.getTemperatureHigh());
+				tmp.put("low", config.getLow());
+				tmp.put("high", config.getHigh());
 				tmp.put("exotherm", config.getExotherm());
-				tmp.put("diff", config.getTemperatureDiff());
+				tmp.put("diff", config.getDiff());
 				result.add(tmp);
 			}
 		
@@ -883,6 +892,7 @@ public class AreaController {
 						step = 100;
 					List<AreaChannel> channels = areaService.getAllAreaChannels(start, step);
 					result.put("data", parseAreaChannels(channels));
+					result.put("count", areaService.getAreaChannelCount());
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -1022,6 +1032,7 @@ public class AreaController {
 						step = 100;
 					List<Channel> channels = areaService.getAllAvailableChannels(start, step);
 					result.put("data", parseChannels(channels));
+					result.put("count", areaService.getChannelCount());
 					result.put("status", "0");
 				} else
 					result.put("status", "600");
@@ -1223,6 +1234,7 @@ public class AreaController {
 						step = 100;
 					List<Machine> machines = areaService.getAllMachines(start, step);
 					result.put("data", parseMachines(machines));
+					result.put("count", areaService.getMachineCount());
 					result.put("status", "0");
 				} else
 					result.put("status", "600");

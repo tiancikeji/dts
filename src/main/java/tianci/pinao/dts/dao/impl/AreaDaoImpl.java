@@ -34,6 +34,12 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	}
 
 	@Override
+	public int getAreaCount() {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_AREA + " where isdel = ?", 
+				new Object[]{0});
+	}
+
+	@Override
 	public boolean addArea(Area area) {
 		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_AREA + "(name, level, `index`, parent, image, lastmod_time, lastmod_userid, isdel) values(?,?,?,?,?,now(),?,?)", 
 				new Object[]{area.getName(), area.getLevel(), area.getIndex(), area.getParent(), area.getImage(), area.getLastModUserid(), 0});
@@ -186,6 +192,16 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	}
 
 	@Override
+	public int getHardwareConfigCount(List<Integer> areaIds) {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ? and area_id in (" + StringUtils.join(areaIds, ",") + ")", new Object[]{0});
+	}
+
+	@Override
+	public int getHardwareConfigCount() {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ?", new Object[]{0});
+	}
+
+	@Override
 	public boolean updateHardwareConfig(AreaHardwareConfig config) {
 		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " set area_id = ?, light = ?, relay = ?, relay1 = ?, voice = ?, lastmod_time = now(), lastmod_userid = ? where id = ?", 
 				new Object[]{config.getAreaid(), config.getLight(), config.getRelay(), config.getRelay1(), config.getVoice(), config.getLastModUserid(), config.getId()});
@@ -258,6 +274,11 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	}
 
 	@Override
+	public int getAreaChannelCount() {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_AREA_CHANNEL + " where isdel = ?", new Object[]{0});
+	}
+
+	@Override
 	public boolean deleteAreaChannelsByAreaid(int areaid, int userid) {
 		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_CHANNEL + " set isdel = ?, lastmod_time = now(), lastmod_userid = ? where area_id = ?", new Object[]{1, userid, areaid});
 		return count > 0;
@@ -286,7 +307,7 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	@Override
 	public boolean addTempConfig(AreaTempConfig config) {
 		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_AREA_TEMP_CONFIG + "(area_id, temperature_low, temperature_high, exotherm, temperature_diff, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, ?, ?, now(), ?, ?)", 
-				new Object[]{config.getAreaid(), config.getTemperatureLow(), config.getTemperatureHigh(), config.getExotherm(), config.getTemperatureDiff(), config.getLastModUserid(), 0});
+				new Object[]{config.getAreaid(), config.getLow(), config.getHigh(), config.getExotherm(), config.getDiff(), config.getLastModUserid(), 0});
 		return count > 0;
 	}
 
@@ -300,10 +321,10 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 					AreaTempConfig config = tempConfigs.get(index);
 					if(config != null){
 						ps.setObject(1, config.getAreaid());
-						ps.setObject(2, config.getTemperatureLow());
-						ps.setObject(3, config.getTemperatureHigh());
+						ps.setObject(2, config.getLow());
+						ps.setObject(3, config.getHigh());
 						ps.setObject(4, config.getExotherm());
-						ps.setObject(5, config.getTemperatureDiff());
+						ps.setObject(5, config.getDiff());
 						ps.setObject(6, config.getLastModUserid());
 						ps.setObject(7, 0);
 					}
@@ -332,11 +353,16 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 		return getJdbcTemplate().query("select id, area_id, temperature_low, temperature_high, exotherm, temperature_diff, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_TEMP_CONFIG + " where isdel = ? limit ?,?", 
 				new Object[]{0, start, step}, new AreaTempConfigRowMapper());
 	}
+
+	@Override
+	public int getTempConfigCount() {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_AREA_TEMP_CONFIG + " where isdel = ?", new Object[]{0});
+	}
 	
 	@Override
 	public boolean updateTempConfig(AreaTempConfig config) {
 		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_AREA_TEMP_CONFIG + " set area_id = ?, temperature_low = ?, temperature_high = ?, exotherm = ?, temperature_diff = ?, lastmod_time = now(), lastmod_userid = ? where id = ?", 
-				new Object[]{config.getAreaid(), config.getTemperatureLow(), config.getTemperatureHigh(), config.getExotherm(), config.getTemperatureDiff(), config.getLastModUserid(), config.getId()});
+				new Object[]{config.getAreaid(), config.getLow(), config.getHigh(), config.getExotherm(), config.getDiff(), config.getLastModUserid(), config.getId()});
 		return count > 0;
 	}
 
@@ -361,6 +387,11 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	@Override
 	public List<Channel> getAllChannels(int start, int step) {
 		return getJdbcTemplate().query("select id, machine_id, name, length, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_CHANNEL + " where isdel = ? limit ?, ?", new Object[]{0, start, step}, new ChannelRowMapper());
+	}
+
+	@Override
+	public int getChannelCount() {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_CHANNEL + " where isdel = ?", new Object[]{0});
 	}
 
 	@Override
@@ -429,6 +460,11 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	}
 
 	@Override
+	public int getMachineCount() {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_MACHINE + " where isdel = 0");
+	}
+
+	@Override
 	public boolean addMachine(Machine machine) {
 		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_MACHINE + "(name, serial_port, baud_rate, lastmod_time, lastmod_userid, isdel) values(?, ?, ?, now(), ?, ?)", 
 				new Object[]{machine.getName(), machine.getSerialPort(), machine.getBaudRate(), machine.getLastModUserid(), 0});
@@ -484,6 +520,11 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	@Override
 	public List<LevelImage> getAllLevels(int start, int step) {
 		return getJdbcTemplate().query("select id, name, image, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_LEVEL + " where isdel = 0 limit ?, ?", new Object[]{start, step}, new LevelImageRowMapper());
+	}
+
+	@Override
+	public int getLevelCount() {
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_LEVEL + " where isdel = 0");
 	}
 
 	@Override
@@ -557,9 +598,9 @@ class AreaTempConfigRowMapper implements RowMapper<AreaTempConfig>{
 		AreaTempConfig config = new AreaTempConfig();
 		config.setId(rs.getInt("id"));
 		config.setAreaid(rs.getInt("area_id"));
-		config.setTemperatureLow(rs.getInt("temperature_low"));
-		config.setTemperatureHigh(rs.getInt("temperature_high"));
-		config.setTemperatureDiff(rs.getInt("temperature_diff"));
+		config.setLow(rs.getInt("temperature_low"));
+		config.setHigh(rs.getInt("temperature_high"));
+		config.setDiff(rs.getInt("temperature_diff"));
 		config.setExotherm(rs.getInt("exotherm"));
 		Timestamp ts = rs.getTimestamp("lastmod_time");
 		if(ts != null)

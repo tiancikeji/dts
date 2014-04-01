@@ -14,13 +14,13 @@ public class AreaTempConfig {
 	
 	private String areaName;
 	
-	private int temperatureLow;
+	private int low;
 	
-	private int temperatureHigh;
+	private int high;
 	
 	private int exotherm;
 	
-	private int temperatureDiff;
+	private int diff;
 	
 	private Date lastModTime;
 	
@@ -42,36 +42,12 @@ public class AreaTempConfig {
 		this.areaid = areaid;
 	}
 
-	public int getTemperatureLow() {
-		return temperatureLow;
-	}
-
-	public void setTemperatureLow(int temperatureLow) {
-		this.temperatureLow = temperatureLow;
-	}
-
-	public int getTemperatureHigh() {
-		return temperatureHigh;
-	}
-
-	public void setTemperatureHigh(int temperatureHigh) {
-		this.temperatureHigh = temperatureHigh;
-	}
-
 	public int getExotherm() {
 		return exotherm;
 	}
 
 	public void setExotherm(int exotherm) {
 		this.exotherm = exotherm;
-	}
-
-	public int getTemperatureDiff() {
-		return temperatureDiff;
-	}
-
-	public void setTemperatureDiff(int temperatureDiff) {
-		this.temperatureDiff = temperatureDiff;
 	}
 
 	public Date getLastModTime() {
@@ -111,5 +87,29 @@ public class AreaTempConfig {
 
 	public void setAreaName(String areaName) {
 		this.areaName = areaName;
+	}
+
+	public int getLow() {
+		return low;
+	}
+
+	public void setLow(int low) {
+		this.low = low;
+	}
+
+	public int getHigh() {
+		return high;
+	}
+
+	public void setHigh(int high) {
+		this.high = high;
+	}
+
+	public int getDiff() {
+		return diff;
+	}
+
+	public void setDiff(int diff) {
+		this.diff = diff;
 	}
 }

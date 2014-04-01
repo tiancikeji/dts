@@ -120,4 +120,20 @@ public interface AreaDao {
 
 	// monitor
 	public List<AreaChannel> getAreaChannelsByAreaids(List<Integer> areaIds);
+
+	public int getAreaCount();
+
+	public int getLevelCount();
+
+	public int getHardwareConfigCount();
+
+	public int getHardwareConfigCount(List<Integer> areaIds);
+
+	public int getTempConfigCount();
+
+	public int getAreaChannelCount();
+
+	public int getChannelCount();
+
+	public int getMachineCount();
 }

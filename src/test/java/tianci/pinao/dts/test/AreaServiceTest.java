@@ -198,9 +198,9 @@ public class AreaServiceTest extends TestCase{
 			int userid = 1;
 			AreaTempConfig config = new AreaTempConfig();
 			config.setAreaid(15);
-			config.setTemperatureLow(40);
-			config.setTemperatureHigh(60);
-			config.setTemperatureDiff(30);
+			config.setLow(40);
+			config.setHigh(60);
+			config.setDiff(30);
 			config.setExotherm(30);
 			System.out.println(as.addAreaTempConfig(config, userid));
 			
@@ -208,14 +208,14 @@ public class AreaServiceTest extends TestCase{
 			
 			config = new AreaTempConfig();
 			config.setAreaid(16);
-			config.setTemperatureLow(40);
-			config.setTemperatureHigh(60);
-			config.setTemperatureDiff(30);
+			config.setLow(40);
+			config.setHigh(60);
+			config.setDiff(30);
 			config.setExotherm(30);
 			System.out.println(as.addAreaTempConfig(config, userid));
 			
 			config.setId(6);
-			config.setTemperatureDiff(20);
+			config.setDiff(20);
 			System.out.println(as.updateAreaTempConfig(config, userid));
 			
 			System.out.println(as.deleteAreaTempConfig(config, userid));

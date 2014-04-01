@@ -501,11 +501,11 @@ public class AreaServiceImpl implements AreaService {
 												|| (cols.length > 12 && NumberUtils.isNumber(cols[12]))){
 									AreaTempConfig config = new AreaTempConfig();
 									if(cols.length > 9 && NumberUtils.isNumber(cols[9]))
-										config.setTemperatureLow(NumberUtils.toInt(cols[9], Integer.MAX_VALUE));
+										config.setLow(NumberUtils.toInt(cols[9], Integer.MAX_VALUE));
 									if(cols.length > 10 && NumberUtils.isNumber(cols[10]))
-										config.setTemperatureHigh(NumberUtils.toInt(cols[10], Integer.MAX_VALUE));
+										config.setHigh(NumberUtils.toInt(cols[10], Integer.MAX_VALUE));
 									if(cols.length > 11 && NumberUtils.isNumber(cols[11]))
-										config.setTemperatureDiff(NumberUtils.toInt(cols[11], Integer.MAX_VALUE));
+										config.setDiff(NumberUtils.toInt(cols[11], Integer.MAX_VALUE));
 									if(cols.length > 12 && NumberUtils.isNumber(cols[12]))
 										config.setExotherm(NumberUtils.toInt(cols[12], Integer.MAX_VALUE));
 									
@@ -732,6 +732,46 @@ public class AreaServiceImpl implements AreaService {
 		}
 		
 		return result;
+	}
+
+	@Override
+	public int getLevelCount() {
+		return areaDao.getLevelCount();
+	}
+
+	@Override
+	public int getAreaCount() {
+		return areaDao.getAreaCount();
+	}
+
+	@Override
+	public int getHardwareConfigCount() {
+		return areaDao.getHardwareConfigCount();
+	}
+
+	@Override
+	public int getHardwareConfigCount(List<Integer> areaIds) {
+		return areaDao.getHardwareConfigCount(areaIds);
+	}
+
+	@Override
+	public int getTempConfigCount() {
+		return areaDao.getTempConfigCount();
+	}
+
+	@Override
+	public int getAreaChannelCount() {
+		return areaDao.getAreaChannelCount();
+	}
+
+	@Override
+	public int getChannelCount() {
+		return areaDao.getChannelCount();
+	}
+
+	@Override
+	public int getMachineCount() {
+		return areaDao.getMachineCount();
 	}
 
 	public AreaDao getAreaDao() {

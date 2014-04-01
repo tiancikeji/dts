@@ -24,7 +24,7 @@ public interface TemService {
 
 	public List<Alarm> getAreaAlarmReportData(Area area, int start, int end, Date startDate, Date endDate);
 
-	public int getAreaAlarmReportCount(Area area);
+	public int getAreaAlarmReportCount(Area area, Date startDate, Date endDate);
 
 	public ChannelMonitorData getChannelData(List<Channel> channels, long time);
 
@@ -32,7 +32,7 @@ public interface TemService {
 
 	public int getChannelAlarmCount(List<Channel> channels);
 
-	public int getChannelAlarmReportCount(List<Channel> channels);
+	public int getChannelAlarmReportCount(List<Channel> channels, Date startDate, Date endDate);
 
 	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate);
 

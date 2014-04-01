@@ -88,5 +88,21 @@ public interface AreaService {
 	public boolean replaceChannels(String data, int userid);
 
 	public boolean replaceMachines(String data, int userid);
+
+	public int getLevelCount();
+
+	public int getAreaCount();
+
+	public int getHardwareConfigCount();
+
+	public int getHardwareConfigCount(List<Integer> areaIds);
+
+	public int getTempConfigCount();
+
+	public int getAreaChannelCount();
+
+	public int getChannelCount();
+
+	public int getMachineCount();
 	
 }
