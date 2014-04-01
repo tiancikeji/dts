@@ -24,7 +24,7 @@ public class LogDaoImpl extends JdbcDaoSupport implements LogDao {
 
 	@Override
 	public List<Log> getLogs(Date startDate, Date endDate) {
-		return getJdbcTemplate().query("select id, type, value, source, lastmod_time from " + SqlConstants.TABLE_LOG + " where isdel = 0 and lastmod_time between ? and ?", 
+		return getJdbcTemplate().query("select id, type, value, source, lastmod_time from " + SqlConstants.TABLE_LOG + " where isdel = 0 and lastmod_time between ? and ? order by lastmod_time desc", 
 				new Object[]{startDate, endDate}, new RowMapper<Log>(){
 
 			@Override

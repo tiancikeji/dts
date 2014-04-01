@@ -42,13 +42,13 @@ public class TemServiceImpl implements TemService {
 
 	@Override
 	public void checkHardware(long userid) {
-		List<Channel> channels = areaDao.getAllChannels();
+		List<Channel> channels = areaDao.getAllChannels(0, Integer.MAX_VALUE);
 		Map<Integer, Channel> channelMaps = new HashMap<Integer, Channel>();
 		if(channels != null && channels.size() > 0)
 			for(Channel channel : channels)
 				channelMaps.put(channel.getId(), channel);
 		
-		List<AreaHardwareConfig> ahwcs = areaDao.getAllHardwareConfigs();
+		List<AreaHardwareConfig> ahwcs = areaDao.getAllHardwareConfigs(0, Integer.MAX_VALUE);
 		Map<Integer, AreaHardwareConfig> ahwcMaps = new HashMap<Integer, AreaHardwareConfig>();
 		if(ahwcs != null && ahwcs.size() > 0)
 			for(AreaHardwareConfig ahwc : ahwcs)
@@ -56,7 +56,7 @@ public class TemServiceImpl implements TemService {
 		
 		List<Check> checks = new ArrayList<Check>();
 		
-		List<AreaChannel> acs = areaDao.getAllAreaChannels();
+		List<AreaChannel> acs = areaDao.getAllAreaChannels(0, Integer.MAX_VALUE);
 		if(acs != null && acs.size() > 0)
 			for(AreaChannel ac : acs)
 				if(channelMaps.containsKey(ac.getChannelid()) && ahwcMaps.containsKey(ac.getAreaid())){
@@ -80,7 +80,7 @@ public class TemServiceImpl implements TemService {
 
 	@Override
 	@Transactional(rollbackFor=Exception.class, value="txManager")
-	public boolean updateAlarm(long id, int status, long userid) {
+	public boolean updateAlarm(List<Long> id, int status, long userid) {
 		if(alarmDao.updateAlarm(id, status, userid))
 			if(alarmDao.addAlarmHistory(id, status, userid))
 				return true;
@@ -90,14 +90,14 @@ public class TemServiceImpl implements TemService {
 	}
 
 	@Override
-	public List<Alarm> getChannelAlarmReportData(List<Channel> channels, int start, int step) {
+	public List<Alarm> getChannelAlarmReportData(List<Channel> channels, int start, int step, Date startDate, Date endDate) {
 		if(channels != null && channels.size() > 0){
 			List<Integer> ids = new ArrayList<Integer>();
 			for(Channel channel : channels)
 				ids.add(channel.getId());
 			
 			// get alarm data
-			List<Alarm> alarms = alarmDao.getAlarmsByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}, start, step); 
+			List<Alarm> alarms = alarmDao.getAlarmsByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}, start, step, startDate, endDate); 
 			
 			if(alarms != null && alarms.size() > 0){
 				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
@@ -151,7 +151,7 @@ public class TemServiceImpl implements TemService {
 				ids.add(channel.getId());
 			
 			// get alarm data
-			List<Alarm> alarms = alarmDao.getAlarmsByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}, start, step); 
+			List<Alarm> alarms = alarmDao.getAlarmsByChannelIds(ids, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}, start, step, null, null); 
 			
 			if(alarms != null && alarms.size() > 0){
 				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
@@ -176,7 +176,7 @@ public class TemServiceImpl implements TemService {
 	}
 
 	@Override
-	public ChannelMonitorData getChannelData(List<Channel> channels, long time, int start, int end) {
+	public ChannelMonitorData getChannelData(List<Channel> channels, long time) {
 		if(channels != null && channels.size() > 0){
 			List<Integer> ids = new ArrayList<Integer>();
 			Map<Integer, String> names = new HashMap<Integer, String>();
@@ -223,7 +223,7 @@ public class TemServiceImpl implements TemService {
 					String[] tmpTem = StringUtils.split(tem.getTem(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
 					String[] tmpStock = StringUtils.split(tem.getStock(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
 					String[] tmpUnstock = StringUtils.split(tem.getUnstock(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
-					for(int i = start - 1; i < tmpTem.length && i < end; i ++){
+					for(int i = 0; i < tmpTem.length; i ++){
 						_length.add(i + 1);
 						
 						double tmpDouble = NumberUtils.toDouble(tmpTem[i], 0);
@@ -261,7 +261,7 @@ public class TemServiceImpl implements TemService {
 	}
 
 	@Override
-	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate, int start, int end) {
+	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate) {
 		if(channels != null && channels.size() > 0){
 			List<Integer> ids = new ArrayList<Integer>();
 			Map<Integer, String> names = new HashMap<Integer, String>();
@@ -280,12 +280,12 @@ public class TemServiceImpl implements TemService {
 				Map<String, Map<Date, Double>> temData = new HashMap<String, Map<Date,Double>>();
 				Map<String, Map<Date, Double>> stockData = new HashMap<String, Map<Date,Double>>();
 				Map<String, Map<Date, Double>> unstockData = new HashMap<String, Map<Date,Double>>();
-				
+
 				for(Temperature tem : tems){
 					int tmpChannel = tem.getChannel();
 	
 					String[] tmpTem = StringUtils.split(tem.getTem(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
-					for(int i = start - 1; i < tmpTem.length && i < end; i ++){
+					for(int i = 0; i < tmpTem.length; i ++){
 						double tmpDouble = NumberUtils.toDouble(tmpTem[i], 0);
 						avg += tmpDouble;
 						count ++;
@@ -325,7 +325,7 @@ public class TemServiceImpl implements TemService {
 						}
 						_tmp.put(tem.getDate(), NumberUtils.toDouble(tmpUnstock[i], 0));
 					}
-				
+					
 					if(count > 0)
 						avg = new BigDecimal(avg).divide(new BigDecimal(count), 5, RoundingMode.HALF_UP).doubleValue();
 	
@@ -391,8 +391,6 @@ public class TemServiceImpl implements TemService {
 					double avg = 0;
 					int count = 0;
 					Map<String, Map<Date, Double>> temData = new HashMap<String, Map<Date, Double>>();
-					Map<String, Map<Date, Double>> stockData = new HashMap<String, Map<Date, Double>>();
-					Map<String, Map<Date, Double>> unstockData = new HashMap<String, Map<Date, Double>>();
 					
 					for(Temperature tem : tems){
 						int tmpChannel = tem.getChannel();
@@ -426,36 +424,6 @@ public class TemServiceImpl implements TemService {
 									}
 									_tmp.put(tem.getDate(), tmpDouble);
 								}
-								
-								i = start - 1;
-								if(i < 0)
-									i = 0;
-
-								String[] tmpStock = StringUtils.split(tem.getStock(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
-								for(; i < tmpStock.length && i < end; i ++){
-									String key = channel.getAreaName() + "-" + i;
-									Map<Date, Double> _tmp = stockData.get(key);
-									if(_tmp == null){
-										_tmp = new HashMap<Date, Double>();
-										stockData.put(key, _tmp);
-									}
-									_tmp.put(tem.getDate(), NumberUtils.toDouble(tmpStock[i], 0));
-								}
-								
-								i = start - 1;
-								if(i < 0)
-									i = 0;
-
-								String[] tmpUnstock = StringUtils.split(tem.getUnstock(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
-								for(; i < tmpUnstock.length && i < end; i ++){
-									String key = channel.getAreaName() + "-" + i;
-									Map<Date, Double> _tmp = unstockData.get(key);
-									if(_tmp == null){
-										_tmp = new HashMap<Date, Double>();
-										unstockData.put(key, _tmp);
-									}
-									_tmp.put(tem.getDate(), NumberUtils.toDouble(tmpUnstock[i], 0));
-								}
 							}
 					}
 					
@@ -467,8 +435,6 @@ public class TemServiceImpl implements TemService {
 					data.setMin(min);
 					data.setAvg(avg);
 					data.setTems(temData);
-					data.setStocks(stockData);
-					data.setUnstocks(unstockData);
 					
 					return data;
 				}
@@ -479,7 +445,7 @@ public class TemServiceImpl implements TemService {
 	}
 	
 	public List<Channel> getAllAvailableChannels() {
-		List<Channel> channels = areaDao.getAllChannels();
+		List<Channel> channels = areaDao.getAllChannels(0, Integer.MAX_VALUE);
 		if(channels != null && channels.size() > 0){
 			Map<Integer, List<Channel>> machineids = new HashMap<Integer, List<Channel>>();
 			for(Channel channel : channels){
@@ -491,7 +457,7 @@ public class TemServiceImpl implements TemService {
 				tmp.add(channel);
 			}
 			
-			List<Machine> machines = areaDao.getAllMachines();
+			List<Machine> machines = areaDao.getAllMachines(0, Integer.MAX_VALUE);
 			if(machines != null && machines.size() > 0)
 				for(Machine machine : machines)
 					if(machineids.keySet().contains(machine.getId()))
@@ -503,7 +469,7 @@ public class TemServiceImpl implements TemService {
 	}
 
 	@Override
-	public List<Alarm> getAreaAlarmReportData(Area area, int start, int end) {
+	public List<Alarm> getAreaAlarmReportData(Area area, int start, int end, Date startDate, Date endDate) {
 		if(area != null){
 			// get sub-area ids
 			Map<Integer, Area> areaMaps = new HashMap<Integer, Area>();
@@ -513,7 +479,7 @@ public class TemServiceImpl implements TemService {
 			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
 				
 			// get alarm data
-			List<Alarm> alarms = alarmDao.getAlarmsByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}, start, end); 
+			List<Alarm> alarms = alarmDao.getAlarmsByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED, Alarm.STATUS_RESET, Alarm.STATUS_RESETED}, start, end, startDate, endDate); 
 			
 			if(alarms != null && alarms.size() > 0){
 				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
@@ -587,7 +553,7 @@ public class TemServiceImpl implements TemService {
 			List<Integer> areaIds = new ArrayList<Integer>(areaMaps.keySet());
 				
 			// get alarm data
-			List<Alarm> alarms = alarmDao.getAlarmsByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}, start, end); 
+			List<Alarm> alarms = alarmDao.getAlarmsByAreaIds(areaIds, new Integer[]{Alarm.STATUS_NEW, Alarm.STATUS_ALARMED, Alarm.STATUS_NOTIFY, Alarm.STATUS_MUTE, Alarm.STATUS_MUTED}, start, end, null, null); 
 			
 			if(alarms != null && alarms.size() > 0){
 				Map<Long, Alarm> alarmMaps = new HashMap<Long, Alarm>();
@@ -760,6 +726,16 @@ public class TemServiceImpl implements TemService {
 				areaMaps.put(area.getId(), area);
 				getAreaMaps(area.getChildren(), areaMaps);
 			}
+	}
+
+	@Override
+	public List<Long> getAllAlarmIds(int status) {
+		return alarmDao.getAllAlarmIds(status);
+	}
+
+	@Override
+	public List<Long> getAlarmIdsByAreaIds(List<Integer> areaIds, int status) {
+		return alarmDao.getAlarmIdsByAreaIds(areaIds, status);
 	}
 
 	public AreaDao getAreaDao() {

@@ -28,7 +28,7 @@ public class DummyAlarmTask implements Runnable {
 		try{
 			Random random = new Random(); 
 			if(random.nextBoolean()){
-				List<AreaChannel> acs = areaService.getAllAreaChannels();
+				List<AreaChannel> acs = areaService.getAllAreaChannels(0, Integer.MAX_VALUE);
 				if(acs != null && acs.size() > 0){
 					AreaChannel ac = acs.get(random.nextInt(acs.size()));
 					Alarm alarm = new Alarm();

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>新增硬件|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="changqu_yingjian_list.html" class="">所有硬件</a></li>
+                            <li><a href="changqu_yingjian_add.html" class="current j_common_add_title">新增硬件</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">新增硬件</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="" class="j_common_form"
+                                                      data-add-url="area/addhwconfig"
+                                                      data-edit-url="area/updatehwconfig"
+                                                      data-back-url="changqu_yingjian_list.html">
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                所属分区：<span id="fenquSelect"></span>
+                                                            </li>
+                                                            <li>
+                                                                灯<span style="display: inline-block; width: 2em;"></span>号：
+                                                                <input data-valid="1" data-valid-message="请输入灯号" name="light" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                继电器：
+                                                                <input data-valid="1" data-valid-message="请输入继电器" name="relay1" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                火警继电器：
+                                                                <input data-valid="1" data-valid-message="火警继电器" name="relay" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                声音地址：
+                                                                <input data-valid="1" data-valid-message="请输入声音地址" name="voice" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+            (function(){
+                $.get($.Dts.rootUri + 'area/areanames', function(res){
+                    new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
+                        id:'select1',
+                        name:'areaid',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_areaid')
+                    });
+                });
+            })();
+        </script>
+    </body>
+</html>

@@ -28,9 +28,9 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	
 	// areas
 	@Override
-	public List<Area> getAllAreas() {
-		return getJdbcTemplate().query("select id, name, level, `index`, parent, image, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA + " where isdel = ?", 
-				new Object[]{0}, new AreaRowMapper());
+	public List<Area> getAllAreas(int start, int step) {
+		return getJdbcTemplate().query("select id, name, level, `index`, parent, image, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA + " where isdel = ? limit ?,?", 
+				new Object[]{0, start, step}, new AreaRowMapper());
 	}
 
 	@Override
@@ -181,8 +181,8 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	}
 
 	@Override
-	public List<AreaHardwareConfig> getAllHardwareConfigs() {
-		return getJdbcTemplate().query("select id, area_id, light, relay, relay1, voice, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ?", new Object[]{0}, new AreaHardwareConfigRowMapper());
+	public List<AreaHardwareConfig> getAllHardwareConfigs(int start, int step) {
+		return getJdbcTemplate().query("select id, area_id, light, relay, relay1, voice, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_HARDWARE_CONFIG + " where isdel = ? limit ?, ?", new Object[]{0, start, step}, new AreaHardwareConfigRowMapper());
 	}
 
 	@Override
@@ -252,9 +252,9 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	}
 
 	@Override
-	public List<AreaChannel> getAllAreaChannels() {
-		return getJdbcTemplate().query("select id, name, area_id, channel_id, start, end, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_CHANNEL + " where isdel = ?", 
-				new Object[]{0}, new AreaChannelRowMapper());
+	public List<AreaChannel> getAllAreaChannels(int start, int step) {
+		return getJdbcTemplate().query("select id, name, area_id, channel_id, start, end, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_CHANNEL + " where isdel = ? limit ?, ?", 
+				new Object[]{0, start, step}, new AreaChannelRowMapper());
 	}
 
 	@Override
@@ -328,9 +328,9 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 	}
 
 	@Override
-	public List<AreaTempConfig> getAllTempConfigs() {
-		return getJdbcTemplate().query("select id, area_id, temperature_low, temperature_high, exotherm, temperature_diff, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_TEMP_CONFIG + " where isdel = ?", 
-				new Object[]{0}, new AreaTempConfigRowMapper());
+	public List<AreaTempConfig> getAllTempConfigs(int start, int step) {
+		return getJdbcTemplate().query("select id, area_id, temperature_low, temperature_high, exotherm, temperature_diff, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_AREA_TEMP_CONFIG + " where isdel = ? limit ?,?", 
+				new Object[]{0, start, step}, new AreaTempConfigRowMapper());
 	}
 	
 	@Override
@@ -359,8 +359,8 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 
 	// channels
 	@Override
-	public List<Channel> getAllChannels() {
-		return getJdbcTemplate().query("select id, machine_id, name, length, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_CHANNEL + " where isdel = ?", new Object[]{0}, new ChannelRowMapper());
+	public List<Channel> getAllChannels(int start, int step) {
+		return getJdbcTemplate().query("select id, machine_id, name, length, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_CHANNEL + " where isdel = ? limit ?, ?", new Object[]{0, start, step}, new ChannelRowMapper());
 	}
 
 	@Override
@@ -424,8 +424,8 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 
 	// machines
 	@Override
-	public List<Machine> getAllMachines() {
-		return getJdbcTemplate().query("select id, name, serial_port, baud_rate, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_MACHINE + " where isdel = 0", new MachineRowMapper());
+	public List<Machine> getAllMachines(int start, int step) {
+		return getJdbcTemplate().query("select id, name, serial_port, baud_rate, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_MACHINE + " where isdel = 0 limit ?, ?", new Object[]{start, step}, new MachineRowMapper());
 	}
 
 	@Override
@@ -482,8 +482,8 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 
 	// level images
 	@Override
-	public List<LevelImage> getAllLevels() {
-		return getJdbcTemplate().query("select id, name, image, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_LEVEL + " where isdel = 0", new LevelImageRowMapper());
+	public List<LevelImage> getAllLevels(int start, int step) {
+		return getJdbcTemplate().query("select id, name, image, lastmod_time, lastmod_userid from " + SqlConstants.TABLE_LEVEL + " where isdel = 0 limit ?, ?", new Object[]{start, step}, new LevelImageRowMapper());
 	}
 
 	@Override

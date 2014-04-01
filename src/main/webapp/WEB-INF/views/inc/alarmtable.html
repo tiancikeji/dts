@@ -1,0 +1,104 @@
+<script type="text/html" id="listTmpl">
+    <table class="table table-auto">
+        <thead>
+        <tr>
+            <th>序号</th>
+            <th>报警类型</th>
+            <th>机器名称</th>
+            <th>通道名称</th>
+            <th>通道距离</th>
+            <th>区域名称</th>
+            <th>报警区域</th>
+            <th>灯号</th>
+            <th>预警继电器</th>
+            <th>火警继电器</th>
+            <th>报警声音</th>
+            <th>实际温度</th>
+            <th>预设报警温度</th>
+            <th>状态</th>
+            <th>添加时间</th>
+            <th>上次更新时间</th>
+            <th>上次更新人</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <%for(i = 0; i < data.length; i++){%>
+        <%var item = data[i]%>
+        <tr>
+            <td><%=item.id%></td>
+            <td><%=['','预警','火警','差温报警','温升速率报警','低温故障','高温故障','斯托克斯故障','反斯托克斯故障','数据存储溢出'][item.type]%></td>
+            <td><%=item.machineName%></td>
+            <td><%=item.channelName%></td>
+            <td><%=item.length%></td>
+            <td><%=item.areaName%></td>
+            <td><%=item.alarmName%></td>
+            <td><%=item.light%></td>
+            <td><%=item.relay1%></td>
+            <td><%=item.relay%></td>
+            <td><%=item.voice%></td>
+            <td><%=item.temperature%></td>
+            <td><%=item.temperaturePre%></td>
+            <td><%=['新增','报警','确认','消音','消音过','复位','复位过'][item.status]%></td>
+            <td><%=item.addTime%></td>
+            <td><%=item.lastModTime%></td>
+            <td><%=item.lastModUserid%></td>
+            <td>
+                <%if(item.status==1){%>
+                <a href="#" class="j_btn_ok j_alarm_btn" data-alarm-type="1" data-alarm-id="<%=item.id%>">确认</a>&nbsp;
+                <%}%>
+                <%if(item.status==1||item.status==2){%>
+                <a href="#" class="j_btn_voice j_alarm_btn" data-alarm-type="2" data-alarm-id="<%=item.id%>">消音</a>&nbsp;
+                <%}%>
+                <%if(item.status==1||item.status==2||item.status==3){%>
+                <a href="#" class="j_btn_reset j_alarm_btn" data-alarm-type="3" data-alarm-id="<%=item.id%>">复位</a>&nbsp;
+                <%}%>
+                <%if(item.history.length){%>
+                <a href="#" class="j_btn_reset j_history_btn">查看历史</a>&nbsp;<%}%>
+            </td>
+        </tr>
+        <%if(item.history.length){%>
+        <tr class="hide">
+            <td></td>
+            <td colspan="17">
+                <%for(var h = 0; h < item.history.length;  h++){%>
+                <%var his = item.history[h]%>
+                <p>
+                    操作：<%=['','','确认','消音','','复位'][his.operation]%>&nbsp;&nbsp;
+                    操作时间：<%=his.lastModTime%>&nbsp;&nbsp;
+                    操作人：<%=his.lastModUserid%>&nbsp;&nbsp;
+                </p>
+                <%}%>
+            </td>
+        </tr><%}%>
+        <%}%>
+        </tbody>
+    </table>
+    <div>
+        共<%=Math.ceil(count/50)%>页 &nbsp;
+        &nbsp;第<%=Math.ceil($.Dts.areaManager.historyStart/50)%>页&nbsp;
+        <%if(Math.ceil($.Dts.areaManager.historyStart/50) > 1){%>
+            <a href="#" class="j_btn_history_page" data-page="1">首页</a>&nbsp;
+            <a href="#" class="j_btn_history_page" data-page="<%=Math.ceil($.Dts.areaManager.historyStart/50)-1%>">上一页</a>&nbsp;
+        <%}%>
+        <%if(Math.ceil($.Dts.areaManager.historyStart/50) < Math.ceil(count/50)){%>
+            <a href="#" class="j_btn_history_page" data-page="<%=Math.ceil($.Dts.areaManager.historyStart/50)+1%>">下一页</a>&nbsp;
+            <a href="#" class="j_btn_history_page" data-page="<%=Math.ceil(count/50)%>">尾页</a>
+        <%}%>
+
+
+    </div>
+</script>
+
+<script>
+    (function(){
+        $('.j_alarm_table').delegate('.j_btn_history_page', 'click', function(e){
+            e.preventDefault();
+            var $target = $(this);
+            var page = +$target.attr('data-page');
+            $.Dts.areaManager.historyStart = (page - 1) * 50 + 1;
+            $.Dts.areaManager.loadHistory();
+        });
+    })();
+
+</script>

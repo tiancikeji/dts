@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <title>所有分区通道|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="changqu_tongdao_list.html" class="current">所有分区通道</a></li>
+                            <li><a href="changqu_tongdao_add.html" class="">新增分区通道</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li><a href="#"><i class="icon-toolbar icon-toolbar2"></i>打印</a></li>
+                                <li><a href="#"><i class="icon-toolbar icon-toolbar3"></i>导出</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="panes-2">
+                            <div id="list" class="j_common_list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script type="text/html" id="listTmpl">
+            <table class="table table-auto">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>报警通道名称</th>
+                    <th>分区id</th>
+                    <th>分区名称</th>
+                    <th>机器id</th>
+                    <th>机器名称</th>
+                    <th>通道id</th>
+                    <th>通道名称</th>
+                    <th>分区通道开始距离</th>
+                    <th>分区通道结束距离</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <%for(i = 0; i < data.length; i++){%>
+                        <%var item = data[i]%>
+                        <tr>
+                            <td><%=item.id%></td>
+                            <td><%=item.name%></td>
+                            <td><%=item.areaid%></td>
+                            <td><%=item.areaname%></td>
+                            <td><%=item.machineid%></td>
+                            <td><%=item.machinename%></td>
+                            <td><%=item.channelid%></td>
+                            <td><%=item.channelname%></td>
+                            <td><%=item.start%></td>
+                            <td><%=item.end%></td>
+                            <td>
+                                <a href="changqu_tongdao_add.html?form_edit_mode=1<%for(var name in item){%>&form_<%=name%>=<%:u=item[name]%><%}%>"
+                                   class="j_common_edit">编辑</a>&nbsp;
+                                <a href="#" class="j_common_delete" data-delete-id="<%=item.id%>"
+                                   data-delete-url="area/deletechannel">删除</a>
+                            </td>
+                        </tr>
+                    <%}%>
+                </tbody>
+            </table>
+        </script>
+        <script>
+            $.get($.Dts.rootUri + 'area/channels', function(res){
+                if(!$.Dts.ajax.validRes(res)){
+                    return;
+                }
+                $('#list').html(baidu.template('listTmpl', res));
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>新增机器|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="jiqi_list.html">所有机器</a></li>
+                            <li><a href="jiqi_add.html" class="current j_common_add_title">新增机器</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">新增机器</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="" class="j_common_form"
+                                                      data-add-url="machine/addmachine"
+                                                      data-edit-url="machine/updatemachine"
+                                                      data-back-url="jiqi_list.html">
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                机器名称：
+                                                                <input data-valid="1" data-valid-message="机器名称" name="name" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                串口号：
+                                                                <input data-valid="1" data-valid-message="串口号" name="serialPort" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                波特率：
+                                                                <input data-valid="1" data-valid-message="波特率" name="baudRate" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+
+        </script>
+    </body>
+</html>

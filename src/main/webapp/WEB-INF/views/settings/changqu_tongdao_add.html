@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>新增分区通道|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="changqu_tongdao_list.html" class="">所有分区通道</a></li>
+                            <li><a href="changqu_tongdao_add.html" class="current j_common_add_title">新增分区通道</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">新增分区通道</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="" class="j_common_form"
+                                                      data-add-url="area/addchannel"
+                                                      data-edit-url="area/updatechannel"
+                                                      data-back-url="changqu_tongdao_list.html">
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                报警通道名称：
+                                                                <input data-valid="1" data-valid-message="报警通道名称" name="name" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                所属分区：<span id="fenquSelect"></span>
+                                                            </li>
+                                                            <li>
+                                                                机器名称：<span id="jiqiSelect"></span>
+                                                            </li>
+                                                            <li>
+                                                                通道名称：<span id="tongdaoSelect"></span>
+                                                            </li>
+                                                            <li>
+                                                                分区通道开始距离：
+                                                                <input data-valid="1" data-valid-message="分区通道开始距离" name="start" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                分区通道结束距离：
+                                                                <input data-valid="1" data-valid-message="分区通道结束距离" name="end" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+            (function(){
+                $.get($.Dts.rootUri + 'area/areanames', function(res){
+                    new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
+                        id:'select1',
+                        name:'areaid',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_areaid')
+                    });
+                });
+
+                $.get($.Dts.rootUri + 'machine/machines', function(res){
+                    new $.Dts.linkAgeSelect($('#jiqiSelect'), res.data, {
+                        id:'select2',
+                        name:'machineid',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_machineid')
+                    });
+                    $('#select2').bind('change', function(e){
+                        renderChannel();
+                    });
+                    renderChannel();
+                });
+
+
+
+                var channelsData = {};
+
+                $.get($.Dts.rootUri + 'channel/channels', function(res){
+                    if(!$.Dts.ajax.validRes(res)){
+                        return;
+                    }
+                    channelsData = res.data;
+                    renderChannel();
+                });
+
+
+
+                function renderChannel(){
+                    var currentMachineId = $('#select2').val();
+                    var channelData = [];
+                    for(var i = 0; i < channelsData.length; i++){
+                        var channel = channelsData[i];
+                        if(currentMachineId == channel.machineid){
+                            channelData.push(channel);
+                        }
+                    }
+                    $('#select3').remove();
+                    new $.Dts.linkAgeSelect($('#tongdaoSelect'), channelData, {
+                        id:'select3',
+                        name:'channelid',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_channelid')
+                    });
+                }
+
+
+
+
+
+
+
+            })();
+        </script>
+    </body>
+</html>

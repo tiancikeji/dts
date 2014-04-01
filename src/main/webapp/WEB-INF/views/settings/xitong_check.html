@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>系统自检|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <div class="menu">
+                        <h3>参数设置</h3>
+                        <!--#include virtual="/dts/inc/nav_settings.html"-->
+                    </div>
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+            (function(){
+                $.get($.Dts.rootUri + '/check/hardware?userid=' + $.Dts.login.getUserId(), function(res){
+                    if(res.status != 0){
+                        alert('自检失败，请稍后再试');
+                    }else{
+                        alert('自检命令已经下发');
+                    }
+                }, 'json');
+            })();
+        </script>
+    </body>
+</html>

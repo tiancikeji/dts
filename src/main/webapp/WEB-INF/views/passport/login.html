@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>登录|NEINE预警系统</title>
+
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf" style="background:none;">
+
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1" style="border: 0 none;">
+
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">登录</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="postForm" type="post" action="">
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                用户名：
+                                                                <input data-valid="1" data-valid-message="用户名" name="name" class="select-2 ipt-f3" />
+                                                            </li>
+                                                            <li>
+                                                                密码：
+                                                                <input data-valid="1" data-valid-message="密码" name="password" class="select-2 ipt-f3" />
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+            (function(){
+                // $.Iwami.selectNav('.j_nav_usermanage');
+                var $postForm = $('#postForm');
+                $postForm.submit(function(e){
+                    e.preventDefault();
+                    $.post($.Dts.rootUri + '/login', $postForm.serialize(), function(res){
+                        if($.Dts.ajax.validRes(res)){ //验证通过
+                            if(res.status != 0){
+                                alert('登录失败，请稍后再试');
+                            }else if(!res.data.userid){
+                                alert('用户名或密码错误');
+                            }else{
+                                var data = res.data;
+                                var cookieOpt = {'expires': 30, path: '/'} ;
+                                $.cookie('name', data.name, cookieOpt);
+                                $.cookie('userid', data.userid, cookieOpt);
+                                $.cookie('role', data.role, cookieOpt);
+                                $.cookie('right', data.right, cookieOpt);
+
+                                var referrer = $.Dts.getParameter('referrer') || '';
+                                var jump = decodeURIComponent(referrer) || document.referrer || '../changqu_fenqu_list.html';
+
+                                location.href = jump;
+                            }
+                        }
+                    }, 'json');
+                });
+            })();
+        </script>
+    </body>
+</html>

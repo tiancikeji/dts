@@ -26,7 +26,7 @@ public class AutoImportMachineConfigTask {
 		BufferedReader br = null;
 		try{
 			// check db
-			List<Machine> tmp = areaService.getAllMachines();
+			List<Machine> tmp = areaService.getAllMachines(0, Integer.MAX_VALUE);
 			if(tmp == null || tmp.size() <= 0){
 				// read from file
 				br = new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream(configName)));

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <title>温度数据保存设置|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="xitong_wendu_tks.html" class="current">托克斯与反斯托克斯</a></li>
+                            <li><a href="xitong_wendu_refertem.html">refertem</a></li>
+                            <li><a href="xitong_wendu_jiange.html">备份数据间隔</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li><a href="#" class="j_btn_print"><i class="icon-toolbar icon-toolbar2"></i>打印</a></li>
+                                <li><a href="#" class="j_btn_export"><i class="icon-toolbar icon-toolbar3"></i>导出</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">托克斯与反斯托克斯设置</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="">
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                是否保存：<span id="saveSelect"></span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input type="hidden" name="id" id="postId" value="">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div><!-- mod-3 -->
+                                </div><!-- grid-f4 -->
+                            </div>
+                        </div>
+                    </div><!-- mod-2 -->
+                </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+            (function(){
+                $.get($.Dts.rootUri + '/config/get?type=2', function(res){
+                    $('#postId').val(res.data.id);
+                    new $.Dts.linkAgeSelect($('#saveSelect'), [
+                        {
+                            id: '1',
+                            name: '保存'
+                        },
+                        {
+                            id: '0',
+                            name: '不保存'
+                        }
+                    ], {
+                        id:'select1',
+                        name:'value',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: res.data.value
+                    });
+                });
+                var $form = $('#dataForm');
+                $form.submit(function(e){
+                    e.preventDefault();
+                    if(!$.Dts.validForm(this)){
+                        return;
+                    }
+                    $.post($.Dts.rootUri + 'config/update?type=2&userid=' + $.cookie('userid'), $form.serialize(), function(res){
+                        if($.Dts.ajax.validRes(res)){ //验证通过
+                            alert(res.status == 0 ? '操作成功' : '操作失败，请稍后重试');
+                        }
+                    });
+                });
+            })();
+
+        </script>
+    </body>
+</html>

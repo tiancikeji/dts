@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <title>测试测试测试测试测试测试测试</title>
+        <style>
+            #header, #sidebar,.hd-1{
+                display: none;
+            }
+
+
+        </style>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+            <div id="container" style="width: 600px; height: 500px;">
+
+            </div>
+
+            <button id="button">添加</button>
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="changqu_fenqu_list.html" class="current">所有分区</a></li>
+                            <li><a href="changqu_fenqu_add.html" class="">新增分区</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li><a href="#"><i class="icon-toolbar icon-toolbar2"></i>打印</a></li>
+                                <li><a href="../area/download" class="j_btn_export" target="_blank"><i class="icon-toolbar icon-toolbar3"></i>下载</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="panes-2">
+                            <div id="list" class="j_common_list">
+                                <!--
+                                <div class="pagination">
+                                    <ul>
+                                        <li class="disabled"><a href="javascript:;" rel="nofollow">«</a></li>
+                                        <li class="active"><a href="/list/index.html" rel="nofollow">1</a></li>
+                                        <li><a href="/p-p2.html" rel="nofollow">2</a></li>
+                                        <li><a href="/p-p3.html" rel="nofollow">3</a></li>
+                                        <li><a href="/p-p4.html" rel="nofollow">4</a></li>
+                                        <li><a href="/p-p5.html" rel="nofollow">5</a></li>
+                                        <li><a href="/p-p6.html" rel="nofollow">6</a></li>
+                                        <li><a href="/p-p7.html" rel="nofollow">7</a></li>
+                                        <li><a href="/p-p8.html" rel="nofollow">8</a></li>
+                                        <li><a href="/p-p9.html" rel="nofollow">9</a></li>
+                                        <li><a href="/p-p10.html" rel="nofollow">10</a></li>
+                                        <li class="disabled"><a>...</a></li>
+                                        <li><a href="/p-p100.html" rel="nofollow">100</a></li>
+                                        <li><a href="/p-p2.html" rel="nofollow">»</a></li>
+                                    </ul>
+                                </div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+
+
+        <script src="highcharts.js"></script>
+        <script>
+            $(function () {
+                $.get('http://zaoke.me/dts/monitor/area/data?userid=1&id=1&time=-1', function(res){
+                    var data = res.data;
+                    var date = (new Date(data.time)).toLocaleTimeString();
+                    $('#container').highcharts({
+                        title: {
+                            text: 'title',
+                            x: -20 //center
+                        },
+                        subtitle: {
+                            text: 'subtitle',
+                            x: -20
+                        },
+                        xAxis: {
+                            categories: [date]
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Temperature (°C)'
+                            },
+                            plotLines: [{
+                                value: 0,
+                                width: 1,
+                                color: '#808080'
+                            }]
+                        },
+                        tooltip: {
+                            valueSuffix: '°C'
+                        },
+                        legend: {
+                            layout: 'vertical',
+                            align: 'right',
+                            verticalAlign: 'middle',
+                            borderWidth: 0
+                        },
+                        series: [{
+                            name: '最低',
+                            data: [data.min]
+                        }, {
+                            name: '最高',
+                            data: [data.max]
+                        }, {
+                            name: '平均',
+                            data: [data.avg]
+                        }]
+                    });
+                    setTimeout(function(){
+                        loadData(data.time);
+                    }, res.interval * 2000);
+                }, 'json');
+
+            });
+            var i = 10;
+            var x = 13;
+            $('#button').click(function() {
+                var chart = $('#container').highcharts();
+                chart.series[0].addPoint([x, i], true, true);
+
+                chart.series[1].addPoint([x, i+1], true, true);
+
+                chart.series[2].addPoint([x, i+2], true, true);
+
+                chart.series[3].addPoint([x, i+3], true, true);
+                i++;
+                x++;
+            });
+
+            function renderData(data){
+
+                var chart = $('#container').highcharts();
+                chart.series[0].addPoint([x, i], true, true);
+
+                chart.series[1].addPoint([x, i+1], true, true);
+
+                chart.series[2].addPoint([x, i+2], true, true);
+
+                chart.series[3].addPoint([x, i+3], true, true);
+            }
+
+            var xNums = 1; //当前x轴以有多少个点
+            var xNumsMax = 5; //x轴最多展示多少个点
+            function loadData(time){
+                //return;
+                $.get('http://zaoke.me/dts/monitor/area/data?userid=1&id=1&time=' + time, function(res){
+                    var data = res.data;
+                    var date = (new Date(data.time)).toLocaleTimeString();
+                    var chart = $('#container').highcharts();
+                    var isShift = true; //追加后是否删除最前面的点
+                    if(xNums < xNumsMax){
+                        isShift = false;
+                    }
+
+                    chart.series[0].addPoint([date, data.min], true, isShift);
+
+                    chart.series[1].addPoint([date, data.max], true, isShift);
+
+                    chart.series[2].addPoint([date, data.avg], true, isShift);
+                    xNums++;
+                    setTimeout(function(){
+                        loadData(data.time);
+                    }, res.interval * 2000);
+
+                }, 'json');
+            }
+        </script>
+    </body>
+</html>

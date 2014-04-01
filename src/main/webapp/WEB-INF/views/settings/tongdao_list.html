@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <!--#include file="/dts/inc/head.html"-->
+        <title>所有通道|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="tongdao_list.html" class="current">所有通道</a></li>
+                            <li><a href="tongdao_add.html">新增通道</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li class="up-btn j_upload_btn" data-upurl="/channel/replace"></li>
+                                <li><a href="../channel/download" class="j_btn_export" target="_blank"><i class="icon-toolbar icon-toolbar3"></i>下载</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="panes-2">
+                            <div id="list" class="j_common_list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <!--#include virtual="/dts/static/inc/upload.js.html"-->
+
+        <script type="text/html" id="listTmpl">
+            <table class="table table-auto">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>通道名称</th>
+                    <th>机器id</th>
+                    <th>机器名称</th>
+                    <th>长度</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <%for(i = 0; i < data.length; i++){%>
+                    <%var item = data[i]%>
+                    <tr>
+                        <td><%=item.id%></td>
+                        <td><%=item.name%></td>
+                        <td><%=item.machineid%></td>
+                        <td><%=item.machinename%></td>
+                        <td><%=item.length%></td>
+                        <td>
+                            <a href="tongdao_add.html?form_edit_mode=1&form_id=<%:u=item.id%>&form_name=<%:u=item.name%>&form_machineid=<%:u=item.machineid%>&form_length=<%:u=item.length%>"
+                               class="j_common_edit">编辑</a>&nbsp;
+                            <a href="#" class="j_common_delete" data-delete-id="<%=item.id%>"
+                               data-delete-url="channel/deletechannel">删除</a>
+                        </td>
+                    </tr>
+                <%}%>
+                </tbody>
+            </table>
+        </script>
+        <script>
+            $.get($.Dts.rootUri + 'channel/channels', function(res){
+                if(!$.Dts.ajax.validRes(res)){
+                    return;
+                }
+                $('#list').html(baidu.template('listTmpl', res));
+            });
+        </script>
+    </body>
+</html>

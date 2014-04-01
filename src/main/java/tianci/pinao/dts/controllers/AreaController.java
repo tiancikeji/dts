@@ -158,7 +158,7 @@ public class AreaController {
 
 	@RequestMapping(value="/level/levels", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getLevels(HttpServletRequest request){
+	public Map<Object, Object> getLevels(HttpServletRequest request, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
 		try{
@@ -169,7 +169,11 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					List<LevelImage> levels = areaService.getAllLevels();
+					if(start == null)
+						start = 0;
+					if(step == null)
+						step = 100;
+					List<LevelImage> levels = areaService.getAllLevels(start, step);
 					result.put("data", parseLevelImages(levels));
 					result.put("status", "0");		
 				} else
@@ -302,7 +306,7 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					List<Area> areas = areaService.getAllAailableAreas();
+					List<Area> areas = areaService.getAllAailableAreas(0, Integer.MAX_VALUE);
 					List<Map<String, Object>> data = new ArrayList<Map<String,Object>>();
 					if(areas != null && areas.size() > 0)
 						for(Area area : areas){
@@ -326,7 +330,7 @@ public class AreaController {
 
 	@RequestMapping(value="/area/areas", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreas(HttpServletRequest request){
+	public Map<Object, Object> getAreas(HttpServletRequest request, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -337,7 +341,11 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User)obj;
 				if(configService.checkLifeTime() || user.getRole() == 1){
-					List<Area> areas = areaService.getAllAailableAreas();
+					if(start == null)
+						start = 0;
+					if(step == null)
+						step = 100;
+					List<Area> areas = areaService.getAllAailableAreas(start, step);
 					result.put("data", parseAreas(areas));
 					result.put("status", "0");
 				} else
@@ -423,24 +431,24 @@ public class AreaController {
 					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "名称" + PinaoConstants.TEM_DATA_COL_SEP + "分类" + PinaoConstants.TEM_DATA_COL_SEP + "报警区域" + PinaoConstants.TEM_DATA_COL_SEP + "父级厂区" + PinaoConstants.TEM_DATA_COL_SEP + "图片" + PinaoConstants.TEM_DATA_COL_SEP + "灯号" + PinaoConstants.TEM_DATA_COL_SEP + "预警继电器号" + PinaoConstants.TEM_DATA_COL_SEP + "火警继电器号" + PinaoConstants.TEM_DATA_COL_SEP + "声音地址" + PinaoConstants.TEM_DATA_COL_SEP + "低温报警" + PinaoConstants.TEM_DATA_COL_SEP + "高温报警" + PinaoConstants.TEM_DATA_COL_SEP + "差温报警" + PinaoConstants.TEM_DATA_COL_SEP + "温升报警" + PinaoConstants.TEM_DATA_COL_SEP + "报警显示名称" + PinaoConstants.TEM_DATA_COL_SEP + "通道名称" + PinaoConstants.TEM_DATA_COL_SEP + "机器名称" + PinaoConstants.TEM_DATA_COL_SEP + "开始距离" + PinaoConstants.TEM_DATA_COL_SEP + "结束距离" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
 					
 					Map<Integer, AreaHardwareConfig> hMap = new HashMap<Integer, AreaHardwareConfig>();
-					List<AreaHardwareConfig> hardConfigs = areaService.getAllHardwareConfigs();
+					List<AreaHardwareConfig> hardConfigs = areaService.getAllHardwareConfigs(0, Integer.MAX_VALUE);
 					if(hardConfigs != null && hardConfigs.size() > 0)
 						for(AreaHardwareConfig config : hardConfigs)
 							hMap.put(config.getAreaid(), config);
 					
 					Map<Integer, AreaChannel> acMap = new HashMap<Integer, AreaChannel>();
-					List<AreaChannel> areaChannels = areaService.getAllAreaChannels();
+					List<AreaChannel> areaChannels = areaService.getAllAreaChannels(0, Integer.MAX_VALUE);
 					if(areaChannels != null && areaChannels.size() > 0)
 						for(AreaChannel ac : areaChannels)
 							acMap.put(ac.getAreaid(), ac);
 					
 					Map<Integer, AreaTempConfig> tMap = new HashMap<Integer, AreaTempConfig>();
-					List<AreaTempConfig> areaTempConfigs = areaService.getAllTempConfigs();
+					List<AreaTempConfig> areaTempConfigs = areaService.getAllTempConfigs(0, Integer.MAX_VALUE);
 					if(areaTempConfigs != null && areaTempConfigs.size() > 0)
 						for(AreaTempConfig config : areaTempConfigs)
 							tMap.put(config.getAreaid(), config);
 					
-					List<Area> areas = areaService.getAllAailableAreas();
+					List<Area> areas = areaService.getAllAailableAreas(0, Integer.MAX_VALUE);
 					if(areas != null && areas.size() > 0){
 						Map<Integer, Area> aMap = new HashMap<Integer, Area>();
 						for(Area area : areas)
@@ -459,11 +467,11 @@ public class AreaController {
 							else
 								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							if(temp != null)
-								out.write((temp.getTemperatureLow() + PinaoConstants.TEM_DATA_COL_SEP + temp.getTemperatureHigh() + PinaoConstants.TEM_DATA_COL_SEP + temp.getTemperatureDiff() + PinaoConstants.TEM_DATA_COL_SEP + temp.getExotherm()).getBytes());
+								out.write((temp.getTemperatureLow() + PinaoConstants.TEM_DATA_COL_SEP + temp.getTemperatureHigh() + PinaoConstants.TEM_DATA_COL_SEP + temp.getTemperatureDiff() + PinaoConstants.TEM_DATA_COL_SEP + temp.getExotherm() + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							else
 								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							if(ac != null)
-								out.write((ac.getName() + "	" + ac.getChannelName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getMachineName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getStart() + PinaoConstants.TEM_DATA_COL_SEP + ac.getEnd()).getBytes());
+								out.write((ac.getName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getChannelName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getMachineName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getStart() + PinaoConstants.TEM_DATA_COL_SEP + ac.getEnd()).getBytes());
 							else
 								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
 							
@@ -577,7 +585,7 @@ public class AreaController {
 
 	@RequestMapping(value="/area/hwconfigs", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaHardwareConfigs(HttpServletRequest request){
+	public Map<Object, Object> getAreaHardwareConfigs(HttpServletRequest request, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -588,7 +596,11 @@ public class AreaController {
 				User user = (User) obj;
 				if(user.getRole() < 3){
 					if(configService.checkLifeTime() || user.getRole() == 1){
-						List<AreaHardwareConfig> _configs = areaService.getAllHardwareConfigs();
+						if(start == null)
+							start = 0;
+						if(step == null)
+							step = 100;
+						List<AreaHardwareConfig> _configs = areaService.getAllHardwareConfigs(start, step);
 						
 						List<AreaHardwareConfig> configs = new ArrayList<AreaHardwareConfig>();
 						//filter by userid roles
@@ -623,6 +635,7 @@ public class AreaController {
 				tmp.put("areaname", config.getAreaName());
 				tmp.put("light", config.getLight());
 				tmp.put("relay", config.getRelay());
+				tmp.put("relay1", config.getRelay1());
 				tmp.put("voice", config.getVoice());
 				result.add(tmp);
 			}
@@ -716,7 +729,7 @@ public class AreaController {
 
 	@RequestMapping(value="/area/tempconfigs", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaTempConfigs(HttpServletRequest request){
+	public Map<Object, Object> getAreaTempConfigs(HttpServletRequest request, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -726,7 +739,11 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					List<AreaTempConfig> configs = areaService.getAllTempConfigs();
+					if(start == null)
+						start = 0;
+					if(step == null)
+						step = 100;
+					List<AreaTempConfig> configs = areaService.getAllTempConfigs(start, step);
 					result.put("data", parseTempConfigs(configs));
 					result.put("status", "0");
 				} else
@@ -771,12 +788,15 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					List<AreaChannel> channels = new ArrayList<AreaChannel>();
-					channels.add(channel);
-					boolean success = areaService.addAreaChannel(channels, new Long(userid).intValue());
-					if(success)
-						result.put("status", "0");
-					else
+					if(channel != null && channel.getStart() > 0 && channel.getEnd() > 0 && channel.getEnd() >= channel.getStart()){
+						List<AreaChannel> channels = new ArrayList<AreaChannel>();
+						channels.add(channel);
+						boolean success = areaService.addAreaChannel(channels, new Long(userid).intValue());
+						if(success)
+							result.put("status", "0");
+						else
+							result.put("status", "400");
+					} else
 						result.put("status", "400");
 				} else
 					result.put("status", "600");
@@ -847,7 +867,7 @@ public class AreaController {
 
 	@RequestMapping(value="/area/channels", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaChannels(HttpServletRequest request){
+	public Map<Object, Object> getAreaChannels(HttpServletRequest request, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -857,7 +877,11 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					List<AreaChannel> channels = areaService.getAllAreaChannels();
+					if(start == null)
+						start = 0;
+					if(step == null)
+						step = 100;
+					List<AreaChannel> channels = areaService.getAllAreaChannels(start, step);
 					result.put("data", parseAreaChannels(channels));
 					result.put("status", "0");
 				} else
@@ -905,10 +929,13 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					boolean success= areaService.addChannel(channel, new Long(userid).intValue());
-					if(success)
-						result.put("status", "0");
-					else
+					if(channel != null && channel.getLength() > 0){
+						boolean success= areaService.addChannel(channel, new Long(userid).intValue());
+						if(success)
+							result.put("status", "0");
+						else
+							result.put("status", "400");
+					} else
 						result.put("status", "400");
 				} else
 					result.put("status", "600");
@@ -979,7 +1006,7 @@ public class AreaController {
 
 	@RequestMapping(value="/channel/channels", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAllChannels(HttpServletRequest request){
+	public Map<Object, Object> getAllChannels(HttpServletRequest request, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -989,7 +1016,11 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					List<Channel> channels = areaService.getAllAvailableChannels();
+					if(start == null)
+						start = 0;
+					if(step == null)
+						step = 100;
+					List<Channel> channels = areaService.getAllAvailableChannels(start, step);
 					result.put("data", parseChannels(channels));
 					result.put("status", "0");
 				} else
@@ -1068,7 +1099,7 @@ public class AreaController {
 					out = response.getOutputStream();
 					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "通道id" + PinaoConstants.TEM_DATA_COL_SEP + "机器ID" + PinaoConstants.TEM_DATA_COL_SEP + "通道长度" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
 					
-					List<Channel> channels = areaService.getAllAvailableChannels();
+					List<Channel> channels = areaService.getAllAvailableChannels(0, Integer.MAX_VALUE);
 					if(channels != null && channels.size() > 0)
 						for(Channel channel : channels)
 							out.write((channel.getName() + PinaoConstants.TEM_DATA_COL_SEP + channel.getMachineName() + PinaoConstants.TEM_DATA_COL_SEP + channel.getLength() + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
@@ -1176,7 +1207,7 @@ public class AreaController {
 
 	@RequestMapping(value="/machine/machines", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAllMachines(HttpServletRequest request){
+	public Map<Object, Object> getAllMachines(HttpServletRequest request, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -1186,7 +1217,11 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					List<Machine> machines = areaService.getAllMachines();
+					if(start == null)
+						start = 0;
+					if(step == null)
+						step = 100;
+					List<Machine> machines = areaService.getAllMachines(start, step);
 					result.put("data", parseMachines(machines));
 					result.put("status", "0");
 				} else
@@ -1264,7 +1299,7 @@ public class AreaController {
 					out = response.getOutputStream();
 					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器id" + PinaoConstants.TEM_DATA_COL_SEP + "光开关" + PinaoConstants.TEM_DATA_COL_SEP + "串口" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
 					
-					List<Machine> machines = areaService.getAllMachines();
+					List<Machine> machines = areaService.getAllMachines(0, Integer.MAX_VALUE);
 					if(machines != null && machines.size() > 0)
 						for(Machine machine : machines)
 							out.write((machine.getName() + PinaoConstants.TEM_DATA_COL_SEP + machine.getSerialPort() + PinaoConstants.TEM_DATA_COL_SEP + machine.getBaudRate() + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());

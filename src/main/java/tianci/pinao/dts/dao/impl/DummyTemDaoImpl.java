@@ -31,10 +31,9 @@ public class DummyTemDaoImpl implements TemDao {
 	@Override
 	public List<Temperature> getTemsByChannel(ArrayList<Integer> channels, Date start, Date end) {
 		List<Temperature> result = new ArrayList<Temperature>();
-		int ttt = (int)(end.getTime() - start.getTime());
 		for(Integer key : channels){
 			Random random = new Random();
-			
+			Date date = new Date(start.getTime() + 1000);
 			for(int i = 0; i < 10; i ++){
 				Temperature tmp = new Temperature();
 				tmp.setChannel(key);
@@ -50,7 +49,7 @@ public class DummyTemDaoImpl implements TemDao {
 				for(int j = 0; j < 1000; j ++)
 					sb.append((20 + random.nextInt(10)) + ".6,");
 				tmp.setUnstock(sb.toString());
-				tmp.setDate(new Date(start.getTime() + random.nextInt(ttt)));
+				tmp.setDate(date);
 				result.add(tmp);
 			}
 		}
@@ -87,9 +86,9 @@ public class DummyTemDaoImpl implements TemDao {
 	@Override
 	public List<Temperature> getTemNStocksByChannel(List<Integer> channels, Date start, Date end) {
 		List<Temperature> result = new ArrayList<Temperature>();
-		int ttt = (int)(end.getTime() - start.getTime());
 		for(Integer key : channels){
 			Random random = new Random();
+			Date date = new Date(start.getTime() + 1000);
 			for(int j = 0; j < 10; j ++){
 				Temperature tmp = new Temperature();
 				tmp.setChannel(key);
@@ -105,7 +104,7 @@ public class DummyTemDaoImpl implements TemDao {
 				for(int i = 0; i < 1000; i ++)
 					sb.append((20 + random.nextInt(10)) + ".6,");
 				tmp.setUnstock(sb.toString());
-				tmp.setDate(new Date(start.getTime() + random.nextInt(ttt)));
+				tmp.setDate(date);
 				result.add(tmp);
 			}
 		}

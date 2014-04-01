@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>新增通道|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                        </ul>
+                        <div class="fr toolbar">
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">故障条件设置</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="" class="j_common_form"
+                                                      data-edit-url="/config/update"
+                                                      data-back-url="config_list.html">
+                                                    <input type="hidden"  name="type" class="j_common_form_autovalue" />
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                类型：<span id="type"></span>
+                                                            </li>
+                                                            <li>
+                                                                值：
+                                                                <input name="value" size="20" class="j_common_form_autovalue" />
+
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+            (function(){
+                $.Dts._configTypes = ['','','','','','','斯托克斯文献值','反斯托克斯文献值','高温故障值','低温故障值','硬盘剩余容量百分比'];
+
+                var type = $.Dts.getParameter('form_type');
+
+                document.title = $.Dts._configTypes[type] + '|NEINE预警系统';
+
+                $('#type').html($.Dts._configTypes[type]);
+
+                var $tabs = $('#Tabs-2');
+                for(var i = 6; i < $.Dts._configTypes.length; i++){
+                    $tabs.append($(' <li><a href="config_list.html?type='+i+'" class="'+
+                            ($.Dts.getParameter('form_type') == i ? 'current' : '')
+                            +'">'+$.Dts._configTypes[i]+'</a></li>'));
+                }
+
+                $('#dataForm').attr('data-back-url', 'config_list.html?type='+type)
+            })();
+        </script>
+    </body>
+</html>

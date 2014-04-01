@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>项目信息|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="cf" style="padding: 100px 20px;">
+
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script>
+            (function(){
+                $.get($.Dts.rootUri + 'project/info?userid=' + $.Dts.login.getUserId(), function(res){
+                    $('#container').html('<p>'+ res.data.content +'</p>' +
+                    '<img src="'+ $.Dts.rootUri + res.data.image +'" />');
+                });
+            })();
+        </script>
+    </body>
+</html>

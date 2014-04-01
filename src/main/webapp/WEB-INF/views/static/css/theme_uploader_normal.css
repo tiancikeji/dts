@@ -1,0 +1,89 @@
+.upload-wrapper {
+    overflow: hidden;
+    padding: 5px;
+}
+.upload-wrapper .upload-list {
+    clear: both;
+    overflow: hidden;
+    *zoom: 1;
+}
+.upload-wrapper .upload-btn {
+    background: url('../images/uploader/upload_normal.png');
+    width: 120px;
+    height: 120px;
+    cursor: pointer;
+}
+.upload-wrapper .upload-btn:hover {
+    background: url('../images/uploader/upload_hover.png');
+}
+.upload-wrapper .upload-list-item {
+    float: left;
+    display: inline;
+    width: 120px;
+    height: 120px;
+    text-align: center;
+    color: #333;
+    text-decoration: none;
+    position: relative;
+    cursor: default;
+    outline: 0;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    background: url('../images/uploader/unload.png');
+}
+.upload-wrapper .upload-list-item .item-img {
+    width: 120px;
+    height: 120px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.upload-wrapper .upload-list-item .item-cover {
+    width: 52px;
+    height: 52px;
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    background: url('../images/uploader/cover.png') no-repeat left top;
+    z-index: 9;
+}
+.upload-wrapper .upload-list-item .item-progress {
+    border: 1px solid #dfe4eb;
+    height: 6px;
+    left: 12px;
+    overflow: hidden;
+    padding: 1px;
+    position: absolute;
+    text-align: left;
+    top: 58px;
+    width: 92px;
+}
+.upload-wrapper .upload-list-item .item-progress b {
+    display: block;
+    height: 6px;
+    background: url('../images/uploader/loading.gif');
+    background-color: #b4b4b4;
+    width: 0;
+}
+.upload-wrapper .upload-list-item .item-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 17px;
+    height: 17px;
+    background: url('../images/uploader/close.png') no-repeat;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 10;
+}
+.upload-wrapper .upload-list-item .item-error {
+    text-align: center;
+    height: auto;
+    margin-top: 50px;
+    color: red;
+    display: none;
+}
+.upload-wrapper .upload-list-item .drag_wrapper {
+    width: 100%;
+    height: 100%;
+}

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>新增用户|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>用户管理</h3>
+                    <!--#include virtual="/dts/inc/nav_passport.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="../passport/list.html" class="">所有用户</a></li>
+                            <li><a href="../passport/add.html" class="current">新增用户</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">新增分区通道</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="" class="j_common_form"
+                                                      data-add-url="/user/new"
+                                                      data-edit-url="/user/modify">
+                                                    <input type="hidden" name="id" class="j_common_form_autovalue" />
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                登录用户名：
+                                                                <input data-valid="1" data-valid-message="登录用户名" name="name" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                登录密码：
+                                                                <input data-valid="1" data-valid-message="登录密码" name="passwordLogin" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                退出密码：
+                                                                <input data-valid="1" data-valid-message="退出密码" name="passwordLogout" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                复位密码：
+                                                                <input data-valid="1" data-valid-message="复位密码" name="passwordReset" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                用户角色：<span id="rolesSelect"></span>
+                                                            </li>
+                                                            <li>
+                                                                可操作厂区：
+                                                                <input type="hidden" name="areaIds" id="areaIds" />
+                                                                <p id="areaTree" class="tree" style="background:#fff;"></p>
+                                                            </li>
+
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script src="../static/js/tree.js"></script>
+
+        <script>
+            (function(){
+               // role:int 用户角色 2 系统管理员（只有超级管理员能够看到此选项）, 3 , 4
+               // areaIds：String 用,分割，新增用户可以看到的监控区域id列表（前端可以把所有的areas列表列出，前端动态增加/删除可以操作的区域列表）
+
+                new $.Dts.linkAgeSelect($('#rolesSelect'), [
+                    {
+                        type: 2,
+                        name: '系统管理员'
+                    },
+                    {
+                        type: 3,
+                        name: '班长'
+                    },
+                    {
+                        type: 4,
+                        name: '操作工'
+                    }
+                ], {
+                    id:'select1',
+                    name:'role',
+                    label:'',
+                    textTag:'name',
+                    valueTag:'type',
+                    selected: $.Dts.getParameter('form_role')
+                });
+
+                $.get($.Dts.rootUri + 'area/areanames', function(res){
+                    new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
+                        id:'select1',
+                        name:'areaid',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_areaid')
+                    });
+                });
+                $.get($.Dts.rootUri + 'channel/channels', function(res){
+                    new $.Dts.linkAgeSelect($('#tongdaoSelect'), res.data, {
+                        id:'select2',
+                        name:'channelid',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_channelid')
+                    });
+                });
+                $.get($.Dts.rootUri + 'machine/machines', function(res){
+                    new $.Dts.linkAgeSelect($('#jiqiSelect'), res.data, {
+                        id:'select3',
+                        name:'machineid',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_machineid')
+                    });
+                });
+
+                //编辑模式已有区域
+                var areaIds;
+                if($.Dts.form.isEditMode()){
+                    areaIds = ',' + $.Dts.getParameter('form_areaIds') + ',';
+                }
+
+                //获取所有区域
+
+                var areaListData = [];
+                function getTreeFromData(data){
+                    if(!data.length){
+                        return {};
+                    }
+                    if(data[0].children){
+                        var obj = {};
+                        for(var i =0; i < data.length; i++){
+                            var item = data[i];
+                            var checked = '';
+                            if(areaIds && areaIds.indexOf(','+ item.id + ',') > -1){
+                                checked = 'checked';
+                            }
+                            areaListData[item.id] = item;
+                            obj['<label><input '+checked+' type="checkbox" value="'+item.id+'">'+item.name+'</label>'] = getTreeFromData(item.children);
+                        }
+                        return obj;
+                    }else{
+                        var arr = [];
+                        for(var i =0; i < data.length; i++){
+                            var item = data[i];
+                            var checked = '';
+                            if(areaIds && areaIds.indexOf(','+ item.id + ',') > -1){
+                                checked = 'checked';
+                            }
+                            areaListData[item.id] = item;
+                            arr.push('<label><input '+checked+' type="checkbox" value="'+item.id+'">'+item.name+'</label>');
+                        }
+                        return arr;
+                    }
+
+                }
+
+                var $areaIds = $('#areaIds');
+                function caculateAreaIds(){
+                    var ids = [];
+                    $('#areaTree').find(':checked').each(function(i, o){
+                        ids.push(this.value);
+                    });
+                    $areaIds.val(ids.join(','));
+                }
+
+                $.get($.Dts.rootUri + '/monitor/areas?userid=' + $.Dts.login.getUserId(), function(res){
+                    var data = res.data;
+                    new simpleTree(document.getElementById('areaTree'),getTreeFromData(data),'open');
+                    //绑定树的事件
+                    $('#areaTree').delegate('input', 'change', function(e){
+                        e.preventDefault();
+                        var $target = $(this);
+                        var checked = $target[0].checked;
+                        if($target.closest('dt').length){//选中的dt，让所有子集都选中
+                            $target.closest('dl').find('input').each(function(){
+                                this.checked = checked;
+                            });
+                        }
+                            $target.parents('dl').find('input:first').each(function(){
+                                this.checked = checked;
+                            });
+                        
+                        caculateAreaIds();
+
+                    });
+
+
+                });
+            })();
+        </script>
+    </body>
+</html>

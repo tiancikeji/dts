@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title> New Document </title>
+    <meta name="Generator" content="EditPlus">
+    <meta name="Author" content="">
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <meta charset="utf-8"/>
+    <style type="text/css">
+        body{
+            font-size:12px;
+        }
+        dl{
+            margin:0;
+            padding:0;
+        }
+        dl .line{
+            background:url('http://images.cnblogs.com/cnblogs_com/libmw/399586/o_vertLine.gif') repeat-y;
+            margin:0;
+            padding:0;
+        }
+        dl.open dd{
+            display:block;
+        }
+        dl.close dd{
+            display:none;
+        }
+        dt{
+            line-height:22px;
+            height:22px;
+        }
+        dd{
+            margin-left: 16px;
+        }
+
+
+        img{
+            vertical-align: middle;
+            background-color: white;
+        }
+    </style>
+    <base href="http://images.cnblogs.com/cnblogs_com/libmw/399586/">
+</head>
+
+<body>
+<dl id="test"></dl>
+</body>
+<script>
+    config = {
+        icon: {
+            folder: {
+                root: ['o_folderNodeOpenLastFirst.gif', 'o_folderNodeLastFirst.gif']
+                ,branchroot: ['o_folderNodeOpenFirst.gif', 'o_folderNodeFirst.gif']
+                ,branch: ['o_folderNodeOpen.gif', 'o_folderNode.gif']
+                ,branchlast: ['o_folderNodeOpenLast.gif', 'o_folderNodeLast.gif']
+            }
+            ,file: {
+                branchleaf: 'o_docNode.gif'
+                ,leaf: 'o_docNodeLast.gif'
+            }
+        }
+    }
+    function addClass(node,className){
+        node.className += ' ' + className;
+    }
+    function replaceClass(node,oldClassName,newClassName){
+        node.className = node.className.replace(oldClassName,newClassName);
+    }
+    function hasClass(node,className){
+        var reg = new RegExp('\\b' +className+ '\\b');
+        return reg.test(node.className);
+    }
+
+    createFolder = function(json, status, isRoot){
+
+        //{'海淀':['五道口','知春路'],'朝阳':['大望路','望京']}的第一次循环，item为['五道口','知春路']，key为海淀，cur为1，num为2
+        //['五道口','知春路','上地']的第一次循环，item为五道口，key为0，cur为1，num为3
+        function getNode(item, key, cur, num){//item待生成的节点(对象或者字符串), key当前对象的对象名，cur：当前第几次循环，num：总共几次循环
+            var htm = '';
+            if(typeof item == 'object'){//生成文件夹形式的dd节点
+                position = isRoot && cur == 1?(num>1?'branchroot':'root'):(cur==num?'branchlast':'branch');//根文件夹判断是独根还是多个分支的根，分支文件夹判断是否为最后一个分支
+                htm += '<dd><dl class="'+status + (position=='branch'?' line':(position=='branchroot'?' line':''))+'" tree-position="'+position+'">';
+                htm += '<dt><span><img src="'+config.icon.folder[position][status=='open'?0:1]+'" icon-type="folderHandle" /><img src="o_folder.gif" /></span>'+key+'</dt>';
+                htm += createFolder(item, status);
+                htm += '</dl></dd>';
+            }else{//生成文件形式的dd节点
+                htm += '<dd><span><img src="'+config.icon.file[cur==num?'leaf':'branchleaf']+'" /><img src="o_doc.gif" /></span>'+item+'</dd>';
+            }
+            return htm;
+        }
+
+        var html = '';
+        if(Object.prototype.toString.apply(json) == '[object Array]'){//数组
+            for(i=0,len=json.length;i<len;i++){
+                if(typeof json[i] == 'object')
+                    html += createFolder(json[i], status);
+                else
+                    html += getNode(json[i], i, i+1, len);
+            }
+        }else if(typeof json == 'object'){//对象
+            var len = 0,cur=1;
+            for(var key in json){len++;}
+            for(var key in json){
+                html += getNode(json[key], key, cur++, len);
+            }
+        }else{
+            return '';
+        }
+        return html;
+    }
+
+    create = function(node, json, status){
+        var html = '<dl>';
+        html += createFolder(json, status, true);
+        html += '</dl>';
+        node.innerHTML = html;
+        node.onclick = function(e){
+            var evt = e || window.event,
+                    target = evt.target || evt.srcElement;
+            if(target.nodeName == 'IMG' && target.getAttribute('icon-type') == 'folderHandle'){
+                var ctn = target.parentNode.parentNode.parentNode,
+                        isOpen = hasClass(ctn, 'open');
+                replaceClass(ctn, isOpen?'open':'close', isOpen?'close':'open');
+                target.src = config.icon.folder[ctn.getAttribute('tree-position')][isOpen?1:0];
+            }
+        }
+    }
+    var json = {
+        '北京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门']
+                ,'90号': ['未开通']
+            }
+            ,'朝阳':['大望路','望京']
+        }
+        ,'北的京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                ,'90号': ['未开通']
+            }
+            ,'朝阳':['大望路','望京']
+        }
+        ,'北的3京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                ,'90号': ['未开通']
+            }
+            ,'朝阳':['大望路','望京']
+        }
+        ,'北2的京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                ,'90号': ['未开通']
+            }
+            ,'朝阳':['大望路','望京']
+        }
+        ,'北g的京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                ,'90号': ['未开通']
+            }
+            ,'北的京': {
+                '海淀': {
+                    '13号': ['五道口','知春路']
+                    ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                    ,'90号': ['未开通']
+                }
+                ,'朝阳':['大望路','望京']
+            }
+            ,'朝阳':['大望路','望京']
+            ,'北的京': {
+                '海淀': {
+                    '13号': ['五道口','知春路']
+                    ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                    ,'90号': ['未开通']
+                }
+                ,'朝阳':['大望路','望京']
+                ,'北的京': {
+                    '海淀': {
+                        '13号': ['五道口','知春路']
+                        ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                        ,'90号': ['未开通']
+                    }
+                    ,'朝阳':['大望路','望京']
+                }
+            }
+        }
+        ,'北的f京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                ,'90号': ['未开通']
+            }
+            ,'朝阳':['大望路','望京']
+            ,'北的京': {
+                '海淀': {
+                    '13号': ['五道口','知春路']
+                    ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                    ,'90号': ['未开通']
+                }
+                ,'朝阳':['大望路','望京']
+            }
+        }
+        ,'北e的京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                ,'90号': ['未开通']
+            }
+            ,'朝阳':['大望路','望京']
+            ,'北的京': {
+                '海淀': {
+                    '13号': ['五道口','知春路']
+                    ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                    ,'90号': ['未开通']
+                }
+                ,'朝阳':['大望路','望京']
+            }
+        }
+        ,'北的w京': {
+            '海淀': {
+                '13号': ['五道口','知春路']
+                ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                ,'90号': ['未开通']
+            }
+            ,'朝阳':['大望路','望京']
+            ,'北的京': {
+                '海淀': {
+                    '13号': ['五道口','知春路']
+                    ,'4号': ['西直门',{'望京':['望京东','望京西']}]
+                    ,'90号': ['未开通']
+                }
+                ,'朝阳':['大望路','望京']
+            }
+        }
+    }
+
+    create(document.getElementById('test'),json,'open')
+</script>
+</html>

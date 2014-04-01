@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <title>机器通道监控|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+
+                <div class="menu">
+                    <h3>历史查询</h3>
+                    <!--#include virtual="/dts/inc/nav_report.html"-->
+                </div>
+                <div class="menu-ext">
+                    <p>监测名称：<span id="monitorName"></span></p>
+                    <p>最高温度：<span id="maxTemp"></span> °C</p>
+                    <p>最低温度：<span id="minTemp"></span> °C</p>
+                    <p>平均温度：<span id="avgTemp"></span> °C</p>
+                </div>
+
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1 j_tabs_switch">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li class="j_tabs_switch_hd current" id="chartsBtn"><a href="#">数据报表</a></li>
+                            <li class="j_tabs_switch_hd"><a href="#">报警信息</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li><a href="#"><i class="icon-toolbar icon-toolbar2"></i>打印</a></li>
+                                <li><a href="#" class="j_btn_export" target="_blank"><i class="icon-toolbar icon-toolbar3"></i>下载</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+
+                        <div class="panes-2 j_tabs_switch_bd">
+                            <p>
+                                开始时间：
+                                <input name="startTime" type="text" class="select-2 j_date" size="20">
+                                结束时间：
+                                <input name="endTime" type="text"  class="select-2 j_date" size="20">
+                                <input class="btn btn-blue" type="button" id="btnRenderCharts" value="确定">
+                            </p>
+                            <div class="charts" id="chartsTempContainer"></div>
+                            <div class="charts" id="chartsStockContainer"></div>
+                            <div class="charts" id="chartsUnstockContainer"></div>
+                        </div>
+
+                        <div class="panes-2 j_tabs_switch_bd hide">
+                            <p id="list" class="j_alarm_table"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <!--#include virtual="/dts/inc/alarmtable.html"-->
+        <script src="../static/js/tree.js"></script>
+        <script src="../static/js/echarts-plain.js"></script>
+        <script>
+            (function(){
+                $.Dts.areaManager = {
+                    isMechine: false, //当前是否选择的机器，false代表选择的通道
+                    loadTimer: null,
+                    xNums: 1, //当前x轴以有多少个点
+                    xNumsMax: 5, //x轴最多展示多少个点
+                    areaListData: {}, //区域数据
+                    $monitorName: $('#monitorName'),
+                    $maxTemp: $('#maxTemp'),
+                    $minTemp: $('#minTemp'),
+                    $avgTemp: $('#avgTemp'),
+                    $areaImage: $('#areaImage'),
+                    $startTime: $('input[name="startTime"]'),
+                    $endTime: $('input[name="endTime"]'),
+                    initImage: function(id){
+                        return; //仪器没有平面视图，直接显示数据报表
+                        console.log('imitImage',id);
+                        this.$areaImage.find('img').attr('src', $.Dts.rootUri + $.Dts.areaManager.areaListData[id].image);
+                    },
+                    initArea: function(id){ //初始化一个区域
+                        id = id || $.Dts.areaManager.currentId;
+                        var _this = this;
+                        this.xNums = 1;
+                        this.initImage(id);
+                        clearTimeout(_this.loadTimer);
+                        _this.loadTimer = null;
+                        this.$monitorName.html($.Dts.areaManager.currentName);
+                        $.get($.Dts.rootUri + '/monitor/'+ ($.Dts.areaManager.isMechine ? 'machine' : 'channel') +
+                                '/data?userid='+$.Dts.login.getUserId()+'&id='+id+'&time=-1&start='+
+                                $.Dts.areaManager.start +'&end=' + $.Dts.areaManager.end, function(res){
+                            if(_this.loadTimer){
+                                return;
+                            }
+                            var data = res.data;
+                            var xAxis = [];
+                            var stocks = [],tems = [],unstocks = [];
+                            for(var d in data.data){
+                                var channelData = data.data[d];
+                                xAxis = channelData.length;
+                                stocks.push({
+                                    name: d,
+                                    data: channelData.stocks
+                                });
+                                tems.push({
+                                    name: d,
+                                    data: channelData.tems
+                                });
+                                unstocks.push({
+                                    name: d,
+                                    data: channelData.unstocks
+                                });
+                            }
+
+
+
+                        }, 'json');
+                    },
+
+                    renderCharts: function(id){
+
+                        id = id || $.Dts.areaManager.currentId;
+
+                        var _this = this;
+                        $.get($.Dts.rootUri + '/report/'+ ($.Dts.areaManager.isMechine ? 'machine' : 'channel') +
+                                '/data?userid='+$.Dts.login.getUserId()+'&id='+id+'&start='+  this.$startTime.val() +'&end='+  this.$endTime.val(), function(res){
+
+                            var data = res.data;
+
+                            //初始化温度数据
+                            _this.maxTemp = data.max;
+                            _this.minTemp = data.min;
+                            _this.avgSum += data.avg;
+                            _this.renderTemp();
+
+                            //温度
+                            var tems = [];
+                            for(var i in data.tems.data){
+                                tems.push({
+                                    type:'line',
+                                    name: i,
+                                    data: data.tems.data[i]
+                                })
+                            }
+                            var temsChart = echarts.init(document.getElementById('chartsTempContainer'));
+                            var option = {
+                                tooltip : {
+                                    trigger: 'axis'
+                                },
+                                legend: {
+                                    data:['温度']
+                                },
+                                calculable : false,
+                                xAxis : [
+                                    {
+                                        type : 'category',
+                                        boundaryGap : false,
+                                        data : data["tems"]["dates"]
+                                    }
+                                ],
+                                yAxis : [
+                                    {
+                                        type : 'value',
+                                        splitArea : {show : true}
+                                    }
+                                ],
+                                series : tems
+                            };
+                            temsChart.setOption(option);
+
+                            //stocks
+                            var stocks = [];
+                            for(var i in data.stocks.data){
+                                stocks.push({
+                                    type:'line',
+                                    name: i,
+                                    data: data.stocks.data[i]
+                                })
+                            }
+                            var stocksChart = echarts.init(document.getElementById('chartsStockContainer'));
+                            var option = {
+                                tooltip : {
+                                    trigger: 'axis'
+                                },
+                                legend: {
+                                    data:['stocksChart']
+                                },
+                                calculable : false,
+                                xAxis : [
+                                    {
+                                        type : 'category',
+                                        boundaryGap : false,
+                                        data : data["tems"]["dates"]
+                                    }
+                                ],
+                                yAxis : [
+                                    {
+                                        type : 'value',
+                                        splitArea : {show : true}
+                                    }
+                                ],
+                                series : stocks
+                            };
+                            stocksChart.setOption(option);
+
+                            //unstocks
+                            var unstocks = [];
+                            for(var i in data.unstocks.data){
+                                unstocks.push({
+                                    type:'line',
+                                    name: i,
+                                    data: data.unstocks.data[i]
+                                })
+                            }
+                            var unStocksChart = echarts.init(document.getElementById('chartsUnstockContainer'));
+                            var option = {
+                                tooltip : {
+                                    trigger: 'axis'
+                                },
+                                legend: {
+                                    data:['unStocksChart']
+                                },
+                                calculable : false,
+                                xAxis : [
+                                    {
+                                        type : 'category',
+                                        boundaryGap : false,
+                                        data : data["tems"]["dates"]
+                                    }
+                                ],
+                                yAxis : [
+                                    {
+                                        type : 'value',
+                                        splitArea : {show : true}
+                                    }
+                                ],
+                                series : unstocks
+                            };
+                            unStocksChart.setOption(option);
+                        }, 'json');
+                    },
+
+                    renderTemp: function(){
+                        this.$maxTemp.html(this.maxTemp);
+                        this.$minTemp.html(this.minTemp);
+                        this.$avgTemp.html(this.avgTemp);
+                    },
+                    loadHistory: function(id){
+                        id = id || $.Dts.areaManager.currentId;
+                        $.get($.Dts.rootUri + '/report/'+ ($.Dts.areaManager.isMechine ? 'machine' : 'channel') +
+                                '/alarm?userid=' + $.Dts.login.getUserId() + '&id=' + id +
+                                '&start='+$.Dts.areaManager.historyStart+'&step=50', function(res){
+                            if(!$.Dts.ajax.validRes(res)){
+                                return;
+                            }
+                            $('#list').html(baidu.template('listTmpl', res));
+                        });
+                    }
+                }
+
+
+
+
+
+
+
+
+
+                function getTreeFromData(data){
+                    if(!data.length){
+                        return {};
+                    }
+                    if(data[0].channels){
+                        var obj = {};
+                        for(var i =0; i < data.length; i++){
+                            var item = data[i];
+                            $.Dts.areaManager.areaListData[item.id] = item;
+                            obj['<a data-id="'+item.id+'" data-machine=1>'+item.name+'</a>'] = getTreeFromData(item.channels);
+                        }
+                        return obj;
+                    }else{
+                        var arr = [];
+                        for(var i =0; i < data.length; i++){
+                            var item = data[i];
+                            $.Dts.areaManager.areaListData[item.id] = item;
+                            arr.push('<a data-id="'+item.id+'">'+item.name+'</a>');
+                        }
+                        return arr;
+                    }
+
+                }
+
+                $.get($.Dts.rootUri + '/monitor/channels?userid=' + $.Dts.login.getUserId(), function(res){
+                    var data = res.data;
+                    new simpleTree(document.getElementById('channelTree'),getTreeFromData(data),'open');
+                    //绑定树的事件
+                    $('#channelTree a').click(function(e){
+                        e.preventDefault();
+                        var $target = $(this);
+                        $.Dts.areaManager.isMechine = $target.attr('data-machine') == '1';
+                        $.Dts.areaManager.currentName = $target.html();
+                        $.Dts.areaManager.currentId = $target.attr('data-id');
+                        $.Dts.areaManager.initArea();
+                    });
+                    $('.j_btn_page').click(function(e){
+                        e.preventDefault();
+                        var $target = $(this);
+                        if($target.attr('data-action') == 'prev'){//向前
+                            if($.Dts.areaManager.start > 1){
+                                $.Dts.areaManager.start = $.Dts.areaManager.start - 100;
+                                $.Dts.areaManager.end = $.Dts.areaManager.end - 100;
+                            }else{
+                                return;
+                            }
+                        }else{
+                            $.Dts.areaManager.start = $.Dts.areaManager.start + 100;
+                            $.Dts.areaManager.end = $.Dts.areaManager.end + 100;
+                        }
+                        $.Dts.areaManager.initArea();
+                    });
+
+                    $('.j_btn_history_page').click(function(e){
+                        e.preventDefault();
+                        var $target = $(this);
+                        if($target.attr('data-action') == 'prev'){//向前
+                            if($.Dts.areaManager.historyStart > 1){
+                                $.Dts.areaManager.historyStart = $.Dts.areaManager.historyStart - 50;
+                            }else{
+                                return;
+                            }
+                        }else{
+                            $.Dts.areaManager.historyStart = $.Dts.areaManager.historyStart + 50;
+                        }
+                        $.Dts.areaManager.loadHistory();
+                    });
+
+                    $.Dts.areaManager.currentName = $.Dts.areaManager.areaListData[1].name;
+                    $.Dts.areaManager.start = 1;
+                    $.Dts.areaManager.historyStart = 1;
+                    $.Dts.areaManager.end = 100;
+                    $.Dts.areaManager.currentId = 1;
+                    $.Dts.areaManager.initArea();
+                });
+
+                //charts点击后触发resize，从而从新计算图表宽度
+                $('#chartsBtn').click(function(){
+                    setTimeout(function(){
+                        $(window).trigger('resize');
+                    }, 200);
+                });
+
+                //图表绘制
+                $('#btnRenderCharts').click(function(){
+                    $.Dts.areaManager.renderCharts();
+                });
+            })();
+
+
+        </script>
+        <script src="../static/datepick/lhgcore.lhgcalendar.min.js"></script>
+        <script>
+            (function(){
+                //日期控件 yyyy-MM-dd HH:mm:ss
+                $('.j_date').calendar({ format:'yyyy-MM-dd HH:mm:ss' });
+            })();
+        </script>
+    </body>
+</html>

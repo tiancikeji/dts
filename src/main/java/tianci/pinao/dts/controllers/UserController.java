@@ -55,7 +55,8 @@ public class UserController {
 				log.setValue("" + user.getId());
 				log.setSource(user.getName());
 				logService.addLog(log);
-			}
+			} else
+				result.put("status", "500");
 		} catch(Throwable t){
 			t.printStackTrace();
 			result.put("status", "400");

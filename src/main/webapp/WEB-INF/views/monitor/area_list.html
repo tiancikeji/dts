@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <title>监测区域|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+
+                <div class="menu">
+                    <h3>实时监控</h3>
+                    <!--#include virtual="/dts/inc/nav_monitor.html"-->
+                </div>
+                <div class="menu-ext">
+                    <p>监测名称：<span id="monitorName"></span></p>
+                    <p>最高温度：<span id="maxTemp"></span> °C</p>
+                    <p>最低温度：<span id="minTemp"></span> °C</p>
+                    <p>平均温度：<span id="avgTemp"></span> °C</p>
+                </div>
+
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1 j_tabs_switch">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li class="j_tabs_switch_hd current"><a href="#">平面视图</a></li>
+                            <li class="j_tabs_switch_hd" id="chartsBtn"><a href="#">数据报表</a></li>
+                            <li class="j_tabs_switch_hd"><a href="#">报警信息</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li><a href="#"><i class="icon-toolbar icon-toolbar2"></i>打印</a></li>
+                                <li><a href="../area/download" class="j_btn_export" target="_blank"><i class="icon-toolbar icon-toolbar3"></i>下载</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="panes-2 j_tabs_switch_bd ">
+                            <div class="fl area-panel" id="areaImage">
+                                <img style="position: absolute; width: 100%; height: 100%;" />
+                                <table class="table-area" style="position: absolute; width: 100%; height: 100%;">
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                                </table>
+                            </div>
+                            <div class="fl j_alarm_info hide">
+                                <p>报警区域说明：<span class="j_alarmname"></span></p><br />
+                                <p>报警类型：<span class="j_alarmtype"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="panes-2 j_tabs_switch_bd hide" style="padding: 20px;">
+                            <div class="charts" id="chartsContainer"></div>
+                        </div>
+
+                        <div class="panes-2 j_tabs_switch_bd hide">
+                            <p id="list" class="j_alarm_table"></p>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <!--#include virtual="/dts/inc/alarmtable.html"-->
+        <script src="../static/js/highcharts.js"></script>
+        <script src="../static/js/tree.js"></script>
+        <script>
+            (function(){
+                $.Dts.areaManager = {
+                    loadTimer: null,
+                    xNums: 1, //当前x轴以有多少个点
+                    xNumsMax: 5, //x轴最多展示多少个点
+                    areaListData: {}, //区域数据
+                    $monitorName: $('#monitorName'),
+                    $maxTemp: $('#maxTemp'),
+                    $minTemp: $('#minTemp'),
+                    $avgTemp: $('#avgTemp'),
+                    $areaImage: $('#areaImage'),
+                    $areaTableItem: $('#areaImage td'),
+                    $alarmInfo: $('.j_alarm_info'),
+                    initImage: function(id){
+                        console.log('imitImage',id);
+                        this.$areaImage.find('img').attr('src', $.Dts.rootUri + $.Dts.areaManager.areaListData[id].image);
+                        this.$areaTableItem.removeClass('highlight');
+                    },
+                    initArea: function(id){ //初始化一个区域
+                        id = id || $.Dts.areaManager.currentId;
+                        var _this = this;
+                        this.xNums = 1;
+                        this.$alarmInfo.hide();
+                        this.initImage(id);
+                        this.loadHistory(id);
+                        clearTimeout(_this.loadTimer);
+                        _this.loadTimer = null;
+                        this.$monitorName.html($.Dts.areaManager.areaListData[id].name);
+                        $.get($.Dts.rootUri + '/monitor/area/data?userid='+$.Dts.login.getUserId()+'&id='+id+'&time=-1', function(res){
+                            if(_this.loadTimer){
+                                return;
+                            }
+                            var data = res.data;
+                            var date = (new Date(data.time)).toLocaleTimeString();
+                            $('#chartsContainer').highcharts({
+                                title: {
+                                    text: $.Dts.areaManager.areaListData[id].name + '温度监控',
+                                    x: -20 //center
+                                },
+                                subtitle: {
+                                    text: ' ',
+                                    x: -20
+                                },
+                                xAxis: {
+                                    categories: [date]
+                                },
+                                yAxis: {
+                                    title: {
+                                        text: '温度 (°C)'
+                                    },
+                                    plotLines: [{
+                                        value: 0,
+                                        width: 1,
+                                        color: '#808080'
+                                    }]
+                                },
+                                tooltip: {
+                                    valueSuffix: '°C'
+                                },
+                                legend: {
+                                    layout: 'vertical',
+                                    align: 'right',
+                                    verticalAlign: 'middle',
+                                    borderWidth: 0
+                                },
+                                series: [{
+                                    name: '最低',
+                                    data: [data.min]
+                                }, {
+                                    name: '最高',
+                                    data: [data.max]
+                                }, {
+                                    name: '平均',
+                                    data: [data.avg]
+                                }]
+                            });
+                            _this.checkAlarm(data);
+                            //初始化温度数据
+                            _this.maxTemp = data.max;
+                            _this.minTemp = data.min;
+                            _this.avgSum += data.avg;
+                            _this.renderTemp();
+                            _this.loadTimer = setTimeout(function(){
+                                _this.loadData(data.time, id);
+                            }, res.interval * 1000);
+                        }, 'json');
+                    },
+                    loadData: function(time, id){
+                        var _this = this;
+                        _this.loadTimer = null;
+                        $.get($.Dts.rootUri + '/monitor/area/data?userid='+
+                                $.Dts.login.getUserId()+'&id='+id+'&time=' + time, function(res){
+                            if(_this.loadTimer){
+                                return;
+                            }
+                            if($.Dts.ajax.validRes(res)){ //验证通过
+                                var data = res.data;
+                                var date = (new Date(data.time)).toLocaleTimeString();
+                                var chart = $('#chartsContainer').highcharts();
+                                var isShift = true; //追加后是否删除最前面的点
+                                if(_this.xNums < _this.xNumsMax){
+                                    isShift = false;
+                                }
+
+                                chart.series[0].addPoint([date, data.min], true, isShift);
+
+                                chart.series[1].addPoint([date, data.max], true, isShift);
+
+                                chart.series[2].addPoint([date, data.avg], true, isShift);
+                                _this.xNums++;
+                                _this.checkAlarm(data);
+
+                                _this.maxTemp = data.max;
+                                _this.minTemp = data.min;
+                                _this.avgTemp = data.avg;
+                                _this.renderTemp();
+                                _this.loadTimer = setTimeout(function(){
+                                    _this.loadData(data.time, id);
+                                }, res.interval * 2000);
+                            }
+
+                        }, 'json');
+                    },
+                    renderTemp: function(){
+                        this.$maxTemp.html(this.maxTemp);
+                        this.$minTemp.html(this.minTemp);
+                        this.$avgTemp.html(this.avgTemp);
+                    },
+                    loadHistory: function(id){
+                        id = id || $.Dts.areaManager.currentId;
+                        $.get($.Dts.rootUri + '/monitor/area/alarm?userid=' + $.Dts.login.getUserId() + '&id=' + id +
+                                '&start='+$.Dts.areaManager.historyStart+'&step=50', function(res){
+                            if($.Dts.ajax.validRes(res)){ //验证通过
+                                $('#list').html(baidu.template('listTmpl', res));
+                            }
+                        });
+                    },
+                    checkAlarm: function(data){
+                        //报警展示
+                        if(data.alarmIdxs){
+                            this.renderAlarmArea(data);
+                        }
+                        //报警说明
+                        if(data.alarmName){
+                            this.renderAlarmInfo(data);
+                        }
+                    },
+                    renderAlarmArea: function(data){
+                        console.log('报警了', data)
+                        for(var i = 0; i < data.alarmIdxs.length; i++){
+                            var item = data.alarmIdxs[i]
+                            var alarmId = data.alarmIds[i];
+                            this.$areaTableItem.eq(item - 1).data('alarmId', alarmId).addClass('highlight').unbind('click').bind('click', function(){
+                                console.log('点击了',$(this),$(this).data('alarmId'))
+                                $.Dts.areaManager.initArea($(this).data('alarmId'));
+                            });
+
+                        }
+                    },
+                    renderAlarmInfo: function(data){
+                        this.$alarmInfo.find('.j_alarmname').html(data.alarmName);
+                        this.$alarmInfo.find('.j_alarmtype').html($.Dts.alarmManager.alarmType[data.alarmType]);
+                        this.$alarmInfo.show();
+                    }
+                }
+
+                function getTreeFromData(data){
+                    if(!data.length){
+                        return {};
+                    }
+                    if(data[0].children){
+                        var obj = {};
+                        for(var i =0; i < data.length; i++){
+                            var item = data[i];
+                            $.Dts.areaManager.areaListData[item.id] = item;
+                            obj['<a data-id="'+item.id+'">'+item.name+'</a>'] = getTreeFromData(item.children);
+                        }
+                        return obj;
+                    }else{
+                        var arr = [];
+                        for(var i =0; i < data.length; i++){
+                            var item = data[i];
+                            $.Dts.areaManager.areaListData[item.id] = item;
+                            arr.push('<a data-id="'+item.id+'">'+item.name+'</a>');
+                        }
+                        return arr;
+                    }
+
+                }
+
+                $.get($.Dts.rootUri + '/monitor/areas?userid=' + $.Dts.login.getUserId(), function(res){
+                    if(!$.Dts.ajax.validRes(res)){
+                        return;
+                    }
+                    var data = res.data;
+                    new simpleTree(document.getElementById('areaTree'),getTreeFromData(data),'open');
+                    //绑定树的事件
+                    $('#areaTree a').click(function(e){
+                        e.preventDefault();
+                        var $target = $(this);
+                        console.log($target);
+                        $.Dts.areaManager.initArea($target.attr('data-id'));
+                    });
+
+                    $('.j_btn_history_page').click(function(e){
+                        e.preventDefault();
+                        var $target = $(this);
+                        if($target.attr('data-action') == 'prev'){//向前
+                            if($.Dts.areaManager.historyStart > 1){
+                                $.Dts.areaManager.historyStart = $.Dts.areaManager.historyStart - 50;
+                            }else{
+                                return;
+                            }
+                        }else{
+                            $.Dts.areaManager.historyStart = $.Dts.areaManager.historyStart + 50;
+                        }
+                        $.Dts.areaManager.loadHistory();
+                    });
+
+                    $.Dts.areaManager.historyStart = 1;
+                    $.Dts.areaManager.currentId = 1;
+                    $.Dts.areaManager.initArea();
+                });
+
+                //charts点击后触发resize，从而从新计算图表宽度
+                $('#chartsBtn').click(function(){
+                    setTimeout(function(){
+                        $(window).trigger('resize');
+                    }, 200);
+                });
+            })();
+
+        </script>
+
+        <script>
+
+        </script>
+    </body>
+</html>

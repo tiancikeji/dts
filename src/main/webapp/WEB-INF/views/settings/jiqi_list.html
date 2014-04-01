@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <title>所有机器|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="jiqi_list.html" class="current">所有机器</a></li>
+                            <li><a href="jiqi_add.html">新增机器</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li class="up-btn j_upload_btn" data-upurl="/machine/replace"></li>
+                                <li><a href="../machine/download" class="j_btn_export" target="_blank"><i class="icon-toolbar icon-toolbar3"></i>下载</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="panes-2">
+                            <div id="list" class="j_common_list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <!--#include virtual="/dts/static/inc/upload.js.html"-->
+
+        <script type="text/html" id="listTmpl">
+            <table class="table table-auto">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>机器名称</th>
+                    <th>串口号</th>
+                    <th>波特率</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <%for(i = 0; i < data.length; i++){%>
+                        <%var item = data[i]%>
+                        <tr>
+                            <td><%=item.id%></td>
+                            <td><%=item.name%></td>
+                            <td><%=item.serialport%></td>
+                            <td><%=item.baudrate%></td>
+                            <td>
+                                <a href="jiqi_add.html?form_edit_mode=1&form_id=<%:u=item.id%>&form_name=<%:u=item.name%>&form_serialport=<%:u=item.serialport%>&form_baudrate=<%:u=item.baudrate%>"
+                                   class="j_common_edit">编辑</a>&nbsp;
+                                <a href="#" class="j_common_delete" data-delete-id="<%=item.id%>"
+                                   data-delete-url="machine/deletemachine">删除</a>
+                            </td>
+                        </tr>
+                    <%}%>
+                </tbody>
+            </table>
+        </script>
+        <script>
+            $.get($.Dts.rootUri + 'machine/machines', function(res){
+                if(!$.Dts.ajax.validRes(res)){
+                    return;
+                }
+                $('#list').html(baidu.template('listTmpl', res));
+            });
+        </script>
+    </body>
+</html>

@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,9 +81,9 @@ public class TemperatureController {
 		return result;
 	}
 
-	@RequestMapping(value="/alarm/notify", method = RequestMethod.GET)
+	@RequestMapping(value="/alarm/notify", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<Object, Object> notifyAlarm(HttpServletRequest request, long userid, long id){
+	public Map<Object, Object> notifyAlarm(HttpServletRequest request, long userid, String id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -92,7 +93,10 @@ public class TemperatureController {
 			if(obj != null && obj instanceof User){	
 				User user = (User)obj;
 				if(configService.checkLifeTime() || user.getRole() == 1){
-					if(temService.updateAlarm(id, Alarm.STATUS_NOTIFY, userid))
+					List<Long> ids = new ArrayList<Long>();
+					for(String _id : StringUtils.split(id, ","))
+						ids.add(NumberUtils.toLong(_id, -1));
+					if(temService.updateAlarm(ids, Alarm.STATUS_NOTIFY, userid))
 						result.put("status", "0");
 					else
 						result.put("status", "400");
@@ -107,9 +111,9 @@ public class TemperatureController {
 		return result;
 	}
 
-	@RequestMapping(value="/alarm/mute", method = RequestMethod.GET)
+	@RequestMapping(value="/alarm/mute", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<Object, Object> muteAlarm(HttpServletRequest request, long userid, long id){
+	public Map<Object, Object> muteAlarm(HttpServletRequest request, long userid, String id){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -118,8 +122,11 @@ public class TemperatureController {
 			Object obj = PinaoUtils.getUserFromSession(request, userid);
 			if(obj != null && obj instanceof User){	
 				User user = (User)obj;
-				if(configService.checkLifeTime() || user.getRole() == 1){		
-					if(temService.updateAlarm(id, Alarm.STATUS_MUTE, userid))
+				if(configService.checkLifeTime() || user.getRole() == 1){	
+					List<Long> ids = new ArrayList<Long>();
+					for(String _id : StringUtils.split(id, ","))
+						ids.add(NumberUtils.toLong(_id, -1));
+					if(temService.updateAlarm(ids, Alarm.STATUS_MUTE, userid))
 						result.put("status", "0");
 					else
 						result.put("status", "400");
@@ -134,9 +141,9 @@ public class TemperatureController {
 		return result;
 	}
 
-	@RequestMapping(value="/alarm/reset", method = RequestMethod.GET)
+	@RequestMapping(value="/alarm/reset", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<Object, Object> resetAlarm(HttpServletRequest request, long userid, long id, String loginname, String password){
+	public Map<Object, Object> resetAlarm(HttpServletRequest request, long userid, String id, String loginname, String password){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -147,8 +154,50 @@ public class TemperatureController {
 				User user = userService.getResetUser(loginname, password);
 				if(user != null && StringUtils.equals(user.getPasswordReset(), password)){
 					if(user.getRole() < 4){
-						if(configService.checkLifeTime() || user.getRole() == 1){	
-							if(temService.updateAlarm(id, Alarm.STATUS_RESET, userid))
+						if(configService.checkLifeTime() || user.getRole() == 1){
+							List<Long> ids = new ArrayList<Long>();
+							for(String _id : StringUtils.split(id, ","))
+								ids.add(NumberUtils.toLong(_id, -1));
+							if(temService.updateAlarm(ids, Alarm.STATUS_RESET, userid))
+								result.put("status", "0");
+							else
+								result.put("status", "400");
+						} else
+							result.put("status", "1000");
+					} else
+						result.put("status", "700");
+				} else
+					result.put("status", "600");
+			} else
+				result.put("status", "500");
+		} catch(Throwable t){
+			t.printStackTrace();
+			result.put("status", "400");
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/alarm/resetAll", method = RequestMethod.POST)
+	@ResponseBody
+	public Map<Object, Object> resetAllAlarm(HttpServletRequest request, long userid, String loginname, String password){
+		Map<Object, Object> result = new HashMap<Object, Object>();
+
+		try{
+			userid = PinaoUtils.getUserid(request, userid);
+			result.put("status", "400");
+			Object obj = PinaoUtils.getUserFromSession(request, userid);
+			if(obj != null && obj instanceof User){
+				User user = userService.getResetUser(loginname, password);
+				if(user != null && StringUtils.equals(user.getPasswordReset(), password)){
+					if(user.getRole() < 4){
+						if(configService.checkLifeTime() || user.getRole() == 1){
+							List<Long> ids = null;
+							if(user.getRole() == 1)
+								ids = temService.getAllAlarmIds(Alarm.STATUS_RESET);
+							else
+								ids = temService.getAlarmIdsByAreaIds(user.getAreaIds(), Alarm.STATUS_RESET);
+							
+							if(temService.updateAlarm(ids, Alarm.STATUS_RESET, userid))
 								result.put("status", "0");
 							else
 								result.put("status", "400");
@@ -222,7 +271,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/area/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getAreaAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
+	public Map<Object, Object> getAreaAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step, String startDate, String endDate){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -241,9 +290,11 @@ public class TemperatureController {
 						if(step == null || step <= 0)
 							step = 100;
 						List<Map<String, Object>> tmp = null;
-						if(area != null)
-							tmp = parseAlarmData(temService.getAreaAlarmReportData(area, start, step));
-						else
+						Date _startDate = PinaoUtils.getDate(startDate);
+						Date _endDate = PinaoUtils.getDate(endDate);
+						if(area != null && _startDate != null && _endDate != null && !_endDate.before(_startDate)){
+							tmp = parseAlarmData(temService.getAreaAlarmReportData(area, start, step, _startDate, _endDate));
+						} else
 							tmp = new ArrayList<Map<String,Object>>();
 						
 						result.put("data", tmp);
@@ -280,7 +331,7 @@ public class TemperatureController {
 					Date startDate = PinaoUtils.getDate(start);
 					Date endDate = PinaoUtils.getDate(end);
 					if(area != null && startDate != null && endDate != null && !endDate.before(startDate))
-						tmp = parseReportData(temService.getAreaReportData(area, startDate, endDate));
+						tmp = parseAreaReportData(temService.getAreaReportData(area, startDate, endDate));
 					else
 						tmp = new HashMap<String, Object>();
 					
@@ -296,9 +347,53 @@ public class TemperatureController {
 		}
 		return result;
 	}
+
+	private Map<String, Object> parseAreaReportData(ReportData data) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		if(data != null){
+			result.put("max", PinaoUtils.getFloat(data.getMax()));
+			result.put("min", PinaoUtils.getFloat(data.getMin()));
+			result.put("avg", PinaoUtils.getFloat(data.getAvg()));
+			
+			Map<String, Object> tmp = new HashMap<String, Object>();
+			if(data.getTems() != null && data.getTems().size() > 0){
+				Set<Date> _dates = new HashSet<Date>();
+				for(String name : data.getTems().keySet()){
+					_dates.addAll(data.getTems().get(name).keySet());
+				}
+				List<Date> dates = new ArrayList<Date>(_dates);
+				sortDate(dates);
+				
+				Map<String, Object> _tmp = new HashMap<String, Object>();
+				for(String name : data.getTems().keySet()){
+					Map<Date, Double> _tems = data.getTems().get(name);
+					
+					List<Double> _list = new ArrayList<Double>();
+					for(Date _date : dates)
+						if(_tems.containsKey(_date))
+							_list.add(PinaoUtils.getFloat(_tems.get(_date)));
+						else
+							_list.add(0d);
+					
+					_tmp.put(name, _list);
+				}
+				
+				List<String> dateStr = new ArrayList<String>();
+				for(Date _date : dates)
+					dateStr.add(PinaoUtils.getDateString(_date));
+						
+				tmp.put("dates", dateStr);
+				tmp.put("data", _tmp);
+			}
+			result.put("tems", tmp);
+		}
+		
+		return result;
+	}
 	
 	@RequestMapping(value="/report/area/download", method = RequestMethod.GET)
-	public void downloadAllAreas(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end) throws IOException{
+	public void downloadAllAreas(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end, Integer type) throws IOException{
 		OutputStream out = null;
 		try{
 			// check user role
@@ -308,49 +403,45 @@ public class TemperatureController {
 				User user = (User) obj;
 				if(user.getRole() < 4){
 					if(configService.checkLifeTime() || user.getRole() == 1){
-						response.setContentType("text/plain");
-						String oriFileName = "历史厂区趋势数据.txt";
-						String agent = request.getHeader("USER-AGENT");
-						if (null != agent && -1 != agent.indexOf("Firefox")) {
-							response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
-						} else {
-							response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
-						}
-						out = response.getOutputStream();
-						out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+						if(type == null)
+							type = 0;
 						
-						Area area = searchArea(areaService.getAllAreas(userid, user), id);
-	
-						Date startDate = PinaoUtils.getDate(start);
-						Date endDate = PinaoUtils.getDate(end);
-						if(area != null && startDate != null && endDate != null && !endDate.before(startDate)){
-							ReportData data = temService.getAreaReportData(area, startDate, endDate);
-							if(data != null){
-								Map<String, Map<Date, Double>> tems = data.getTems();
-								Map<String, Map<Date, Double>> stocks = data.getStocks();
-								Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
-								
-								for(String key : tems.keySet()){
-									Map<Date, Double> _temps = data.getTems().get(key);
-									Map<Date, Double> _stocks = null;
-									if(stocks.containsKey(key))
-										_stocks = stocks.get(key);
-									Map<Date, Double> _unstocks = null;
-									if(unstocks.containsKey(key))
-										_unstocks = unstocks.get(key);
+						// txt
+						if(type == 0){
+							response.setContentType("text/plain");
+							String oriFileName = "历史厂区趋势数据.txt";
+							String agent = request.getHeader("USER-AGENT");
+							if (null != agent && -1 != agent.indexOf("Firefox")) {
+								response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+							} else {
+								response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+							}
+							out = response.getOutputStream();
+							out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+							
+							Area area = searchArea(areaService.getAllAreas(userid, user), id);
+		
+							Date startDate = PinaoUtils.getDate(start);
+							Date endDate = PinaoUtils.getDate(end);
+							if(area != null && startDate != null && endDate != null && !endDate.before(startDate)){
+								ReportData data = temService.getAreaReportData(area, startDate, endDate);
+								if(data != null){
+									Map<String, Map<Date, Double>> tems = data.getTems();
 									
-									for(Date _key : _temps.keySet()){
-										out.write(key.getBytes());
-										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-										if(_stocks != null && _stocks.containsKey(_key))
-											out.write(_stocks.get(_key).toString().getBytes());
-										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-										if(_unstocks != null && _unstocks.containsKey(_key))
-											out.write(_unstocks.get(_key).toString().getBytes());
-										out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+									for(String key : tems.keySet()){
+										Map<Date, Double> _temps = data.getTems().get(key);
+										
+										for(Date _key : _temps.keySet()){
+											out.write(key.getBytes());
+											out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+											out.write(_temps.get(_key).toString().getBytes());
+											out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+										}
 									}
 								}
 							}
+						} else {
+							// TODO xls
 						}
 					} else
 						response.sendRedirect(request.getContextPath() + "/" + "expire.html");
@@ -377,9 +468,9 @@ public class TemperatureController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		if(data != null){
-			result.put("max", data.getMax());
-			result.put("min", data.getMin());
-			result.put("avg", data.getAvg());
+			result.put("max", PinaoUtils.getFloat(data.getMax()));
+			result.put("min", PinaoUtils.getFloat(data.getMin()));
+			result.put("avg", PinaoUtils.getFloat(data.getAvg()));
 			
 			Map<String, Object> tmp = new HashMap<String, Object>();
 			if(data.getTems() != null && data.getTems().size() > 0){
@@ -397,14 +488,18 @@ public class TemperatureController {
 					List<Double> _list = new ArrayList<Double>();
 					for(Date _date : dates)
 						if(_tems.containsKey(_date))
-							_list.add(_tems.get(_date));
+							_list.add(PinaoUtils.getFloat(_tems.get(_date)));
 						else
 							_list.add(0d);
 					
 					_tmp.put(name, _list);
 				}
 				
-				tmp.put("dates", dates);
+				List<String> dateStr = new ArrayList<String>();
+				for(Date _date : dates)
+					dateStr.add(PinaoUtils.getDateString(_date));
+						
+				tmp.put("dates", dateStr);
 				tmp.put("data", _tmp);
 			}
 			result.put("tems", tmp);
@@ -425,14 +520,18 @@ public class TemperatureController {
 					List<Double> _list = new ArrayList<Double>();
 					for(Date _date : dates)
 						if(_stocks.containsKey(_date))
-							_list.add(_stocks.get(_date));
+							_list.add(PinaoUtils.getFloat(_stocks.get(_date)));
 						else
 							_list.add(0d);
 					
 					_tmp.put(name, _list);
 				}
-				
-				tmp.put("dates", dates);
+
+				List<String> dateStr = new ArrayList<String>();
+				for(Date _date : dates)
+					dateStr.add(PinaoUtils.getDateString(_date));
+						
+				tmp.put("dates", dateStr);
 				tmp.put("data", _tmp);
 			}
 			result.put("stocks", tmp);
@@ -459,7 +558,12 @@ public class TemperatureController {
 					
 					_tmp.put(name, _list);
 				}
-				tmp.put("dates", dates);
+
+				List<String> dateStr = new ArrayList<String>();
+				for(Date _date : dates)
+					dateStr.add(PinaoUtils.getDateString(_date));
+						
+				tmp.put("dates", dateStr);
 				tmp.put("data", _tmp);
 			}
 			result.put("unstocks", tmp);
@@ -626,9 +730,9 @@ public class TemperatureController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		if(data != null){
-			result.put("max", data.getMax());
-			result.put("min", data.getMin());
-			result.put("avg", data.getAvg());
+			result.put("max", PinaoUtils.getFloat(data.getMax()));
+			result.put("min", PinaoUtils.getFloat(data.getMin()));
+			result.put("avg", PinaoUtils.getFloat(data.getAvg()));
 			result.put("time", data.getTime());
 			if(data.getAlarmIds() != null && data.getAlarmIdx() != null
 					&& data.getAlarmIds().size() > 0 && data.getAlarmIdx().size() > 0){
@@ -703,7 +807,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/channel/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
+	public Map<Object, Object> getChannelAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step, String startDate, String endDate){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -729,8 +833,10 @@ public class TemperatureController {
 					if(step == null || step <= 0)
 						step = 100;
 					List<Map<String, Object>> data = null;
-					if(channels != null && channels.size() > 0)
-						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step));
+					Date _startDate = PinaoUtils.getDate(startDate);
+					Date _endDate = PinaoUtils.getDate(endDate);
+					if(channels != null && channels.size() > 0 && _startDate != null && _endDate != null && !_endDate.before(_startDate))
+						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step, _startDate, _endDate));
 					else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
@@ -749,7 +855,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/channel/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelReportData(HttpServletRequest request, long userid, int id, String startDate, String endDate, Integer start, Integer end){
+	public Map<Object, Object> getChannelReportData(HttpServletRequest request, long userid, int id, String start, String end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -770,17 +876,11 @@ public class TemperatureController {
 									break;
 								}
 
-					if(start == null || start == 0)
-						start = 1;
-					if(end == null || end == -1)
-						end = Integer.MAX_VALUE;
-					if(end < start)
-						end = start;
-					Date _startDate = PinaoUtils.getDate(startDate);
-					Date _endDate = PinaoUtils.getDate(endDate);
+					Date _startDate = PinaoUtils.getDate(start);
+					Date _endDate = PinaoUtils.getDate(end);
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseReportData(temService.getChannelReportData(channels, _startDate, _endDate, start, end));
+						data = parseReportData(temService.getChannelReportData(channels, _startDate, _endDate));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -797,7 +897,7 @@ public class TemperatureController {
 	}
 	
 	@RequestMapping(value="/report/channel/download", method = RequestMethod.GET)
-	public void downloadAllChannels(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end) throws IOException{
+	public void downloadAllChannels(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end, Integer type) throws IOException{
 		OutputStream out = null;
 		try{
 			// check user role
@@ -806,57 +906,60 @@ public class TemperatureController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					response.setContentType("text/plain");
-					String oriFileName = "历史通道趋势数据.txt";
-					String agent = request.getHeader("USER-AGENT");
-					if (null != agent && -1 != agent.indexOf("Firefox")) {
-						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
-					} else {
-						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
-					}
-					out = response.getOutputStream();
-					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					if(type == null)
+						type = 0;
 					
-					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-					List<Channel> channels = new ArrayList<Channel>();
-					if(machines != null && machines.size() > 0)
-						for(Machine machine : machines.keySet())
-							for(Channel channel : machines.get(machine))
-								if(channel.getId() == id){
-									channels.add(channel);
-									break;
-								}
-
-					Date startDate = PinaoUtils.getDate(start);
-					Date endDate = PinaoUtils.getDate(end);
-					if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
-						ReportData data = temService.getChannelReportData(channels, startDate, endDate, 1, Integer.MAX_VALUE);
-						if(data != null){
-							Map<String, Map<Date, Double>> tems = data.getTems();
-							Map<String, Map<Date, Double>> stocks = data.getStocks();
-							Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
-							
-							for(String key : tems.keySet()){
-								Map<Date, Double> _temps = data.getTems().get(key);
-								Map<Date, Double> _stocks = null;
-								if(stocks.containsKey(key))
-									_stocks = stocks.get(key);
-								Map<Date, Double> _unstocks = null;
-								if(unstocks.containsKey(key))
-									_unstocks = unstocks.get(key);
+					// txt
+					if(type == 0){
+						response.setContentType("text/plain");
+						String oriFileName = "历史通道趋势数据.txt";
+						String agent = request.getHeader("USER-AGENT");
+						if (null != agent && -1 != agent.indexOf("Firefox")) {
+							response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+						} else {
+							response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+						}
+						out = response.getOutputStream();
+						out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+						
+						Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+						List<Channel> channels = new ArrayList<Channel>();
+						if(machines != null && machines.size() > 0)
+							for(Machine machine : machines.keySet())
+								for(Channel channel : machines.get(machine))
+									if(channel.getId() == id){
+										channels.add(channel);
+										break;
+									}
+	
+						Date startDate = PinaoUtils.getDate(start);
+						Date endDate = PinaoUtils.getDate(end);
+						if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
+							ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+							if(data != null){
+								Map<String, Map<Date, Double>> tems = data.getTems();
+								Map<String, Map<Date, Double>> stocks = data.getStocks();
 								
-								for(Date _key : _temps.keySet()){
-									out.write(key.getBytes());
-									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-									if(_stocks != null && _stocks.containsKey(_key))
-										out.write(_stocks.get(_key).toString().getBytes());
-									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-									if(_unstocks != null && _unstocks.containsKey(_key))
-										out.write(_unstocks.get(_key).toString().getBytes());
-									out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+								for(String key : tems.keySet()){
+									Map<Date, Double> _temps = data.getTems().get(key);
+									Map<Date, Double> _stocks = null;
+									if(stocks.containsKey(key))
+										_stocks = stocks.get(key);
+									
+									for(Date _key : _temps.keySet()){
+										out.write(key.getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										out.write(_temps.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										if(_stocks != null && _stocks.containsKey(_key))
+											out.write(_stocks.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+									}
 								}
 							}
 						}
+					} else {
+						//TODO xls
 					}
 				} else
 					response.sendRedirect(request.getContextPath() + "/" + "error.html");
@@ -925,7 +1028,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/channel/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getChannelData(HttpServletRequest request, long userid, int id, long time, Integer start, Integer end){
+	public Map<Object, Object> getChannelData(HttpServletRequest request, long userid, int id, long time){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -946,15 +1049,9 @@ public class TemperatureController {
 									break;
 								}
 
-					if(start == null || start == 0)
-						start = 1;
-					if(end == null || end == -1)
-						end = Integer.MAX_VALUE;
-					if(end < start)
-						end = start;
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseChannelData(temService.getChannelData(channels, time, start, end));
+						data = parseChannelData(temService.getChannelData(channels, time));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -973,7 +1070,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/machine/alarm", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step){
+	public Map<Object, Object> getMachineAlarmReportData(HttpServletRequest request, long userid, int id, Integer start, Integer step, String startDate, String endDate){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -998,8 +1095,10 @@ public class TemperatureController {
 					if(step == null || step <= 0)
 						step = 100;
 					List<Map<String, Object>> data = null;
-					if(channels != null && channels.size() > 0)
-						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step));
+					Date _startDate = PinaoUtils.getDate(startDate);
+					Date _endDate = PinaoUtils.getDate(endDate);
+					if(channels != null && channels.size() > 0 && _startDate != null && _endDate != null && !_endDate.before(_startDate))
+						data = parseAlarmData(temService.getChannelAlarmReportData(channels, start, step, _startDate, _endDate));
 					else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
@@ -1018,7 +1117,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/report/machine/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineReportData(HttpServletRequest request, long userid, int id, String startDate, String endDate, Integer start, Integer end){
+	public Map<Object, Object> getMachineReportData(HttpServletRequest request, long userid, int id, String start, String end){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -1038,17 +1137,11 @@ public class TemperatureController {
 								break;
 							}
 
-					if(start == null || start == 0)
-						start = 1;
-					if(end == null || end == -1)
-						end = Integer.MAX_VALUE;
-					if(end < start)
-						end = start;
-					Date _startDate = PinaoUtils.getDate(startDate);
-					Date _endDate = PinaoUtils.getDate(endDate);
+					Date _startDate = PinaoUtils.getDate(start);
+					Date _endDate = PinaoUtils.getDate(end);
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseReportData(temService.getChannelReportData(channels, _startDate, _endDate, start, end));
+						data = parseReportData(temService.getChannelReportData(channels, _startDate, _endDate));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -1067,7 +1160,7 @@ public class TemperatureController {
 
 	
 	@RequestMapping(value="/report/machine/download", method = RequestMethod.GET)
-	public void downloadAllMachines(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end) throws IOException{
+	public void downloadAllMachines(HttpServletRequest request, HttpServletResponse response, long userid, int id, String start, String end, Integer type) throws IOException{
 		OutputStream out = null;
 		try{
 			// check user role
@@ -1076,56 +1169,59 @@ public class TemperatureController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					response.setContentType("text/plain");
-					String oriFileName = "历史机器趋势数据.txt";
-					String agent = request.getHeader("USER-AGENT");
-					if (null != agent && -1 != agent.indexOf("Firefox")) {
-						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
-					} else {
-						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
-					}
-					out = response.getOutputStream();
-					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					if(type == null)
+						type = 0;
 					
-					Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
-					List<Channel> channels = null;
-					if(machines != null && machines.size() > 0)
-						for(Machine machine : machines.keySet())
-							if(machine.getId() == id){
-								channels = machines.get(machine);
-								break;
-							}
-
-					Date startDate = PinaoUtils.getDate(start);
-					Date endDate = PinaoUtils.getDate(end);
-					if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
-						ReportData data = temService.getChannelReportData(channels, startDate, endDate, 1, Integer.MAX_VALUE);
-						if(data != null){
-							Map<String, Map<Date, Double>> tems = data.getTems();
-							Map<String, Map<Date, Double>> stocks = data.getStocks();
-							Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
-							
-							for(String key : tems.keySet()){
-								Map<Date, Double> _temps = data.getTems().get(key);
-								Map<Date, Double> _stocks = null;
-								if(stocks.containsKey(key))
-									_stocks = stocks.get(key);
-								Map<Date, Double> _unstocks = null;
-								if(unstocks.containsKey(key))
-									_unstocks = unstocks.get(key);
+					// txt
+					if(type == 0){
+						response.setContentType("text/plain");
+						String oriFileName = "历史机器趋势数据.txt";
+						String agent = request.getHeader("USER-AGENT");
+						if (null != agent && -1 != agent.indexOf("Firefox")) {
+							response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+						} else {
+							response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+						}
+						out = response.getOutputStream();
+						out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+						
+						Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+						List<Channel> channels = null;
+						if(machines != null && machines.size() > 0)
+							for(Machine machine : machines.keySet())
+								if(machine.getId() == id){
+									channels = machines.get(machine);
+									break;
+								}
+	
+						Date startDate = PinaoUtils.getDate(start);
+						Date endDate = PinaoUtils.getDate(end);
+						if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
+							ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+							if(data != null){
+								Map<String, Map<Date, Double>> tems = data.getTems();
+								Map<String, Map<Date, Double>> stocks = data.getStocks();
 								
-								for(Date _key : _temps.keySet()){
-									out.write(key.getBytes());
-									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-									if(_stocks != null && _stocks.containsKey(_key))
-										out.write(_stocks.get(_key).toString().getBytes());
-									out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
-									if(_unstocks != null && _unstocks.containsKey(_key))
-										out.write(_unstocks.get(_key).toString().getBytes());
-									out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+								for(String key : tems.keySet()){
+									Map<Date, Double> _temps = data.getTems().get(key);
+									Map<Date, Double> _stocks = null;
+									if(stocks.containsKey(key))
+										_stocks = stocks.get(key);
+									
+									for(Date _key : _temps.keySet()){
+										out.write(key.getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										out.write(_temps.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										if(_stocks != null && _stocks.containsKey(_key))
+											out.write(_stocks.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
+									}
 								}
 							}
 						}
+					} else{
+						//TODO xls
 					}
 				} else
 					response.sendRedirect(request.getContextPath() + "/" + "error.html");
@@ -1192,7 +1288,7 @@ public class TemperatureController {
 
 	@RequestMapping(value="/monitor/machine/data", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getMachineData(HttpServletRequest request, long userid, int id, long time, Integer start, Integer end){
+	public Map<Object, Object> getMachineData(HttpServletRequest request, long userid, int id, long time){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 
 		try{
@@ -1211,15 +1307,9 @@ public class TemperatureController {
 								channels = machines.get(machine);
 								break;
 							}
-					if(start == null || start == 0)
-						start = 1;
-					if(end == null || end == -1)
-						end = Integer.MAX_VALUE;
-					if(end < start)
-						end = start;
 					Map<String, Object> data = null;
 					if(channels != null && channels.size() > 0)
-						data = parseChannelData(temService.getChannelData(channels, time, start, end));
+						data = parseChannelData(temService.getChannelData(channels, time));
 					else
 						data = new HashMap<String, Object>();
 					result.put("data", data);
@@ -1240,9 +1330,9 @@ public class TemperatureController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		if(data != null && data.getData() != null && data.getData().size() > 0){
-			result.put("max", data.getMax());
-			result.put("min", data.getMin());
-			result.put("avg", data.getAvg());
+			result.put("max", PinaoUtils.getFloat(data.getMax()));
+			result.put("min", PinaoUtils.getFloat(data.getMin()));
+			result.put("avg", PinaoUtils.getFloat(data.getAvg()));
 			result.put("time", data.getTime());
 			result.put("data", data.getData());
 		}

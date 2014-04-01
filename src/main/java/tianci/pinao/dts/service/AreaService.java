@@ -19,7 +19,7 @@ public interface AreaService {
 	public Map<Machine, List<Channel>> getAllChannels(long userid);
 
 	// only for download...
-	public List<Area> getAllAailableAreas();
+	public List<Area> getAllAailableAreas(int start, int step);
 	// end of only for download...
 
 	public boolean addArea(Area area, int userid);
@@ -28,7 +28,7 @@ public interface AreaService {
 
 	public boolean deleteArea(Area area, int userid);
 
-	public List<AreaHardwareConfig> getAllHardwareConfigs();
+	public List<AreaHardwareConfig> getAllHardwareConfigs(int start, int step);
 
 	public boolean addHardwareConfig(AreaHardwareConfig config, int userid);
 
@@ -36,7 +36,7 @@ public interface AreaService {
 
 	public boolean deleteHardwareConfig(AreaHardwareConfig config, int userid);
 
-	public List<AreaTempConfig> getAllTempConfigs();
+	public List<AreaTempConfig> getAllTempConfigs(int start, int step);
 
 	public boolean addAreaTempConfig(AreaTempConfig config, int userid);
 
@@ -44,7 +44,7 @@ public interface AreaService {
 
 	public boolean deleteAreaTempConfig(AreaTempConfig config, int userid);
 
-	public List<AreaChannel> getAllAreaChannels();
+	public List<AreaChannel> getAllAreaChannels(int start, int step);
 
 	public boolean addAreaChannel(List<AreaChannel> channels, int userid);
 
@@ -52,7 +52,7 @@ public interface AreaService {
 
 	public boolean deleteAreaChannel(AreaChannel channel, int userid);
 
-	public List<Channel> getAllAvailableChannels();
+	public List<Channel> getAllAvailableChannels(int start, int step);
 
 	public boolean addChannel(Channel channel, int userid);
 
@@ -60,7 +60,7 @@ public interface AreaService {
 
 	public boolean deleteChannel(Channel channel, int userid);
 
-	public List<Machine> getAllMachines();
+	public List<Machine> getAllMachines(int start, int step);
 
 	public boolean addMachine(Machine machine, int userid);
 
@@ -71,7 +71,7 @@ public interface AreaService {
 	public boolean deleteMachine(Machine machine, int userid);
 	
 	// level - images
-	public List<LevelImage> getAllLevels();
+	public List<LevelImage> getAllLevels(int start, int step);
 	
 	public boolean addLevelImage(LevelImage level, int userid);
 	

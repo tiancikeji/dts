@@ -22,11 +22,11 @@ public interface TemService {
 
 	public ReportData getAreaReportData(Area area, Date startDate, Date endDate);
 
-	public List<Alarm> getAreaAlarmReportData(Area area, int start, int end);
+	public List<Alarm> getAreaAlarmReportData(Area area, int start, int end, Date startDate, Date endDate);
 
 	public int getAreaAlarmReportCount(Area area);
 
-	public ChannelMonitorData getChannelData(List<Channel> channels, long time, int start, int end);
+	public ChannelMonitorData getChannelData(List<Channel> channels, long time);
 
 	public List<Alarm> getChannelAlarmData(List<Channel> channels, int start, int step);
 
@@ -34,12 +34,16 @@ public interface TemService {
 
 	public int getChannelAlarmReportCount(List<Channel> channels);
 
-	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate, int start, int end);
+	public ReportData getChannelReportData(List<Channel> channels, Date startDate, Date endDate);
 
-	public List<Alarm> getChannelAlarmReportData(List<Channel> channels, int start, int step);
+	public List<Alarm> getChannelAlarmReportData(List<Channel> channels, int start, int step, Date startDate, Date endDate);
 
-	public boolean updateAlarm(long id, int status, long userid);
+	public boolean updateAlarm(List<Long> id, int status, long userid);
 
 	public void checkHardware(long userid);
+
+	public List<Long> getAllAlarmIds(int status);
+
+	public List<Long> getAlarmIdsByAreaIds(List<Integer> areaIds, int status);
 
 }

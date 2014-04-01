@@ -73,16 +73,22 @@ public class AreaServiceImpl implements AreaService {
 				return false;
 		}
 		
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean addArea(Area area, int userid) {
 		if(area != null){
+			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
+			if(areas != null && areas.size() > 0)
+				for(Area tmp : areas)
+					if(StringUtils.equals(tmp.getName(), area.getName()))
+						return false;
+			
 			area.setLastModUserid(userid);
 			return areaDao.addArea(area);
 		}
-		return true;
+		return false;
 	}
 
 	@Override
@@ -91,22 +97,28 @@ public class AreaServiceImpl implements AreaService {
 			area.setLastModUserid(userid);
 			return areaDao.updateArea(area);
 		}
-		return true;
+		return false;
 	}
 
 	@Override
-	public List<Area> getAllAailableAreas() {
-		return areaDao.getAllAreas();
+	public List<Area> getAllAailableAreas(int start, int step) {
+		return areaDao.getAllAreas(start, step);
 	}
 
 	// area hardware config
 	@Override
 	public boolean addHardwareConfig(AreaHardwareConfig config, int userid) {
 		if(config != null){
+			List<AreaHardwareConfig> configs = areaDao.getAllHardwareConfigs(0, Integer.MAX_VALUE);
+			if(configs != null && configs.size() > 0)
+				for(AreaHardwareConfig tmp : configs)
+					if(tmp.getAreaid() == config.getAreaid())
+						return false;
+			
 			config.setLastModUserid(userid);
 			return areaDao.addHardwareConfig(config);
 		}else
-			return true;
+			return false;
 	}
 
 	@Override
@@ -115,7 +127,7 @@ public class AreaServiceImpl implements AreaService {
 			config.setLastModUserid(userid);
 			return areaDao.updateHardwareConfig(config);
 		}else
-			return true;
+			return false;
 	}
 
 	@Override
@@ -123,18 +135,18 @@ public class AreaServiceImpl implements AreaService {
 		if(config != null && config.getId() > 0)
 			return areaDao.deleteHardwareConfig(config.getId(), userid);
 		else
-			return true;
+			return false;
 	}
 
 	@Override
-	public List<AreaHardwareConfig> getAllHardwareConfigs() {
-		List<AreaHardwareConfig> configs = areaDao.getAllHardwareConfigs();
+	public List<AreaHardwareConfig> getAllHardwareConfigs(int start, int step) {
+		List<AreaHardwareConfig> configs = areaDao.getAllHardwareConfigs(start, step);
 		if(configs != null && configs.size() > 0){
 			Map<Integer, AreaHardwareConfig> areaids = new HashMap<Integer, AreaHardwareConfig>();
 			for(AreaHardwareConfig config : configs)
 				areaids.put(config.getAreaid(), config);
 			
-			List<Area> areas = areaDao.getAllAreas();
+			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
 			if(areas != null && areas.size() > 0)
 				for(Area area : areas)
 					if(areaids.keySet().contains(area.getId()))
@@ -148,10 +160,16 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addAreaTempConfig(AreaTempConfig config, int userid) {
 		if(config != null){
+			List<AreaTempConfig> tmps = areaDao.getAllTempConfigs(0, Integer.MAX_VALUE);
+			if(tmps != null && tmps.size() > 0)
+				for(AreaTempConfig tmp : tmps)
+					if(tmp.getAreaid() == config.getAreaid())
+						return false;
+			
 			config.setLastModUserid(userid);
 			return areaDao.addTempConfig(config);
 		} else
-			return true;
+			return false;
 	}
 
 	@Override
@@ -160,7 +178,7 @@ public class AreaServiceImpl implements AreaService {
 			config.setLastModUserid(userid);
 			return areaDao.updateTempConfig(config);
 		} else
-			return true;
+			return false;
 	}
 
 	@Override
@@ -168,18 +186,18 @@ public class AreaServiceImpl implements AreaService {
 		if(config != null && config.getId() > 0)
 			return areaDao.deleteTempConfig(config.getId(), userid);
 		else 
-			return true;
+			return false;
 	}
 
 	@Override
-	public List<AreaTempConfig> getAllTempConfigs() {
-		List<AreaTempConfig> configs = areaDao.getAllTempConfigs();
+	public List<AreaTempConfig> getAllTempConfigs(int start, int step) {
+		List<AreaTempConfig> configs = areaDao.getAllTempConfigs(start, step);
 		if(configs != null && configs.size() > 0){
 			Map<Integer, AreaTempConfig> areaids = new HashMap<Integer, AreaTempConfig>();
 			for(AreaTempConfig config : configs)
 				areaids.put(config.getAreaid(), config);
 			
-			List<Area> areas = areaDao.getAllAreas();
+			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
 			if(areas != null && areas.size() > 0)
 				for(Area area : areas)
 					if(areaids.keySet().contains(area.getId()))
@@ -193,11 +211,21 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addAreaChannel(List<AreaChannel> channels, int userid) {
 		if(channels != null && channels.size() > 0){
+			List<AreaChannel> tmps = areaDao.getAllAreaChannels(0, Integer.MAX_VALUE);
+			Map<Integer, AreaChannel> maps = new HashMap<Integer, AreaChannel>();
+			if(tmps != null && tmps.size() > 0)
+				for(AreaChannel tmp : tmps)
+					maps.put(tmp.getAreaid(), tmp);
+			
 			for(AreaChannel channel : channels)
-				channel.setLastModUserid(userid);
+				if(maps.containsKey(channel.getAreaid()))
+					return false;
+				else
+					channel.setLastModUserid(userid);
+			
 			return areaDao.addAreaChannels(channels);
 		}
-		return true;
+		return false;
 	}
 
 	@Override
@@ -218,8 +246,8 @@ public class AreaServiceImpl implements AreaService {
 	}
 
 	@Override
-	public List<AreaChannel> getAllAreaChannels() {
-		List<AreaChannel> areachannels = areaDao.getAllAreaChannels();
+	public List<AreaChannel> getAllAreaChannels(int start, int step) {
+		List<AreaChannel> areachannels = areaDao.getAllAreaChannels(start, step);
 		
 		if(areachannels != null && areachannels.size() > 0){
 			Map<Integer, List<AreaChannel>> areaids = new HashMap<Integer, List<AreaChannel>>();
@@ -240,19 +268,20 @@ public class AreaServiceImpl implements AreaService {
 				tmp.add(areachannel);
 			}
 			
-			List<Area> areas = areaDao.getAllAreas();
+			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
 			if(areas != null && areas.size() > 0)
 				for(Area area : areas)
 					if(areaids.keySet().contains(area.getId()))
 						for(AreaChannel channel : areaids.get(area.getId()))
 							channel.setAreaName(area.getName());
 			
-			List<Channel> channels = getAllAvailableChannels();
+			List<Channel> channels = getAllAvailableChannels(0, Integer.MAX_VALUE);
 			if(channels != null && channels.size() > 0)
 				for(Channel channel : channels)
 					if(channelids.keySet().contains(channel.getId()))
 						for(AreaChannel areachannel : channelids.get(channel.getId())){
 							areachannel.setChannelName(channel.getName());
+							areachannel.setMachineid(channel.getMachineid());
 							areachannel.setMachineName(channel.getMachineName());
 						}
 		}
@@ -264,10 +293,16 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addChannel(Channel channel, int userid) {
 		if(channel != null){
+			List<Channel> tmps = areaDao.getAllChannels(0, Integer.MAX_VALUE);
+			if(tmps != null && tmps.size() > 0)
+				for(Channel tmp : tmps)
+					if(StringUtils.equals(channel.getName(), tmp.getName()))
+						return false;
+			
 			channel.setLastModUserid(userid);
 			return areaDao.addChannel(channel);
 		} else
-			return true;
+			return false;
 	}
 
 	@Override
@@ -276,7 +311,7 @@ public class AreaServiceImpl implements AreaService {
 			channel.setLastModUserid(userid);
 			return areaDao.updateChannel(channel);
 		}
-		return true;
+		return false;
 	}
 
 	@Override
@@ -285,12 +320,12 @@ public class AreaServiceImpl implements AreaService {
 			channel.setLastModUserid(userid);
 			return areaDao.deleteChannel(channel);
 		}
-		return true;
+		return false;
 	}
 
 	@Override
-	public List<Channel> getAllAvailableChannels() {
-		List<Channel> channels = areaDao.getAllChannels();
+	public List<Channel> getAllAvailableChannels(int start, int step) {
+		List<Channel> channels = areaDao.getAllChannels(start, step);
 		if(channels != null && channels.size() > 0){
 			Map<Integer, List<Channel>> machineids = new HashMap<Integer, List<Channel>>();
 			for(Channel channel : channels){
@@ -302,7 +337,7 @@ public class AreaServiceImpl implements AreaService {
 				tmp.add(channel);
 			}
 			
-			List<Machine> machines = getAllMachines();
+			List<Machine> machines = getAllMachines(0, Integer.MAX_VALUE);
 			if(machines != null && machines.size() > 0)
 				for(Machine machine : machines)
 					if(machineids.keySet().contains(machine.getId()))
@@ -317,10 +352,16 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addMachine(Machine machine, int userid) {
 		if(machine != null){
+			List<Machine> tmps = areaDao.getAllMachines(0, Integer.MAX_VALUE);
+			if(tmps != null && tmps.size() > 0)
+				for(Machine tmp : tmps)
+					if(StringUtils.equals(tmp.getName(), machine.getName()))
+						return false;
+			
 			machine.setLastModUserid(userid);
 			return areaDao.addMachine(machine);
 		} else
-			return true;
+			return false;
 	}
 
 	@Override
@@ -334,7 +375,7 @@ public class AreaServiceImpl implements AreaService {
 			machine.setLastModUserid(userid);
 			return areaDao.updateMachine(machine);
 		} else
-			return true;
+			return false;
 	}
 
 	@Override
@@ -348,21 +389,27 @@ public class AreaServiceImpl implements AreaService {
 				return false;
 		}
 			
-		return true;
+		return false;
 	}
 	
-	public List<Machine> getAllMachines() {
-		return areaDao.getAllMachines();
+	public List<Machine> getAllMachines(int start, int step) {
+		return areaDao.getAllMachines(start, step);
 	}
 
 	@Override
-	public List<LevelImage> getAllLevels() {
-		return areaDao.getAllLevels();
+	public List<LevelImage> getAllLevels(int start, int step) {
+		return areaDao.getAllLevels(start, step);
 	}
 
 	@Override
 	public boolean addLevelImage(LevelImage level, int userid) {
 		if(level != null){
+			List<LevelImage> levels = getAllLevels(0, Integer.MAX_VALUE);
+			if(levels != null && levels.size() > 0)
+				for(LevelImage tmp : levels)
+					if(StringUtils.equals(tmp.getName(), level.getName()))
+						return false;
+			
 			level.setLastModUserid(userid);
 			return areaDao.addLevelImage(level);
 		} else
@@ -396,7 +443,7 @@ public class AreaServiceImpl implements AreaService {
 				
 				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
 				if(lines != null && lines.length > 0){
-					List<Channel> channels = getAllAvailableChannels();
+					List<Channel> channels = getAllAvailableChannels(0, Integer.MAX_VALUE);
 					Map<String, Map<String, Channel>> cMap = new HashMap<String, Map<String, Channel>>();
 					if(channels != null && channels.size() > 0)
 						for(Channel channel : channels){
@@ -498,7 +545,7 @@ public class AreaServiceImpl implements AreaService {
 					if(areas != null && areas.size() > 0){
 						areaDao.deleteAllAreas(userid);
 						if(areaDao.addAreas(areas)){
-							areas = getAllAailableAreas();
+							areas = getAllAailableAreas(0, Integer.MAX_VALUE);
 							
 							if(areas != null && areas.size() > 0)
 								for(Area area : areas){
@@ -555,7 +602,7 @@ public class AreaServiceImpl implements AreaService {
 				
 				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
 				if(lines != null && lines.length > 0){
-					List<Machine> machines = getAllMachines();
+					List<Machine> machines = getAllMachines(0, Integer.MAX_VALUE);
 					Map<String, Machine> mMap = new HashMap<String, Machine>();
 					if(machines != null && machines.size() > 0)
 						for(Machine machine : machines)
@@ -622,7 +669,7 @@ public class AreaServiceImpl implements AreaService {
 
 	@Override
 	public List<Area> getAllAreas(long userid, User user) {
-		List<Area> _areas = areaDao.getAllAreas();
+		List<Area> _areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
 		
 		List<Area> areas = new ArrayList<Area>();
 		//filter by userid roles
@@ -662,7 +709,7 @@ public class AreaServiceImpl implements AreaService {
 	public Map<Machine, List<Channel>> getAllChannels(long userid) {
 		Map<Machine, List<Channel>> result = new HashMap<Machine, List<Channel>>();
 		
-		List<Channel> channels = areaDao.getAllChannels();
+		List<Channel> channels = areaDao.getAllChannels(0, Integer.MAX_VALUE);
 		if(channels != null && channels.size() > 0){
 			Map<Integer, List<Channel>> machineids = new HashMap<Integer, List<Channel>>();
 			for(Channel channel : channels){
@@ -674,7 +721,7 @@ public class AreaServiceImpl implements AreaService {
 				tmp.add(channel);
 			}
 			
-			List<Machine> machines = getAllMachines();
+			List<Machine> machines = getAllMachines(0, Integer.MAX_VALUE);
 			if(machines != null && machines.size() > 0)
 				for(Machine machine : machines)
 					if(machineids.keySet().contains(machine.getId())){

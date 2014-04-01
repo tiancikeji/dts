@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>新增厂区类型默认图片|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="changqu_level_image_list.html" class="">所有厂区默认图片</a></li>
+                            <li><a href="changqu_level_image_add.html" class="current">新增厂区默认图片</a></li>
+                        </ul>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">新增厂区类型默认图片</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="" class="j_common_form"
+                                                      data-add-url="level/addLevel"
+                                                      data-edit-url="level/modifyLevel"
+                                                      data-back-url="changqu_level_image_list.html">
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                层级名称：<input data-valid="1" data-valid-message="请输入层级名称" name="name" class="j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                层级图片：<input data-valid="1" data-valid-message="请上传分区图片" name="image" type="hidden" class="j_common_form_autovalue" />
+                                                                <div id="uploadCtn" class="upload-wrapper">
+                                                                    <div class="upload-list j_up_list"><div class="upload-btn j_up_btn">添加图片</div></div>
+                                                                </div>
+                                                            </li>
+
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script src="../static/js/imageuploader.js"></script>
+        <script>
+            (function(){
+                var $upBtn = $('.j_up_btn');
+                var $form = $('#dataForm');
+                var upUi = new $.Dts.ImageUploaderUi($('#uploadCtn'), {
+                    ui: {
+                        maxPhotoNum: 1,
+                        coverNum: 0,
+                        dragAble: false,
+                        callBack: function(response){
+                            if(response.status != 0){
+                                upUi._setError(this, '');
+                                return;
+                            }
+                            $form[0].image.value = response.name;
+                            this.find('.j_img_bg').attr('src', $.Dts.rootUri + response.name);
+
+                        }
+                    },
+                    upload: {
+                        url: $.Dts.rootUri + 'file/addFile', //上传地址
+                        auto: true, //自动上传
+                        format: 'jpg|gif|png' //图片格式筛选，支持jpg gif bmp png
+                    }
+                });
+                upUi.bind('delete', function(){
+                    $upBtn.show();
+                    $form[0].image.value = '';
+                }).bind('selected', function(){
+                    $upBtn.hide();
+                });
+
+                //编辑模式
+                if($.Dts.form.isEditMode()){
+                    $upBtn.hide();
+                    $('<div class="upload-list-item" id="j_img_88742083_ccaf205fd611_0">' +
+                            '<div class="item-cover j_cover" style="display: none;"></div>' +
+                            '<img class="item-img j_img_bg j_hide_error" src="'+ $.Dts.rootUri + $.Dts.getParameter('form_image') +'">' +
+                            '<span class="item-progress j_hide_complete" style="display: none;">' +
+                            '<b class="j_progress_bar" style="width: 100%;"></b></span>' +
+                            '<div class="item-error j_error j_show_error">上传失败</div>' +
+                            '<span class="item-close j_delete" title="删除此图"></span></div>').prependTo($('.j_up_list'));
+                }
+
+                $.get($.Dts.rootUri + 'area/areanames', function(res){
+                    new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
+                        id:'select1',
+                        name:'parent',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_parent')
+                    });
+                });
+
+
+
+
+            })();
+        </script>
+    </body>
+</html>

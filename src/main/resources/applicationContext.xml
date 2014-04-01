@@ -51,7 +51,7 @@
 		in the /WEB-INF/views directory -->
 	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<beans:property name="prefix" value="/WEB-INF/views/" />
-		<beans:property name="suffix" value=".jsp" />
+		<beans:property name="suffix" value=".html" />
 	</beans:bean>
 	
 	<context:component-scan base-package="tianci.pinao.dts" />

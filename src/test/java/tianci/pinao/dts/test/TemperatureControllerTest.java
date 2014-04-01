@@ -1,11 +1,12 @@
 package tianci.pinao.dts.test;
 
+import junit.framework.TestCase;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import tianci.pinao.dts.controllers.TemperatureController;
 import tianci.pinao.dts.service.TemService;
-import junit.framework.TestCase;
 
 public class TemperatureControllerTest extends TestCase {
 
@@ -62,7 +63,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 			int id = 3;
 			long time = -1;
-			System.out.println(tc.getMachineData(null, userid, id, time, 1, 1));
+			System.out.println(tc.getMachineData(null, userid, id, time));
 		}
 	}
 	
@@ -82,7 +83,7 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 3;
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(tc.getMachineReportData(null, userid, id, start, end, 0, 100));
+			System.out.println(tc.getMachineReportData(null, userid, id, start, end));
 		}
 	}
 	
@@ -91,7 +92,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 3;
-			System.out.println(tc.getMachineAlarmReportData(null, userid, id, 0, 100));
+			System.out.println(tc.getMachineAlarmReportData(null, userid, id, 0, 100, "", ""));
 		}
 	}
 	
@@ -110,7 +111,7 @@ public class TemperatureControllerTest extends TestCase {
 			int id = 2;
 			String start = "2014-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(tc.getChannelReportData(null, userid, id, start, end, 0, 100));
+			System.out.println(tc.getChannelReportData(null, userid, id, start, end));
 		}
 	}
 	
@@ -120,7 +121,7 @@ public class TemperatureControllerTest extends TestCase {
 			long userid = -1;
 			int id = 2;
 			long time = -1;
-			System.out.println(tc.getChannelData(null, userid, id, time, 1, 1));
+			System.out.println(tc.getChannelData(null, userid, id, time));
 		}
 	}
 	
@@ -138,7 +139,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			int id = 1;
-			System.out.println(tc.getChannelAlarmReportData(null, userid, id, 0, 100));
+			System.out.println(tc.getChannelAlarmReportData(null, userid, id, 0, 100, "", ""));
 		}
 	}
 	
@@ -157,7 +158,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			long id= 2;
-			System.out.println(tc.notifyAlarm(null, userid, id));
+			System.out.println(tc.notifyAlarm(null, userid, null));
 		}
 	}
 	
@@ -166,7 +167,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			long id= 2;
-			System.out.println(tc.muteAlarm(null, userid, id));
+			System.out.println(tc.muteAlarm(null, userid, null));
 		}
 	}
 	
@@ -175,7 +176,7 @@ public class TemperatureControllerTest extends TestCase {
 			TemperatureController tc = getController();
 			long userid = -1;
 			long id= 2;
-			System.out.println(tc.resetAlarm(null, userid, id, "", ""));
+			System.out.println(tc.resetAlarm(null, userid, null, "", ""));
 		}
 	}
 	

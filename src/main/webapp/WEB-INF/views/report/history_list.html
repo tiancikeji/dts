@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <title>运行日志|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>运行日志</h3>
+                    <!--#include virtual="/dts/inc/nav_report.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="" class="current">运行日志</a></li>
+                        </ul>
+                        <div class="fr toolbar">
+                            <ul>
+                                <li class="up-btn j_upload_btn" data-upurl="/area/replace"></li>
+                                <li><a href="../area/download" class="j_btn_export" target="_blank"><i class="icon-toolbar icon-toolbar3"></i>下载</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bd-1">
+                        <div class="panes-2">
+                            <div id="list" class="j_common_list">
+                                <!--
+                                <div class="pagination">
+                                    <ul>
+                                        <li class="disabled"><a href="javascript:;" rel="nofollow">«</a></li>
+                                        <li class="active"><a href="/list/index.html" rel="nofollow">1</a></li>
+                                        <li><a href="/p-p2.html" rel="nofollow">2</a></li>
+                                        <li><a href="/p-p3.html" rel="nofollow">3</a></li>
+                                        <li><a href="/p-p4.html" rel="nofollow">4</a></li>
+                                        <li><a href="/p-p5.html" rel="nofollow">5</a></li>
+                                        <li><a href="/p-p6.html" rel="nofollow">6</a></li>
+                                        <li><a href="/p-p7.html" rel="nofollow">7</a></li>
+                                        <li><a href="/p-p8.html" rel="nofollow">8</a></li>
+                                        <li><a href="/p-p9.html" rel="nofollow">9</a></li>
+                                        <li><a href="/p-p10.html" rel="nofollow">10</a></li>
+                                        <li class="disabled"><a>...</a></li>
+                                        <li><a href="/p-p100.html" rel="nofollow">100</a></li>
+                                        <li><a href="/p-p2.html" rel="nofollow">»</a></li>
+                                    </ul>
+                                </div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <!--#include virtual="/dts/static/inc/upload.js.html"-->
+        <script type="text/html" id="listTmpl">
+            <table class="table table-auto list-table">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>类型</th>
+                    <th>用户</th>
+                    <th>机器MAC地址</th>
+                    <th>时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                <%for(i = 0; i < data.length; i++){%>
+                    <%var item = data[i]%>
+                    <tr>
+                        <td><%=item.id%></td>
+                        <td><%=['','web系统启动','系统关闭','用户登录','用户登出','数据采集启动','数据采集关闭'][item.type]%></td>
+                        <td><%=item.value%></td>
+                        <td><%=item.source%></td>
+                        <td><%=item.time%></td>
+                    </tr>
+                <%}%>
+                </tbody>
+            </table>
+        </script>
+        <script>
+            (function(){
+                $.Dts.Levels = {};
+                $.get($.Dts.rootUri + '/log/history?userid=' + $.Dts.login.getUserId() +'&start=2013-04-11%2000:00:00&end=2014-04-11%2000:00:00', function(res){
+                    if(!$.Dts.ajax.validRes(res)){
+                        return;
+                    }
+                    $('#list').html(baidu.template('listTmpl', res));
+                });
+            })();
+
+        </script>
+    </body>
+</html>

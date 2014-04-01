@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <!--#include file="/dts/inc/head.html"-->
+        <title>所有通道|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                        </ul>
+
+                    </div>
+                    <div class="bd-1">
+                        <div class="panes-2">
+                            <div id="list" class="j_common_list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <!--#include virtual="/dts/static/inc/upload.js.html"-->
+
+        <script type="text/html" id="listTmpl">
+            <table class="table table-auto">
+                <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>类型</th>
+                    <th>值</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><%=data.id%></td>
+                        <td><%=$.Dts._configTypes[data.type]%></td>
+                        <td><%=data.value%></td>
+                        <td>
+                            <a href="config_add.html?form_edit_mode=1&form_id=<%:u=data.id%>&form_type=<%:u=data.type%>&form_value=<%:u=data.value%>"
+                               class="j_common_edit">编辑</a>&nbsp;
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </script>
+        <script>
+            $.Dts._configTypes = ['','','','','','','斯托克斯文献值','反斯托克斯文献值','高温故障值','低温故障值','硬盘剩余容量百分比'];
+            document.title = $.Dts._configTypes[$.Dts.getParameter('type')] + '|NEINE预警系统';
+
+            function loadData(id){
+                $.get($.Dts.rootUri + '/config/get?type=' + id, function(res){
+                    if(!$.Dts.ajax.validRes(res)){
+                        return;
+                    }
+                    $('#list').html(baidu.template('listTmpl', res));
+                });
+            }
+            loadData($.Dts.getParameter('type'));
+            var $tabs = $('#Tabs-2');
+            for(var i = 6; i < $.Dts._configTypes.length; i++){
+                $tabs.append($(' <li><a href="#" data-type="'+i+'" class="'+
+                        ($.Dts.getParameter('type') == i ? 'current' : '')
+                        +'">'+$.Dts._configTypes[i]+'</a></li>'));
+            }
+            $tabs.delegate('a', 'click', function(e){
+                e.preventDefault();
+                $tabs.find('a').removeClass('current');
+                var $target = $(this).addClass('current');
+                if($target.attr('data-type')){
+                    loadData($target.attr('data-type'));
+                }
+            });
+
+        </script>
+    </body>
+</html>

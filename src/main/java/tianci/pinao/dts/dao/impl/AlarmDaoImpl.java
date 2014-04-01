@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -62,15 +63,27 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 
 	@Override
 	public List<Alarm> getAlarms(List<Integer> ids, Date date) {
-		return getJdbcTemplate().query("select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM + " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and add_time > ?",  
+		return getJdbcTemplate().query("select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM + " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and add_time > ? order by add_time desc",  
 				new Object[]{0, date}, new AlarmRowMapper());
 	}
 
 	@Override
-	public List<Alarm> getAlarmsByAreaIds(List<Integer> ids, Integer[] status, int start, int step) {
-		return getJdbcTemplate().query("select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM 
-				+ " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ") limit ?, ?",  
-				new Object[]{0, start, step}, new AlarmRowMapper());
+	public List<Alarm> getAlarmsByAreaIds(List<Integer> ids, Integer[] status, int start, int step, Date startDate, Date endDate) {
+		List<Object> params = new ArrayList<Object>();
+		String sql = "select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM 
+				+ " where isdel = ? and area_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ") ";
+		params.add(0);
+		if(startDate != null && endDate != null){
+			sql += "and add_time between ? and ? ";
+			params.add(startDate);
+			params.add(endDate);
+		}
+		
+		sql += "order by add_time desc limit ?, ?";
+		params.add(start);
+		params.add(step);
+
+		return getJdbcTemplate().query(sql, params.toArray(), new AlarmRowMapper());
 	}
 
 	@Override
@@ -81,10 +94,24 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 	}
 
 	@Override
-	public List<Alarm> getAlarmsByChannelIds(List<Integer> ids, Integer[] status, int start, int step) {
-		return getJdbcTemplate().query("select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM 
-				+ " where isdel = ? and channel_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ") limit ?, ?",  
-				new Object[]{0, start, step}, new AlarmRowMapper());
+	public List<Alarm> getAlarmsByChannelIds(List<Integer> ids, Integer[] status, int start, int step, Date startDate, Date endDate) {
+		String sql = "select id, type, machine_id, machine_name, channel_id, channel_name, length, area_id, area_name, alarm_name, light, relay, relay1, voice, temperature, temperature_pre, status, add_time, lastmod_time, lastmod_userid, isdel from " + SqlConstants.TABLE_ALARM 
+				+ " where isdel = ? and channel_id in (" + StringUtils.join(ids, ",") + ") and status in (" + StringUtils.join(status, ",") + ") ";
+		
+		List<Object> params = new ArrayList<Object>();
+		params.add(0);
+		
+		if(startDate != null && endDate != null){
+			sql += " and add_time between ? and ? ";
+			params.add(startDate);
+			params.add(endDate);
+		}
+		
+		sql += "order by add_time desc limit ?, ?";
+		params.add(start);
+		params.add(step);
+		
+		return getJdbcTemplate().query(sql, params.toArray(), new AlarmRowMapper());
 	}
 
 	@Override
@@ -117,17 +144,33 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 	}
 
 	@Override
-	public boolean updateAlarm(long id, int status, long userid) {
-		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_ALARM + " set status = ?, lastmod_time = now(), lastmod_userid = ? where id = ?", 
-				new Object[]{status, userid, id});
+	public boolean updateAlarm(List<Long> id, int status, long userid) {
+		int count = getJdbcTemplate().update("update " + SqlConstants.TABLE_ALARM + " set status = ?, lastmod_time = now(), lastmod_userid = ? where id in (" + StringUtils.join(id, ",") + ")", 
+				new Object[]{status, userid});
 		return count > 0;
 	}
 
 	@Override
-	public boolean addAlarmHistory(long id, int status, long userid) {
-		int count = getJdbcTemplate().update("insert into " + SqlConstants.TABLE_ALARM_HISTORY + "(alarm_id, operation, add_time, add_userid) values(?, ?, now(), ?)", 
-				new Object[]{id, status, userid});
-		return count > 0;
+	public boolean addAlarmHistory(final List<Long> id, final int status, final long userid) {
+		getJdbcTemplate().batchUpdate("insert into " + SqlConstants.TABLE_ALARM_HISTORY + "(alarm_id, operation, add_time, add_userid) values(?, ?, now(), ?)", 
+				new BatchPreparedStatementSetter() {
+					
+					@Override
+					public void setValues(PreparedStatement ps, int i) throws SQLException {
+						if(id.size() > i){
+							Long _id = id.get(i);
+							ps.setObject(1, _id);
+							ps.setObject(2, status);
+							ps.setObject(3, userid);
+						}
+					}
+					
+					@Override
+					public int getBatchSize() {
+						return id.size();
+					}
+				});
+		return true;
 	}
 
 	@Override
@@ -157,6 +200,30 @@ public class AlarmDaoImpl extends JdbcDaoSupport implements AlarmDao{
 			public int getBatchSize() {
 				return checks.size();
 			}
+		});
+	}
+
+	@Override
+	public List<Long> getAllAlarmIds(int status) {
+		return getJdbcTemplate().query("select id from " + SqlConstants.TABLE_ALARM + " where status < ? and status > ?", new Object[]{status, Alarm.STATUS_NEW}, new RowMapper<Long>(){
+
+			@Override
+			public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return rs.getLong("id");
+			}
+			
+		});
+	}
+
+	@Override
+	public List<Long> getAlarmIdsByAreaIds(List<Integer> areaIds, int status) {
+		return getJdbcTemplate().query("select id from " + SqlConstants.TABLE_ALARM + " where status < ? and status > ? and area_id in in (" + StringUtils.join(areaIds, ",") + ")", new Object[]{status, Alarm.STATUS_NEW}, new RowMapper<Long>(){
+
+			@Override
+			public Long mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return rs.getLong("id");
+			}
+			
 		});
 	}
 

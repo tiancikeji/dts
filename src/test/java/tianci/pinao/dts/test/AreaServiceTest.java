@@ -38,7 +38,7 @@ public class AreaServiceTest extends TestCase{
 			ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
 			AreaService as = ac.getBean("areaService", AreaService.class);
 			
-			System.out.println(as.getAllLevels());
+			System.out.println(as.getAllLevels(0, Integer.MAX_VALUE));
 			
 			LevelImage level = new LevelImage();
 			level.setName("厂区");
@@ -51,7 +51,7 @@ public class AreaServiceTest extends TestCase{
 			level.setId(1);
 			System.out.println(as.modifyLevelImage(level, userid));
 			
-			System.out.println(as.getAllLevels());
+			System.out.println(as.getAllLevels(0, Integer.MAX_VALUE));
 			
 			System.out.println(as.deleteLevelImage(level, userid));
 		}
@@ -69,7 +69,7 @@ public class AreaServiceTest extends TestCase{
 			
 			System.out.println(as.addMachine(machine, 1));
 			
-			System.out.println(as.getAllMachines());
+			System.out.println(as.getAllMachines(0, Integer.MAX_VALUE));
 	
 			machine.setId(2);
 			machine.setBaudRate("33");
@@ -93,7 +93,7 @@ public class AreaServiceTest extends TestCase{
 			channel.setLength(2000);
 			System.out.println(as.addChannel(channel, userid));
 			
-			System.out.println(as.getAllAvailableChannels());
+			System.out.println(as.getAllAvailableChannels(0, Integer.MAX_VALUE));
 			
 			channel.setLength(3000);
 			channel.setId(1);
@@ -162,7 +162,7 @@ public class AreaServiceTest extends TestCase{
 			config.setVoice("2");
 			System.out.println(as.addHardwareConfig(config, userid));
 			
-			System.out.println(as.getAllHardwareConfigs());
+			System.out.println(as.getAllHardwareConfigs(0, Integer.MAX_VALUE));
 			
 			config.setId(1);
 			config.setRelay("13");
@@ -170,7 +170,7 @@ public class AreaServiceTest extends TestCase{
 			
 			System.out.println(as.deleteHardwareConfig(config, userid));
 	
-			System.out.println(as.getAllHardwareConfigs());
+			System.out.println(as.getAllHardwareConfigs(0, Integer.MAX_VALUE));
 			
 			config = new AreaHardwareConfig();
 			config.setAreaid(15);
@@ -179,7 +179,7 @@ public class AreaServiceTest extends TestCase{
 			config.setVoice("2");
 			System.out.println(as.addHardwareConfig(config, userid));
 			
-			System.out.println(as.getAllHardwareConfigs());
+			System.out.println(as.getAllHardwareConfigs(0, Integer.MAX_VALUE));
 		}
 	}
 	
@@ -204,7 +204,7 @@ public class AreaServiceTest extends TestCase{
 			config.setExotherm(30);
 			System.out.println(as.addAreaTempConfig(config, userid));
 			
-			System.out.println(as.getAllTempConfigs());
+			System.out.println(as.getAllTempConfigs(0, Integer.MAX_VALUE));
 			
 			config = new AreaTempConfig();
 			config.setAreaid(16);
@@ -239,7 +239,7 @@ public class AreaServiceTest extends TestCase{
 			channels.add(channel);
 			System.out.println(as.addAreaChannel(channels, userid));
 			
-			System.out.println(as.getAllAreaChannels());
+			System.out.println(as.getAllAreaChannels(0, Integer.MAX_VALUE));
 	
 			channels.clear();
 			channel = new AreaChannel();
@@ -251,7 +251,7 @@ public class AreaServiceTest extends TestCase{
 			channels.add(channel);
 			System.out.println(as.addAreaChannel(channels, userid));
 			
-			System.out.println(as.getAllAreaChannels());
+			System.out.println(as.getAllAreaChannels(0, Integer.MAX_VALUE));
 			
 			channel.setId(2);
 			channel.setStart(499);

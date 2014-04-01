@@ -20,7 +20,7 @@ public interface AreaDao {
 	
 	public Map<Integer, Area> getAreaByIds(List<Integer> ids);
 	
-	public List<Area> getAllAreas();
+	public List<Area> getAllAreas(int start, int step);
 	
 	public boolean updateArea(Area area);
 	
@@ -37,7 +37,7 @@ public interface AreaDao {
 	
 	public AreaHardwareConfig getHardwareConfigByAreaid(int areaid);
 	
-	public List<AreaHardwareConfig> getAllHardwareConfigs();
+	public List<AreaHardwareConfig> getAllHardwareConfigs(int start, int step);
 	
 	public boolean updateHardwareConfig(AreaHardwareConfig config);
 	
@@ -54,7 +54,7 @@ public interface AreaDao {
 	
 	public List<AreaChannel> getAreaChannelsByAreaid(int areaid);
 
-	public List<AreaChannel> getAllAreaChannels();
+	public List<AreaChannel> getAllAreaChannels(int start, int step);
 	
 	public boolean deleteAreaChannelsByAreaid(int areaid, int userid);
 	
@@ -73,7 +73,7 @@ public interface AreaDao {
 	
 	public boolean deleteTempConfig(int configid, int userid);
 
-	public List<AreaTempConfig> getAllTempConfigs();
+	public List<AreaTempConfig> getAllTempConfigs(int start, int step);
 
 	public void deleteAllTempConfigs(int userid);
 
@@ -82,7 +82,7 @@ public interface AreaDao {
 	public void addTempConfigs(List<AreaTempConfig> tempConfigs);
 
 	// channels
-	public List<Channel> getAllChannels();
+	public List<Channel> getAllChannels(int start, int step);
 
 	public boolean addChannel(Channel channel);
 
@@ -97,7 +97,7 @@ public interface AreaDao {
 	public boolean deleteChannels(int machineid, int userid);
 
 	// machines
-	public List<Machine> getAllMachines();
+	public List<Machine> getAllMachines(int start, int step);
 
 	public boolean addMachine(Machine machine);
 
@@ -110,7 +110,7 @@ public interface AreaDao {
 	public void deleteAllMachines(int userid);
 	
 	// level - images
-	public List<LevelImage> getAllLevels();
+	public List<LevelImage> getAllLevels(int start, int step);
 	
 	public boolean addLevelImage(LevelImage level);
 	

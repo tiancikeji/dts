@@ -1,6 +1,5 @@
 package tianci.pinao.dts.util;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.text.ParseException;
@@ -13,11 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 
-import tianci.pinao.dts.models.User;
-
 public class PinaoUtils {
 
-	public static String LOCAL_MAC_ADDRESS;
+	public static String LOCAL_MAC_ADDRESS = "unknown";
 	
 	static{
 		try {
@@ -37,8 +34,8 @@ public class PinaoUtils {
 				LOCAL_MAC_ADDRESS = LOCAL_MAC_ADDRESS.substring(0, LOCAL_MAC_ADDRESS.length() - 1);
 			}
 
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Throwable e) {
+			//e.printStackTrace();
 		}
 	}
 
@@ -70,16 +67,18 @@ public class PinaoUtils {
 					}
 		}
 		
-		// TODO change userid to 0
-		return userid;
+		return 0;
 	}
 
 	public static Object getUserFromSession(HttpServletRequest request, long userid) {
-		/*Object obj = request.getSession().getAttribute("" + userid);
-		return obj;*/
-		//TODO change this code
-		User user = new User();
+		return request.getSession().getAttribute("" + userid);
+		/*User user = new User();
 		user.setRole(1);
-		return user;
+		request.getSession().setAttribute("" + userid, user);
+		return user;*/
+	}
+	
+	public static Double getFloat(Object obj){
+		return Double.parseDouble(String.format("%.1f", obj));
 	}
 }

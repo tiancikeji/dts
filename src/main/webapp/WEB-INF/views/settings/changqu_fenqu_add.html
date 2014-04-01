@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--#include virtual="/dts/inc/head.html"-->
+        <link rel="stylesheet" type="text/css" href="../static/css/theme_uploader_normal.css" />
+        <title>新增分区|NEINE预警系统</title>
+    </head>
+    <body>
+        <!--#include virtual="/dts/inc/header.html"-->
+        <div id="container" class="grid-elastic cf">
+
+            <div id="sidebar" class="grid-220">
+                <div class="menu">
+                    <h3>参数设置</h3>
+                    <!--#include virtual="/dts/inc/nav_settings.html"-->
+                </div>
+            </div>
+            <!-- //sidebar -->
+
+            <div id="content" class="wrapper">
+
+                <div class="mod-1">
+                    <div class="hd-1 cf">
+                        <ul id="Tabs-2" class="tabs-2 fl">
+                            <li><a href="changqu_fenqu_list.html" class="">所有分区</a></li>
+                            <li><a href="changqu_fenqu_add.html" class="current j_common_add_title">新增分区</a></li>
+                        </ul>
+                    </div>
+                    <div class="bd-1">
+                        <div class="mod-2">
+                            <div class="hd-2 cf">
+                                <h2 class="j_common_add_title">新增分区</h2>
+                            </div>
+                            <div class="bd-2">
+                                <div class="wrap-cont2 cf">
+
+                                    <div class="grid-f4 fl">
+                                        <div class="mod-3">
+                                            <div class="bd-3">
+                                                <form id="dataForm" type="post" action="" class="j_common_form"
+                                                      data-add-url="area/addArea"
+                                                      data-edit-url="area/updateArea"
+                                                      data-back-url="changqu_fenqu_list.html">
+                                                    <div class="wrap-cont">
+                                                        <ul class="form-list">
+                                                            <li>
+                                                                分区名称：
+                                                                <input data-valid="1" data-valid-message="请输入分区名称" name="name" class="select-2 ipt-f3 j_common_form_autovalue" />
+                                                            </li>
+                                                            <li>
+                                                                分区图片：<input data-valid="1" data-valid-message="请上传分区图片" name="image" type="hidden" class="j_common_form_autovalue" />
+                                                                <div id="uploadCtn" class="upload-wrapper">
+                                                                    <div class="upload-list j_up_list"><div class="upload-btn j_up_btn">添加图片</div></div>
+                                                                </div>
+                                                            </li>
+                                                            <li>
+                                                                所属分区：<span id="fenquSelect"></span>
+                                                            </li>
+                                                            <li>
+                                                                层级：<span id="levelSelect"></span>
+                                                            </li>
+                                                            <li>
+                                                                报警区域：<span id="indexSelect"></span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="btn-wrap">
+                                                        <input class="btn btn-blue" type="submit" value="提交">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div><!-- mod-3 -->
+                                    </div><!-- grid-f4 -->
+                                </div>
+                            </div>
+                        </div><!-- mod-2 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--#include virtual="/dts/inc/footer.html"-->
+        <script src="../static/js/imageuploader.js"></script>
+        <script>
+            (function(){
+                var $upBtn = $('.j_up_btn');
+                var $form = $('#dataForm');
+                var upUi = new $.Dts.ImageUploaderUi($('#uploadCtn'), {
+                    ui: {
+                        maxPhotoNum: 1,
+                        coverNum: 0,
+                        dragAble: false,
+                        callBack: function(response){
+                            console.log('上传wanc', response)
+                            if(response.status != 0){
+                                upUi._setError(this, '');
+                                return;
+                            }
+                            $form[0].image.value = response.name;
+                            this.find('.j_img_bg').attr('src', $.Dts.rootUri + response.name);
+
+                        }
+                    },
+                    upload: {
+                        url: $.Dts.rootUri + 'file/addFile', //上传地址
+                        auto: true, //自动上传
+                        format: 'jpg|gif|png' //图片格式筛选，支持jpg gif bmp png
+                    }
+                });
+                upUi.bind('delete', function(){
+                    $upBtn.show();
+                    $form[0].image.value = '';
+                }).bind('selected', function(){
+                    $upBtn.hide();
+                });
+
+                //编辑模式
+                if($.Dts.form.isEditMode()){
+                    $upBtn.hide();
+                    $('<div class="upload-list-item" id="j_img_88742083_ccaf205fd611_0">' +
+                            '<div class="item-cover j_cover" style="display: none;"></div>' +
+                            '<img class="item-img j_img_bg j_hide_error" src="'+ $.Dts.rootUri + $.Dts.getParameter('form_image') +'">' +
+                            '<span class="item-progress j_hide_complete" style="display: none;">' +
+                            '<b class="j_progress_bar" style="width: 100%;"></b></span>' +
+                            '<div class="item-error j_error j_show_error">上传失败</div>' +
+                            '<span class="item-close j_delete" title="删除此图"></span></div>').prependTo($('.j_up_list'));
+                }
+
+                $.get($.Dts.rootUri + 'area/areanames?userid=' + $.Dts.login.getUserId(), function(res){
+                    new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
+                        id:'select1',
+                        name:'parent',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_parent')
+                    });
+                });
+
+                $.get($.Dts.rootUri + '/level/levels?userid=' + $.Dts.login.getUserId(), function(res){
+                    new $.Dts.linkAgeSelect($('#levelSelect'), res.data, {
+                        id:'select2',
+                        name:'level',
+                        label:'',
+                        textTag:'name',
+                        valueTag:'id',
+                        selected: $.Dts.getParameter('form_level')
+                    });
+                });
+
+                var indexHtml = '<select name="index">';
+                var selectedIndex = $.Dts.getParameter('form_index');
+                var selected;
+                for(var i =1; i <= 16; i++){
+                    selected = '';
+                    if(selectedIndex){
+                        selected = 'selected';
+                    }
+                    indexHtml += '<option '+selected+' value="'+i+'">'+i+'</option>';
+                }
+                indexHtml += '</select>';
+                $('#indexSelect').html(indexHtml);
+
+
+
+            })();
+        </script>
+    </body>
+</html>
