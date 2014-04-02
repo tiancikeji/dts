@@ -40,7 +40,7 @@ public class ConfigControllerTest extends TestCase{
 			long userid = -1;
 			String start = "2013-03-15 00:00:00";
 			String end = "2014-03-16 00:00:00";
-			System.out.println(cs.getLogHistory(null, userid, start, end));
+			System.out.println(cs.getLogHistory(null, userid, start, end, 0, 100));
 		}
 	}
 

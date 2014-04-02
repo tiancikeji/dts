@@ -9,6 +9,6 @@ public interface LogService {
 	
 	public boolean addLog(Log log);
 
-	public List<Log> getLogs(Date startDate, Date endDate);
+	public List<Log> getLogs(Date startDate, Date endDate, Integer start, Integer step);
 
 }

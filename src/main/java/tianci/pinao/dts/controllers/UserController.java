@@ -52,8 +52,8 @@ public class UserController {
 				
 				Log log = new Log();
 				log.setType(Log.TYPE_USER_LOGIN);
-				log.setValue("" + user.getId());
-				log.setSource(user.getName());
+				log.setValue(user.getName());
+				log.setSource("" + user.getId());
 				logService.addLog(log);
 			} else
 				result.put("status", "500");
@@ -81,8 +81,8 @@ public class UserController {
 					
 					Log log = new Log();
 					log.setType(Log.TYPE_USER_LOGOUT);
-					log.setValue("" + user.getId());
-					log.setSource(user.getName());
+					log.setValue(user.getName());
+					log.setSource("" + user.getId());
 					logService.addLog(log);
 				} else
 					result.put("status", "700");

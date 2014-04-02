@@ -17,8 +17,8 @@ public class LogServiceImpl implements LogService {
 	}
 
 	@Override
-	public List<Log> getLogs(Date startDate, Date endDate) {
-		return logDao.getLogs(startDate, endDate);
+	public List<Log> getLogs(Date startDate, Date endDate, Integer start, Integer step) {
+		return logDao.getLogs(startDate, endDate, start, step);
 	}
 
 	public LogDao getLogDao() {

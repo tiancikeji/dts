@@ -128,11 +128,10 @@
 	<beans:bean id="alarmDao" class="tianci.pinao.dts.dao.impl.AlarmDaoImpl">
 		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
 	</beans:bean>
-	<!-- <beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.DummyTemDaoImpl">
-	</beans:bean> -->
-	<beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.TemDaoImpl">
+	<beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.DummyTemDaoImpl" />
+	<!-- <beans:bean id="temDao" class="tianci.pinao.dts.dao.impl.TemDaoImpl">
 		<beans:property name="jdbcTemplate" ref="jdbcTemplate" />
-	</beans:bean>
+	</beans:bean> -->
 
 	<beans:bean id="userService" class="tianci.pinao.dts.service.impl.UserServiceImpl">
 		<beans:property name="userDao" ref="userDao" />
@@ -201,7 +200,7 @@
 		<beans:property name="triggers">
 			<beans:list>
                 <beans:ref bean="softwareLifeTimeRecordTaskTrigger" />
-                <!-- <beans:ref bean="dummyAlarmTaskTrigger" /> -->
+                <beans:ref bean="dummyAlarmTaskTrigger" />
 			</beans:list>
 		</beans:property>
 	</beans:bean>

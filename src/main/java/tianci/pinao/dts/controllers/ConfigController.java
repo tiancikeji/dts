@@ -70,7 +70,7 @@ public class ConfigController {
 
 	@RequestMapping(value="/log/history", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<Object, Object> getLogHistory(HttpServletRequest request, long userid, String start, String end){
+	public Map<Object, Object> getLogHistory(HttpServletRequest request, long userid, String startDate, String endDate, Integer start, Integer step){
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
 		try{
@@ -81,11 +81,17 @@ public class ConfigController {
 			if(obj != null && obj instanceof User){	
 				User user = (User)obj;
 				if(configService.checkLifeTime() || user.getRole() == 1){	
-					Date startDate = PinaoUtils.getDate(start);
-					Date endDate = PinaoUtils.getDate(end);
+					Date _startDate = PinaoUtils.getDate(startDate);
+					Date _endDate = PinaoUtils.getDate(endDate);
+					
+					if(start == null)
+						start = 0;
+					if(step == null)
+						step = 100;
+					
 					List<Map<String, Object>> data = null;
-					if(startDate != null && endDate != null && !endDate.before(startDate)){
-						data = parseLog(logService.getLogs(startDate, endDate));
+					if(_startDate != null && _endDate != null && !_endDate.before(_startDate) && start >= 0 && step > 0){
+						data = parseLog(logService.getLogs(_startDate, _endDate, start, step));
 					} else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
