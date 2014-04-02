@@ -101,6 +101,7 @@
                 <%}%>
                 </tbody>
             </table>
+            <!--#include virtual="/dts/inc/nav_pager.html"-->
         </script>
         <script>
             (function(){
@@ -111,17 +112,20 @@
                             $.Dts.Levels[res.data[i].id] = res.data[i].image;
                         }
                     }
-                    $.get($.Dts.rootUri + 'area/areas?userid=' + $.Dts.login.getUserId(), function(res){
-                        if(!$.Dts.ajax.validRes(res)){
-                            return;
-                        }
-                        $.Dts.fenqu={0:'无'}
-                        var data = res.data;
-                        for(var d = 0; d < data.length; d++){
-                            $.Dts.fenqu[data[d].id]=data[d].name
-                        }
+                    $.Dts.listManager.init($('#list'), 10, function(){
+                        $.get($.Dts.rootUri + '/area/areas?userid=' + $.Dts.login.getUserId() +
+                                '&start='+ this.start +'&step='+ this.step, function(res){
+                            if(!$.Dts.ajax.validRes(res)){
+                                return;
+                            }
+                            $.Dts.fenqu={0:'无'}
+                            var data = res.data;
+                            for(var d = 0; d < data.length; d++){
+                                $.Dts.fenqu[data[d].id]=data[d].name
+                            }
 
-                        $('#list').html(baidu.template('listTmpl', res));
+                            $('#list').html(baidu.template('listTmpl', res));
+                        });
                     });
                 });
             })();

@@ -17,6 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -419,7 +423,7 @@ public class TemperatureController {
 								response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
 							}
 							out = response.getOutputStream();
-							out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器-通道-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_COL_SEP + "斯托克斯" + PinaoConstants.TEM_DATA_COL_SEP + "反斯托克斯" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+							out.write((PinaoConstants.FILE_COMMENT_PREFIX + "厂区-距离" + PinaoConstants.TEM_DATA_COL_SEP + "时间" + PinaoConstants.TEM_DATA_COL_SEP + "温度" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
 							
 							Area area = searchArea(areaService.getAllAreas(userid, user), id);
 		
@@ -436,6 +440,8 @@ public class TemperatureController {
 										for(Date _key : _temps.keySet()){
 											out.write(key.getBytes());
 											out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+											out.write(PinaoUtils.getDateString(_key).getBytes());
+											out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
 											out.write(_temps.get(_key).toString().getBytes());
 											out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
 										}
@@ -443,17 +449,66 @@ public class TemperatureController {
 								}
 							}
 						} else {
-							// TODO xls
+							// xls
+							response.setContentType("application/msexcel");
+							String oriFileName = "历史厂区趋势数据.xls";
+							String agent = request.getHeader("USER-AGENT");
+							if (null != agent && -1 != agent.indexOf("Firefox")) {
+								response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+							} else {
+								response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+							}
+							
+							HSSFWorkbook book = new HSSFWorkbook();
+							HSSFSheet sheet = book.createSheet("历史厂区趋势数据");
+							int rowindex = 0;
+							HSSFRow row = sheet.createRow(rowindex++);
+							int columnIndex = 0;
+							HSSFCell cell = row.createCell(columnIndex++);
+							cell.setCellValue("厂区-距离");
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue("时间");
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue("温度");
+							
+							Area area = searchArea(areaService.getAllAreas(userid, user), id);
+		
+							Date startDate = PinaoUtils.getDate(start);
+							Date endDate = PinaoUtils.getDate(end);
+							if(area != null && startDate != null && endDate != null && !endDate.before(startDate)){
+								ReportData data = temService.getAreaReportData(area, startDate, endDate);
+								if(data != null){
+									Map<String, Map<Date, Double>> tems = data.getTems();
+									
+									for(String key : tems.keySet()){
+										Map<Date, Double> _temps = data.getTems().get(key);
+										
+										for(Date _key : _temps.keySet()){
+											row = sheet.createRow(rowindex++);
+											columnIndex = 0;
+											cell = row.createCell(columnIndex++);
+											cell.setCellValue(key);
+											cell = row.createCell(columnIndex++);
+											cell.setCellValue(PinaoUtils.getDateString(_key));
+											cell = row.createCell(columnIndex++);
+											cell.setCellValue(_temps.get(_key));
+										}
+									}
+								}
+							}
+
+							out = response.getOutputStream();
+							book.write(out);
 						}
 					} else
-						response.sendRedirect(request.getContextPath() + "/" + "expire.html");
+						response.sendRedirect(request.getContextPath() + "/" + "system/expire.html");
 				} else
-					response.sendRedirect(request.getContextPath() + "/" + "error.html");
+					response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 			} else
-				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+				response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} catch(Throwable t){
 			t.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} finally {
 			try {
 				if (out != null) {
@@ -943,35 +998,120 @@ public class TemperatureController {
 							if(data != null){
 								Map<String, Map<Date, Double>> tems = data.getTems();
 								Map<String, Map<Date, Double>> stocks = data.getStocks();
+								Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
 								
 								for(String key : tems.keySet()){
 									Map<Date, Double> _temps = data.getTems().get(key);
 									Map<Date, Double> _stocks = null;
+									Map<Date, Double> _unstocks = null;
 									if(stocks.containsKey(key))
 										_stocks = stocks.get(key);
+									if(unstocks.containsKey(key))
+										_unstocks = unstocks.get(key);
 									
 									for(Date _key : _temps.keySet()){
 										out.write(key.getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										out.write(PinaoUtils.getDateString(_key).getBytes());
 										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
 										out.write(_temps.get(_key).toString().getBytes());
 										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
 										if(_stocks != null && _stocks.containsKey(_key))
 											out.write(_stocks.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										if(_unstocks != null && _unstocks.containsKey(_key))
+											out.write(_unstocks.get(_key).toString().getBytes());
 										out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
 									}
 								}
 							}
 						}
 					} else {
-						//TODO xls
+						// xls
+						response.setContentType("application/msexcel");
+						String oriFileName = "历史通道趋势数据.xls";
+						String agent = request.getHeader("USER-AGENT");
+						if (null != agent && -1 != agent.indexOf("Firefox")) {
+							response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+						} else {
+							response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+						}
+						
+						HSSFWorkbook book = new HSSFWorkbook();
+						HSSFSheet sheet = book.createSheet("历史通道趋势数据");
+						int rowindex = 0;
+						HSSFRow row = sheet.createRow(rowindex++);
+						int columnIndex = 0;
+						HSSFCell cell = row.createCell(columnIndex++);
+						cell.setCellValue("机器-通道-距离");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("时间");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("温度");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("斯托克斯");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("反斯托克斯");
+						
+						Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+						List<Channel> channels = null;
+						if(machines != null && machines.size() > 0)
+							for(Machine machine : machines.keySet())
+								if(machine.getId() == id){
+									channels = machines.get(machine);
+									break;
+								}
+	
+						Date startDate = PinaoUtils.getDate(start);
+						Date endDate = PinaoUtils.getDate(end);
+						if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
+							ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+							if(data != null){
+								Map<String, Map<Date, Double>> tems = data.getTems();
+								Map<String, Map<Date, Double>> stocks = data.getStocks();
+								Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
+								
+								for(String key : tems.keySet()){
+									Map<Date, Double> _temps = data.getTems().get(key);
+									Map<Date, Double> _stocks = null;
+									Map<Date, Double> _unstocks = null;
+									if(stocks.containsKey(key))
+										_stocks = stocks.get(key);
+									if(unstocks.containsKey(key))
+										_unstocks = unstocks.get(key);
+									
+									for(Date _key : _temps.keySet()){
+										row = sheet.createRow(rowindex++);
+										columnIndex = 0;
+										cell = row.createCell(columnIndex++);
+										cell.setCellValue(key);
+										cell = row.createCell(columnIndex++);
+										cell.setCellValue(PinaoUtils.getDateString(_key));
+										cell = row.createCell(columnIndex++);
+										cell.setCellValue(_temps.get(_key));
+										if(_stocks != null && _stocks.containsKey(_key)){
+											cell = row.createCell(columnIndex++);
+											cell.setCellValue(_stocks.get(_key));
+										}
+										if(_unstocks != null && _unstocks.containsKey(_key)){
+											cell = row.createCell(columnIndex++);
+											cell.setCellValue(_unstocks.get(_key));
+										}
+									}
+								}
+							}
+						}
+
+						out = response.getOutputStream();
+						book.write(out);
 					}
 				} else
-					response.sendRedirect(request.getContextPath() + "/" + "error.html");
+					response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 			} else
-				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+				response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} catch(Throwable t){
 			t.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} finally {
 			try {
 				if (out != null) {
@@ -1207,35 +1347,120 @@ public class TemperatureController {
 							if(data != null){
 								Map<String, Map<Date, Double>> tems = data.getTems();
 								Map<String, Map<Date, Double>> stocks = data.getStocks();
+								Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
 								
 								for(String key : tems.keySet()){
 									Map<Date, Double> _temps = data.getTems().get(key);
 									Map<Date, Double> _stocks = null;
+									Map<Date, Double> _unstocks = null;
 									if(stocks.containsKey(key))
 										_stocks = stocks.get(key);
+									if(unstocks.containsKey(key))
+										_unstocks = unstocks.get(key);
 									
 									for(Date _key : _temps.keySet()){
 										out.write(key.getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										out.write(PinaoUtils.getDateString(_key).getBytes());
 										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
 										out.write(_temps.get(_key).toString().getBytes());
 										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
 										if(_stocks != null && _stocks.containsKey(_key))
 											out.write(_stocks.get(_key).toString().getBytes());
+										out.write(PinaoConstants.TEM_DATA_COL_SEP.getBytes());
+										if(_unstocks != null && _unstocks.containsKey(_key))
+											out.write(_unstocks.get(_key).toString().getBytes());
 										out.write(PinaoConstants.TEM_DATA_LINE_SEP.getBytes());
 									}
 								}
 							}
 						}
 					} else{
-						//TODO xls
+						// xls
+						response.setContentType("application/msexcel");
+						String oriFileName = "历史机器趋势数据.xls";
+						String agent = request.getHeader("USER-AGENT");
+						if (null != agent && -1 != agent.indexOf("Firefox")) {
+							response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
+						} else {
+							response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
+						}
+						
+						HSSFWorkbook book = new HSSFWorkbook();
+						HSSFSheet sheet = book.createSheet("历史机器趋势数据");
+						int rowindex = 0;
+						HSSFRow row = sheet.createRow(rowindex++);
+						int columnIndex = 0;
+						HSSFCell cell = row.createCell(columnIndex++);
+						cell.setCellValue("机器-通道-距离");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("时间");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("温度");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("斯托克斯");
+						cell = row.createCell(columnIndex++);
+						cell.setCellValue("反斯托克斯");
+						
+						Map<Machine, List<Channel>> machines = areaService.getAllChannels(userid);
+						List<Channel> channels = null;
+						if(machines != null && machines.size() > 0)
+							for(Machine machine : machines.keySet())
+								if(machine.getId() == id){
+									channels = machines.get(machine);
+									break;
+								}
+	
+						Date startDate = PinaoUtils.getDate(start);
+						Date endDate = PinaoUtils.getDate(end);
+						if(channels != null && channels.size() > 0 && startDate != null && endDate != null && !endDate.before(startDate)){
+							ReportData data = temService.getChannelReportData(channels, startDate, endDate);
+							if(data != null){
+								Map<String, Map<Date, Double>> tems = data.getTems();
+								Map<String, Map<Date, Double>> stocks = data.getStocks();
+								Map<String, Map<Date, Double>> unstocks = data.getUnstocks();
+								
+								for(String key : tems.keySet()){
+									Map<Date, Double> _temps = data.getTems().get(key);
+									Map<Date, Double> _stocks = null;
+									Map<Date, Double> _unstocks = null;
+									if(stocks.containsKey(key))
+										_stocks = stocks.get(key);
+									if(unstocks.containsKey(key))
+										_unstocks = unstocks.get(key);
+									
+									for(Date _key : _temps.keySet()){
+										row = sheet.createRow(rowindex++);
+										columnIndex = 0;
+										cell = row.createCell(columnIndex++);
+										cell.setCellValue(key);
+										cell = row.createCell(columnIndex++);
+										cell.setCellValue(PinaoUtils.getDateString(_key));
+										cell = row.createCell(columnIndex++);
+										cell.setCellValue(_temps.get(_key));
+										if(_stocks != null && _stocks.containsKey(_key)){
+											cell = row.createCell(columnIndex++);
+											cell.setCellValue(_stocks.get(_key));
+										}
+										if(_unstocks != null && _unstocks.containsKey(_key)){
+											cell = row.createCell(columnIndex++);
+											cell.setCellValue(_unstocks.get(_key));
+										}
+									}
+								}
+							}
+						}
+
+						out = response.getOutputStream();
+						book.write(out);
 					}
 				} else
-					response.sendRedirect(request.getContextPath() + "/" + "error.html");
+					response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 			} else
-				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+				response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} catch(Throwable t){
 			t.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} finally {
 			try {
 				if (out != null) {

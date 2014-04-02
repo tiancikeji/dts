@@ -48,6 +48,14 @@
                                 结束时间：
                                 <input name="endTime" type="text"  class="select-2 j_date" size="20">
                                 <input class="btn btn-blue" type="button" id="btnRenderCharts" value="确定">
+                                &nbsp;&nbsp;
+                                数据类型：
+                                <select id="dataType">
+                                    <option value="0">txt</option>
+                                    <option value="1">xls</option>
+                                </select>
+                                <input class="btn btn-blue j_permission" data-role="3" type="button" id="btnDown" value="数据下载">
+
                             </p>
                             <div class="charts" id="chartsTempContainer"></div>
                             <div class="charts" id="chartsStockContainer"></div>
@@ -55,7 +63,14 @@
                         </div>
 
                         <div class="panes-2 j_tabs_switch_bd hide">
-                            <p id="list " class="j_alarm_table"></p>
+                            <p>
+                                开始时间：
+                                <input name="startHistoryTime" type="text" class="select-2 j_date" size="20">
+                                结束时间：
+                                <input name="endHistoryTime" type="text"  class="select-2 j_date" size="20">
+                                <input class="btn btn-blue" type="button" id="btnRenderHistory" value="确定">
+                            </p>
+                            <p id="list" class="j_alarm_table"></p>
 
                         </div>
                     </div>
@@ -63,7 +78,9 @@
             </div>
         </div>
         <!--#include virtual="/dts/inc/footer.html"-->
-        <script type="text/html" id="listTmpl">
+        <!--#include virtual="/dts/inc/alarmtable.html"-->
+
+        <script type="text/html" id="adfafafadfad">
             <table class="table table-auto">
                 <thead>
                 <tr>
@@ -151,6 +168,8 @@
                     $areaImage: $('#areaImage'),
                     $startTime: $('input[name="startTime"]'),
                     $endTime: $('input[name="endTime"]'),
+                    $startHistoryTime: $('input[name="startHistoryTime"]'),
+                    $endHistoryTime: $('input[name="endHistoryTime"]'),
                     initImage: function(id){
                         return;
                         this.$areaImage.find('img').attr('src', $.Dts.rootUri + $.Dts.areaManager.areaListData[id].image);
@@ -160,7 +179,7 @@
                         var _this = this;
                         this.xNums = 1;
                         this.initImage(id);
-                        this.loadHistory(id);
+                        //this.loadHistory(id);
                         clearTimeout(_this.loadTimer);
                         _this.loadTimer = null;
                         this.$monitorName.html($.Dts.areaManager.areaListData[id].name);
@@ -218,6 +237,7 @@
                                     };
                                     temsChart.setOption(option);
 
+                                    return;//不再展示stocks和unstocks
                                     //stocks
                                     var stocks = [];
                                     for(var i in data.stocks.data){
@@ -297,11 +317,12 @@
                     loadHistory: function(id){
                         id = id || $.Dts.areaManager.currentId;
                         $.get($.Dts.rootUri + '/report/area/alarm?userid=' + $.Dts.login.getUserId() + '&id=' + id +
-                                '&start='+$.Dts.areaManager.historyStart+'&step=50', function(res){
+                                '&start='+$.Dts.areaManager.historyStart+'&step=50&startDate='+  this.$startHistoryTime.val() +'&endDate='+  this.$endHistoryTime.val(), function(res){
                             if(!$.Dts.ajax.validRes(res)){
                                 return;
                             }
                             $('#list').html(baidu.template('listTmpl', res));
+                            $.Dts.login.renderPermission();
                         });
                     }
                 }
@@ -342,7 +363,6 @@
                     $('#areaTree a').click(function(e){
                         e.preventDefault();
                         var $target = $(this);
-                        console.log($target);
                         $.Dts.areaManager.initArea($target.attr('data-id'));
                     });
 
@@ -377,6 +397,28 @@
                 $('#btnRenderCharts').click(function(){
                     $.Dts.areaManager.renderCharts();
                 });
+
+                //数据下载
+                $('#btnDown').click(function(){
+                    var start = $.Dts.areaManager.$startTime.val();
+                    var end = $.Dts.areaManager.$endTime.val();
+                    if(!start || !end){
+                        alert('请选择开始和结束时间');
+                        return;
+                    }
+                    window.open('area/download?userid=' + $.Dts.login.getUserId() +
+                        '&id=' + $.Dts.areaManager.currentId +
+                        '&type=' + $('#dataType').val() +
+                        '&start=' + start +
+                        '&end=' + end
+                    );
+                });
+
+                //历史查询
+                $('#btnRenderHistory').click(function(){
+                    $.Dts.areaManager.loadHistory();
+                });
+
 
             })();
         </script>

@@ -1,18 +1,16 @@
-<header id="header" class="cf">
+<div id="header" class="cf">
 
     <h1 id="logo">
-        <a href="/index.html">
-            <img src="../static/images/logo.png" alt="NEINE预警系统" title="NEINE预警系统">
-        </a>
+        <img src="../static/images/logo.png" alt="NEINE预警系统" title="NEINE预警系统">
     </h1><!-- logo -->
 
-    <nav id="nav">
+    <div id="nav">
         <ul>
             <li><a href="../monitor/area_list.html"><i class="icon-nav icon-nav1"></i>实时监控</a></li>
-            <li><a href="../report/area_list.html"><i class="icon-nav icon-nav2"></i>查询报表</a></li>
+            <li><a href="../report/area_list.html"><i class="icon-nav icon-nav2"></i>历史查询</a></li>
             <li><a href="../project/info.html"><i class="icon-nav icon-nav3"></i>项目信息</a></li>
-            <li><a href="../settings/changqu_fenqu_list.html"><i class="icon-nav icon-nav4"></i>参数设置</a></li>
-            <li><a href="../passport/list.html"><i class="icon-nav icon-nav5"></i>用户管理</a></li>
+            <li class="j_permission" data-role="2"><a href="../settings/changqu_yingjian_list.html"><i class="icon-nav icon-nav4"></i>参数设置</a></li>
+            <li class="j_permission" data-role="3"><a href="../passport/list.html"><i class="icon-nav icon-nav5"></i>用户管理</a></li>
             <li><a href="#" class="j_logout"><i class="icon-nav icon-nav6"></i>安全退出</a></li>
             <li class="divider-v"></li>
             <li>
@@ -20,6 +18,6 @@
                 <p id="localTime"><span><!--#config timefmt="%Y年 %m月 %d日 星期%w"--><!--#echo var="DATE_LOCAL"--></span></p>
             </li>
         </ul>
-    </nav><!-- nav -->
+    </div><!-- nav -->
 
-</header><!-- //header -->
+</div><!-- //header -->

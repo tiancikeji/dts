@@ -11,6 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +31,6 @@ import tianci.pinao.dts.models.Machine;
 import tianci.pinao.dts.models.User;
 import tianci.pinao.dts.service.AreaService;
 import tianci.pinao.dts.service.ConfigService;
-import tianci.pinao.dts.util.PinaoConstants;
 import tianci.pinao.dts.util.PinaoUtils;
 
 @Controller
@@ -384,6 +387,7 @@ public class AreaController {
 	}
 	
 	@RequestMapping(value="/area/replace", method = RequestMethod.POST)
+	@ResponseBody
 	public Map<Object, Object> replaceAreas(HttpServletRequest request, String data, long userid) throws IOException{
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
@@ -421,16 +425,57 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					response.setContentType("text/plain");
-					String oriFileName = "厂区.txt";
+					// xls
+					response.setContentType("application/msexcel");
+					String oriFileName = "厂区.xls";
 					String agent = request.getHeader("USER-AGENT");
 					if (null != agent && -1 != agent.indexOf("Firefox")) {
 						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
 					} else {
 						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
 					}
-					out = response.getOutputStream();
-					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "名称" + PinaoConstants.TEM_DATA_COL_SEP + "分类" + PinaoConstants.TEM_DATA_COL_SEP + "报警区域" + PinaoConstants.TEM_DATA_COL_SEP + "父级厂区" + PinaoConstants.TEM_DATA_COL_SEP + "图片" + PinaoConstants.TEM_DATA_COL_SEP + "灯号" + PinaoConstants.TEM_DATA_COL_SEP + "预警继电器号" + PinaoConstants.TEM_DATA_COL_SEP + "火警继电器号" + PinaoConstants.TEM_DATA_COL_SEP + "声音地址" + PinaoConstants.TEM_DATA_COL_SEP + "低温报警" + PinaoConstants.TEM_DATA_COL_SEP + "高温报警" + PinaoConstants.TEM_DATA_COL_SEP + "差温报警" + PinaoConstants.TEM_DATA_COL_SEP + "温升报警" + PinaoConstants.TEM_DATA_COL_SEP + "报警显示名称" + PinaoConstants.TEM_DATA_COL_SEP + "通道名称" + PinaoConstants.TEM_DATA_COL_SEP + "机器名称" + PinaoConstants.TEM_DATA_COL_SEP + "开始距离" + PinaoConstants.TEM_DATA_COL_SEP + "结束距离" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					
+					HSSFWorkbook book = new HSSFWorkbook();
+					HSSFSheet sheet = book.createSheet("厂区");
+					int rowindex = 0;
+					HSSFRow row = sheet.createRow(rowindex++);
+					int columnIndex = 0;
+					HSSFCell cell = row.createCell(columnIndex++);
+					cell.setCellValue("名称");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("分类");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("报警区域");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("父级厂区");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("图片");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("灯号");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("预警继电器号");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("火警继电器号");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("声音地址");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("低温报警");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("高温报警");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("差温报警");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("温升报警");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("报警显示名称");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("通道名称");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("机器名称");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("开始距离");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("结束距离");
 					
 					Map<Integer, AreaHardwareConfig> hMap = new HashMap<Integer, AreaHardwareConfig>();
 					List<AreaHardwareConfig> hardConfigs = areaService.getAllHardwareConfigs(0, Integer.MAX_VALUE);
@@ -462,30 +507,78 @@ public class AreaController {
 							AreaHardwareConfig hc = hMap.get(area.getId());
 							AreaChannel ac = acMap.get(area.getId());
 							
-							out.write((area.getName() + PinaoConstants.TEM_DATA_COL_SEP + area.getLevel() + PinaoConstants.TEM_DATA_COL_SEP + area.getIndex() + PinaoConstants.TEM_DATA_COL_SEP + (parent != null ? parent.getName() : StringUtils.EMPTY) + PinaoConstants.TEM_DATA_COL_SEP + StringUtils.trimToEmpty(area.getImage()) + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
+							row = sheet.createRow(rowindex++);
+							columnIndex = 0;
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(area.getName());
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(area.getLevel());
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(area.getIndex());
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(parent != null ? parent.getName() : StringUtils.EMPTY);
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(StringUtils.trimToEmpty(area.getImage()));
 							
-							if(hc != null)
-								out.write((hc.getLight() + PinaoConstants.TEM_DATA_COL_SEP + hc.getRelay1() + PinaoConstants.TEM_DATA_COL_SEP + hc.getRelay() + PinaoConstants.TEM_DATA_COL_SEP + hc.getVoice() + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
-							else
-								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
-							if(temp != null)
-								out.write((temp.getLow() + PinaoConstants.TEM_DATA_COL_SEP + temp.getHigh() + PinaoConstants.TEM_DATA_COL_SEP + temp.getDiff() + PinaoConstants.TEM_DATA_COL_SEP + temp.getExotherm() + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
-							else
-								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
-							if(ac != null)
-								out.write((ac.getName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getChannelName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getMachineName() + PinaoConstants.TEM_DATA_COL_SEP + ac.getStart() + PinaoConstants.TEM_DATA_COL_SEP + ac.getEnd()).getBytes());
-							else
-								out.write((PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP + PinaoConstants.TEM_DATA_COL_SEP).getBytes());
-							
-							out.write((PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+							if(hc != null){
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(hc.getLight());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(hc.getRelay1());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(hc.getRelay());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(hc.getVoice());
+							} else{
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+							}
+							if(temp != null){
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(temp.getLow());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(temp.getHigh());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(temp.getDiff());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(temp.getExotherm());
+							} else{
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+							}
+							if(ac != null){
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(ac.getName());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(ac.getChannelName());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(ac.getMachineName());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(ac.getStart());
+								cell = row.createCell(columnIndex++);
+								cell.setCellValue(ac.getEnd());
+							} else{
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+								cell = row.createCell(columnIndex++);
+							}
 						}
 					}
+
+					out = response.getOutputStream();
+					book.write(out);
 				}
 			} else
-				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+				response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} catch(Throwable t){
 			t.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} finally {
 			try {
 				if (out != null) {
@@ -830,10 +923,13 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					boolean success = areaService.updateAreaChannel(channel, new Long(userid).intValue());
-					if(success)
-						result.put("status", "0");
-					else
+					if(channel != null && channel.getStart() > 0 && channel.getEnd() > 0 && channel.getEnd() >= channel.getStart()){
+						boolean success = areaService.updateAreaChannel(channel, new Long(userid).intValue());
+						if(success)
+							result.put("status", "0");
+						else
+							result.put("status", "400");
+					} else
 						result.put("status", "400");
 				} else
 					result.put("status", "600");
@@ -970,10 +1066,13 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					boolean success= areaService.updateChannel(channel, new Long(userid).intValue());
-					if(success)
-						result.put("status", "0");
-					else
+					if(channel.getLength() > 0){
+						boolean success= areaService.updateChannel(channel, new Long(userid).intValue());
+						if(success)
+							result.put("status", "0");
+						else
+							result.put("status", "400");
+					} else
 						result.put("status", "400");
 				} else
 					result.put("status", "600");
@@ -1063,6 +1162,7 @@ public class AreaController {
 	}
 
 	@RequestMapping(value="/channel/replace", method = RequestMethod.POST)
+	@ResponseBody
 	public Map<Object, Object> replaceChannels(HttpServletRequest request, String data, long userid) throws IOException{
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
@@ -1099,27 +1199,50 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					response.setContentType("text/plain");
-					String oriFileName = "通道.txt";
+					// xls
+					response.setContentType("application/msexcel");
+					String oriFileName = "通道.xls";
 					String agent = request.getHeader("USER-AGENT");
 					if (null != agent && -1 != agent.indexOf("Firefox")) {
 						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
 					} else {
 						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
 					}
-					out = response.getOutputStream();
-					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "通道id" + PinaoConstants.TEM_DATA_COL_SEP + "机器ID" + PinaoConstants.TEM_DATA_COL_SEP + "通道长度" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					
+					HSSFWorkbook book = new HSSFWorkbook();
+					HSSFSheet sheet = book.createSheet("通道");
+					int rowindex = 0;
+					HSSFRow row = sheet.createRow(rowindex++);
+					int columnIndex = 0;
+					HSSFCell cell = row.createCell(columnIndex++);
+					cell.setCellValue("通道名称");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("机器名称");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("长度");
 					
 					List<Channel> channels = areaService.getAllAvailableChannels(0, Integer.MAX_VALUE);
 					if(channels != null && channels.size() > 0)
-						for(Channel channel : channels)
-							out.write((channel.getName() + PinaoConstants.TEM_DATA_COL_SEP + channel.getMachineName() + PinaoConstants.TEM_DATA_COL_SEP + channel.getLength() + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+						for(Channel channel : channels){
+							row = sheet.createRow(rowindex++);
+							columnIndex = 0;
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(channel.getName());
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(channel.getMachineName());
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(channel.getLength());
+						}
+					
+					out = response.getOutputStream();
+					book.write(out);
+				
 				}
 			} else
-				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+				response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} catch(Throwable t){
 			t.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} finally {
 			try {
 				if (out != null) {
@@ -1264,6 +1387,7 @@ public class AreaController {
 	}
 
 	@RequestMapping(value="/machine/replace", method = RequestMethod.POST)
+	@ResponseBody
 	public Map<Object, Object> replaceMachines(HttpServletRequest request, String data, long userid) throws IOException{
 		Map<Object, Object> result = new HashMap<Object, Object>();
 		
@@ -1300,27 +1424,49 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					response.setContentType("text/plain");
-					String oriFileName = "机器.txt";
+					// xls
+					response.setContentType("application/msexcel");
+					String oriFileName = "机器.xls";
 					String agent = request.getHeader("USER-AGENT");
 					if (null != agent && -1 != agent.indexOf("Firefox")) {
 						response.setHeader("Content-disposition", "attachment;filename=" + new String(oriFileName.getBytes("utf-8"),"iso-8859-1"));
 					} else {
 						response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(oriFileName, "UTF-8"));
 					}
-					out = response.getOutputStream();
-					out.write((PinaoConstants.FILE_COMMENT_PREFIX + "机器id" + PinaoConstants.TEM_DATA_COL_SEP + "光开关" + PinaoConstants.TEM_DATA_COL_SEP + "串口" + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+					
+					HSSFWorkbook book = new HSSFWorkbook();
+					HSSFSheet sheet = book.createSheet("机器");
+					int rowindex = 0;
+					HSSFRow row = sheet.createRow(rowindex++);
+					int columnIndex = 0;
+					HSSFCell cell = row.createCell(columnIndex++);
+					cell.setCellValue("机器名称");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("串口号");
+					cell = row.createCell(columnIndex++);
+					cell.setCellValue("波特率");
 					
 					List<Machine> machines = areaService.getAllMachines(0, Integer.MAX_VALUE);
 					if(machines != null && machines.size() > 0)
-						for(Machine machine : machines)
-							out.write((machine.getName() + PinaoConstants.TEM_DATA_COL_SEP + machine.getSerialPort() + PinaoConstants.TEM_DATA_COL_SEP + machine.getBaudRate() + PinaoConstants.TEM_DATA_LINE_SEP).getBytes());
+						for(Machine machine : machines){
+							row = sheet.createRow(rowindex++);
+							columnIndex = 0;
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(machine.getName());
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(machine.getSerialPort());
+							cell = row.createCell(columnIndex++);
+							cell.setCellValue(machine.getBaudRate());
+						}
+					
+					out = response.getOutputStream();
+					book.write(out);
 				}
 			} else
-				response.sendRedirect(request.getContextPath() + "/" + "error.html");
+				response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} catch(Throwable t){
 			t.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/" + "error.html");
+			response.sendRedirect(request.getContextPath() + "/" + "system/error.html");
 		} finally {
 			try {
 				if (out != null) {

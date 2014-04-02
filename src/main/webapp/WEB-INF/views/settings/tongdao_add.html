@@ -74,7 +74,7 @@
         <script>
             (function(){
                 //渲染所有机器
-                $.get($.Dts.rootUri + 'machine/machines', function(res){
+                $.get($.Dts.rootUri + '/machine/machines', function(res){
                     new $.Dts.linkAgeSelect($('#machineList'), res.data, {
                         id:'select1',
                         name:'machineid',

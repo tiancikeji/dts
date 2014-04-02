@@ -47,7 +47,7 @@
                     <th>分区ID</th>
                     <th>分区名称</th>
                     <th>灯号</th>
-                    <th>继电器</th>
+                    <th>预警继电器</th>
                     <th>火警继电器</th>
                     <th>声音</th>
                     <th>操作</th>
@@ -75,13 +75,17 @@
                 <%}%>
                 </tbody>
             </table>
+            <!--#include virtual="/dts/inc/nav_pager.html"-->
         </script>
         <script>
-            $.get($.Dts.rootUri + 'area/hwconfigs', function(res){
-                if(!$.Dts.ajax.validRes(res)){
-                    return;
-                }
-                $('#list').html(baidu.template('listTmpl', res));
+            $.Dts.listManager.init($('#list'), 10, function(){
+                $.get($.Dts.rootUri + '/area/hwconfigs' + '?start='+ this.start +'&step='+ this.step, function(res){
+                    if(!$.Dts.ajax.validRes(res)){
+                        return;
+                    }
+
+                    $('#list').html(baidu.template('listTmpl', res));
+                });
             });
         </script>
     </body>

@@ -88,6 +88,7 @@
                         var _this = this;
                         this.xNums = 1;
                         this.initImage(id);
+                        this.loadHistory(id);
                         clearTimeout(_this.loadTimer);
                         _this.loadTimer = null;
                         this.$monitorName.html($.Dts.areaManager.currentName);
@@ -246,6 +247,7 @@
                                 return;
                             }
                             $('#list').html(baidu.template('listTmpl', res));
+                            $.Dts.login.renderPermission();
                         });
                     }
                 }
@@ -333,7 +335,9 @@
                     $.Dts.areaManager.start = 1;
                     $.Dts.areaManager.historyStart = 1;
                     $.Dts.areaManager.end = 100;
-                    $.Dts.areaManager.currentId = 1;
+                    $.Dts.areaManager.currentId = $('#channelTree a:first').attr('data-id');;
+                    $.Dts.areaManager.isMechine = true;
+                    $.Dts.areaManager.currentName = $('#channelTree a:first').html();
                     $.Dts.areaManager.initArea();
                 });
 

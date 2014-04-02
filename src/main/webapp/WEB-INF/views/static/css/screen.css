@@ -709,7 +709,8 @@ li.paginatorLast { float: none; }
     height: 500px;
 }
 .table-area td{
-    border: 1px solid blue;
+    border: 1px solid transparent; */
+    width: 25%;
 }
 .table-area td.highlight{
     background-color: red;

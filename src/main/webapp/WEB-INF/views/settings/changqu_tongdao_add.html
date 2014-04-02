@@ -85,7 +85,7 @@
         <!--#include virtual="/dts/inc/footer.html"-->
         <script>
             (function(){
-                $.get($.Dts.rootUri + 'area/areanames', function(res){
+                $.get($.Dts.rootUri + '/area/areanames', function(res){
                     new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
                         id:'select1',
                         name:'areaid',
@@ -96,7 +96,7 @@
                     });
                 });
 
-                $.get($.Dts.rootUri + 'machine/machines', function(res){
+                $.get($.Dts.rootUri + '/machine/machines', function(res){
                     new $.Dts.linkAgeSelect($('#jiqiSelect'), res.data, {
                         id:'select2',
                         name:'machineid',
@@ -115,7 +115,7 @@
 
                 var channelsData = {};
 
-                $.get($.Dts.rootUri + 'channel/channels', function(res){
+                $.get($.Dts.rootUri + '/channel/channels', function(res){
                     if(!$.Dts.ajax.validRes(res)){
                         return;
                     }

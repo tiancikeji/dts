@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +26,6 @@ import tianci.pinao.dts.models.User;
 import tianci.pinao.dts.service.AreaService;
 import tianci.pinao.dts.util.PinaoConstants;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 public class AreaServiceImpl implements AreaService {
 	
@@ -44,7 +45,7 @@ public class AreaServiceImpl implements AreaService {
 				if(!(dir.exists() && dir.isDirectory()))
 					dir.mkdirs();
 				fs = new FileOutputStream(path + name);
-			    fs.write(Base64.decode(splits[1].split(",")[1])); 
+			    fs.write(Base64.decodeBase64(splits[1].split(",")[1])); 
 			} catch (Throwable t) {
 				t.printStackTrace();
 			} finally{
@@ -440,9 +441,16 @@ public class AreaServiceImpl implements AreaService {
 		if(StringUtils.isNotBlank(data)){
 			String content = getContent(data);
 			if(StringUtils.isNotBlank(content)){
+
+				List<String> lines = new ArrayList<String>();
+				Scanner sc = new Scanner(content);
+				while(sc.hasNextLine()){
+					String line = StringUtils.trimToEmpty(sc.nextLine());
+					if(StringUtils.isNotBlank(line))
+						lines.add(line);
+				}
 				
-				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
-				if(lines != null && lines.length > 0){
+				if(lines != null && lines.size() > 0){
 					List<Channel> channels = getAllAvailableChannels(0, Integer.MAX_VALUE);
 					Map<String, Map<String, Channel>> cMap = new HashMap<String, Map<String, Channel>>();
 					if(channels != null && channels.size() > 0)
@@ -483,7 +491,7 @@ public class AreaServiceImpl implements AreaService {
 												|| (cols.length > 7 && StringUtils.isNotBlank(cols[7]))){
 									AreaHardwareConfig config = new AreaHardwareConfig();
 									if(cols.length > 5 && StringUtils.isNotBlank(cols[5]))
-										config.setLight(StringUtils.trimToEmpty(cols[6]));
+										config.setLight(StringUtils.trimToEmpty(cols[5]));
 									if(cols.length > 6 && StringUtils.isNotBlank(cols[6]))
 										config.setRelay1(StringUtils.trimToEmpty(cols[6]));
 									if(cols.length > 7 && StringUtils.isNotBlank(cols[7]))
@@ -515,23 +523,24 @@ public class AreaServiceImpl implements AreaService {
 								
 								if((cols.length > 13 && StringUtils.isNotBlank(cols[13]))
 										|| (cols.length > 14 && StringUtils.isNotBlank(cols[14]))
-										|| (cols.length > 15 && NumberUtils.isNumber(cols[15]))
-												|| (cols.length > 16 && NumberUtils.isNumber(cols[16]))){
-									String tmpMachineName = StringUtils.trimToEmpty(cols[14]);
+										|| (cols.length > 15 && StringUtils.isNotBlank(cols[15]))
+										|| (cols.length > 16 && NumberUtils.isNumber(cols[16]))
+												|| (cols.length > 17 && NumberUtils.isNumber(cols[17]))){
+									String tmpMachineName = StringUtils.trimToEmpty(cols[15]);
 									if(cMap.containsKey(tmpMachineName)){
-										String tmpChannelName = StringUtils.trimToEmpty(cols[13]);
+										String tmpChannelName = StringUtils.trimToEmpty(cols[14]);
 										Map<String, Channel> ctmp = cMap.get(tmpMachineName);
 										if(ctmp != null && ctmp.containsKey(tmpChannelName)){
 											Channel tmpChannel = ctmp.get(tmpChannelName);
-											int start = NumberUtils.toInt(cols[15], -1);
-											int end = NumberUtils.toInt(cols[16], -1);
+											int start = NumberUtils.toInt(cols[16], -1);
+											int end = NumberUtils.toInt(cols[17], -1);
 											if(start > 0 && end >= start){
 												AreaChannel areaChannel = new AreaChannel();
 												areaChannel.setStart(start);
 												areaChannel.setEnd(end);
 												areaChannel.setMachineid(tmpChannel.getMachineid());
 												areaChannel.setChannelid(tmpChannel.getId());
-												areaChannel.setName(StringUtils.trimToEmpty(cols[12]));
+												areaChannel.setName(StringUtils.trimToEmpty(cols[13]));
 												
 												areaChannel.setLastModUserid(userid);
 												areaChannels.put(area.getName(), areaChannel);
@@ -545,8 +554,6 @@ public class AreaServiceImpl implements AreaService {
 					if(areas != null && areas.size() > 0){
 						areaDao.deleteAllAreas(userid);
 						if(areaDao.addAreas(areas)){
-							areas = getAllAailableAreas(0, Integer.MAX_VALUE);
-							
 							if(areas != null && areas.size() > 0)
 								for(Area area : areas){
 									int id = area.getId();
@@ -564,7 +571,7 @@ public class AreaServiceImpl implements AreaService {
 									if(areaChannels.containsKey(name))
 										areaChannels.get(name).setAreaid(id);
 								}
-							
+
 							if(parents != null && parents.size() > 0)
 								areaDao.updateAreaParents(new ArrayList<Area>(parents.values()));
 							
@@ -599,9 +606,16 @@ public class AreaServiceImpl implements AreaService {
 			String content = getContent(data);
 			if(StringUtils.isNotBlank(content)){
 				List<Channel> channels = new ArrayList<Channel>();
+
+				List<String> lines = new ArrayList<String>();
+				Scanner sc = new Scanner(content);
+				while(sc.hasNextLine()){
+					String line = StringUtils.trimToEmpty(sc.nextLine());
+					if(StringUtils.isNotBlank(line))
+						lines.add(line);
+				}
 				
-				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
-				if(lines != null && lines.length > 0){
+				if(lines != null && lines.size() > 0){
 					List<Machine> machines = getAllMachines(0, Integer.MAX_VALUE);
 					Map<String, Machine> mMap = new HashMap<String, Machine>();
 					if(machines != null && machines.size() > 0)
@@ -621,7 +635,7 @@ public class AreaServiceImpl implements AreaService {
 							}
 						}
 				}
-				
+
 				if(channels != null && channels.size() > 0){
 					areaDao.deleteAllChannels(userid);
 					return areaDao.addChannels(channels);
@@ -638,9 +652,16 @@ public class AreaServiceImpl implements AreaService {
 			String content = getContent(data);
 			if(StringUtils.isNotBlank(content)){
 				List<Machine> machines = new ArrayList<Machine>();
+
+				List<String> lines = new ArrayList<String>();
+				Scanner sc = new Scanner(content);
+				while(sc.hasNextLine()){
+					String line = StringUtils.trimToEmpty(sc.nextLine());
+					if(StringUtils.isNotBlank(line))
+						lines.add(line);
+				}
 				
-				String[] lines = StringUtils.split(content, PinaoConstants.TEM_DATA_LINE_SEP);
-				if(lines != null && lines.length > 0)
+				if(lines != null && lines.size() > 0)
 					for(String line : lines)
 						if(StringUtils.isNotBlank(line) && !StringUtils.startsWith(line, PinaoConstants.FILE_COMMENT_PREFIX)){
 							String[] cols = StringUtils.split(line, PinaoConstants.TEM_DATA_COL_SEP);
@@ -664,7 +685,7 @@ public class AreaServiceImpl implements AreaService {
 	}
 	
 	private String getContent(String data){
-		return StringUtils.split(data, ";")[1].split(",")[1];
+		return new String(Base64.decodeBase64(data));
 	}
 
 	@Override

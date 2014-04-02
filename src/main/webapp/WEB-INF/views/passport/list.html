@@ -92,7 +92,7 @@
             </table>
         </script>
         <script>
-            $.get($.Dts.rootUri + 'user/list?userid=' + $.Dts.login.getUserId(), function(res){
+            $.get($.Dts.rootUri + '/user/list?userid=' + $.Dts.login.getUserId(), function(res){
                 if(!$.Dts.ajax.validRes(res)){
                     return;
                 }

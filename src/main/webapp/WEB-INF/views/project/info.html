@@ -14,8 +14,12 @@
         <script>
             (function(){
                 $.get($.Dts.rootUri + 'project/info?userid=' + $.Dts.login.getUserId(), function(res){
-                    $('#container').html('<p>'+ res.data.content +'</p>' +
-                    '<img src="'+ $.Dts.rootUri + res.data.image +'" />');
+                    if(!$.Dts.ajax.validRes(res)){
+                        return;
+                    }
+                    $('#container').html('<img src="'+ $.Dts.rootUri + res.data.image +'" />' +
+                            '<p>'+ res.data.content +'</p>'
+                    );
                 });
             })();
         </script>

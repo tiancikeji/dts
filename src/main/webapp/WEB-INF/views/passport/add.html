@@ -31,7 +31,7 @@
                     <div class="bd-1">
                         <div class="mod-2">
                             <div class="hd-2 cf">
-                                <h2 class="j_common_add_title">新增分区通道</h2>
+                                <h2 class="j_common_add_title">新增用户</h2>
                             </div>
                             <div class="bd-2">
                                 <div class="wrap-cont2 cf">
@@ -93,21 +93,27 @@
             (function(){
                // role:int 用户角色 2 系统管理员（只有超级管理员能够看到此选项）, 3 , 4
                // areaIds：String 用,分割，新增用户可以看到的监控区域id列表（前端可以把所有的areas列表列出，前端动态增加/删除可以操作的区域列表）
-
-                new $.Dts.linkAgeSelect($('#rolesSelect'), [
-                    {
+                var roles = [];
+                var userRole = +$.cookie('role');
+                if(userRole < 2){//超级管理员
+                    roles.push({
                         type: 2,
                         name: '系统管理员'
-                    },
-                    {
+                    });
+                }
+                if(userRole < 3){//系统管理员
+                    roles.push({
                         type: 3,
                         name: '班长'
-                    },
-                    {
+                    });
+                }
+                if(userRole < 4){//班长
+                    roles.push({
                         type: 4,
                         name: '操作工'
-                    }
-                ], {
+                    });
+                }
+                new $.Dts.linkAgeSelect($('#rolesSelect'), roles, {
                     id:'select1',
                     name:'role',
                     label:'',
@@ -116,7 +122,7 @@
                     selected: $.Dts.getParameter('form_role')
                 });
 
-                $.get($.Dts.rootUri + 'area/areanames', function(res){
+                $.get($.Dts.rootUri + '/area/areanames', function(res){
                     new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
                         id:'select1',
                         name:'areaid',
@@ -126,7 +132,7 @@
                         selected: $.Dts.getParameter('form_areaid')
                     });
                 });
-                $.get($.Dts.rootUri + 'channel/channels', function(res){
+                $.get($.Dts.rootUri + '/channel/channels', function(res){
                     new $.Dts.linkAgeSelect($('#tongdaoSelect'), res.data, {
                         id:'select2',
                         name:'channelid',
@@ -136,7 +142,7 @@
                         selected: $.Dts.getParameter('form_channelid')
                     });
                 });
-                $.get($.Dts.rootUri + 'machine/machines', function(res){
+                $.get($.Dts.rootUri + '/machine/machines', function(res){
                     new $.Dts.linkAgeSelect($('#jiqiSelect'), res.data, {
                         id:'select3',
                         name:'machineid',
@@ -213,7 +219,7 @@
                             $target.parents('dl').find('input:first').each(function(){
                                 this.checked = checked;
                             });
-                        
+
                         caculateAreaIds();
 
                     });

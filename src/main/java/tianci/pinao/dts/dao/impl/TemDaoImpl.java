@@ -39,14 +39,14 @@ public class TemDaoImpl extends JdbcDaoSupport implements TemDao {
 	@Override
 	public List<Temperature> getLatestTemNStocksByChannel(List<Integer> channels, Date time) {
 		String sql = "select channel, tem, stock, unstock, date from " + SqlConstants.TABLE_TEMPERATURE + " where channel in (" + StringUtils.join(channels.toArray()) + ")";
-		Object[] params = new Object[1];
+		List<Object> params = new ArrayList<Object>();
 		if(time != null){
 			sql += " and date > ?";
-			params[0] = time;
+			params.add(time);
 		}
 		sql += " order by date desc limit 1";
 		
-		return getJdbcTemplate().query(sql, params, new TemperatureRowMapper());
+		return getJdbcTemplate().query(sql, params.toArray(), new TemperatureRowMapper());
 	}
 
 	@Override

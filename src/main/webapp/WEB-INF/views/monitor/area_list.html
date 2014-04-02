@@ -84,6 +84,7 @@
                         </div>
 
                         <div class="panes-2 j_tabs_switch_bd hide">
+
                             <p id="list" class="j_alarm_table"></p>
 
                         </div>
@@ -110,12 +111,12 @@
                     $areaTableItem: $('#areaImage td'),
                     $alarmInfo: $('.j_alarm_info'),
                     initImage: function(id){
-                        console.log('imitImage',id);
                         this.$areaImage.find('img').attr('src', $.Dts.rootUri + $.Dts.areaManager.areaListData[id].image);
                         this.$areaTableItem.removeClass('highlight');
                     },
-                    initArea: function(id){ //初始化一个区域
+                    initArea: function(id, time){ //初始化一个区域
                         id = id || $.Dts.areaManager.currentId;
+                        time = time || -1;
                         var _this = this;
                         this.xNums = 1;
                         this.$alarmInfo.hide();
@@ -124,7 +125,7 @@
                         clearTimeout(_this.loadTimer);
                         _this.loadTimer = null;
                         this.$monitorName.html($.Dts.areaManager.areaListData[id].name);
-                        $.get($.Dts.rootUri + '/monitor/area/data?userid='+$.Dts.login.getUserId()+'&id='+id+'&time=-1', function(res){
+                        $.get($.Dts.rootUri + '/monitor/area/data?userid='+$.Dts.login.getUserId()+'&id='+id+'&time=' + time, function(res){
                             if(_this.loadTimer){
                                 return;
                             }
@@ -186,6 +187,7 @@
                     loadData: function(time, id){
                         var _this = this;
                         _this.loadTimer = null;
+                        this.currentTime = time;
                         $.get($.Dts.rootUri + '/monitor/area/data?userid='+
                                 $.Dts.login.getUserId()+'&id='+id+'&time=' + time, function(res){
                             if(_this.loadTimer){
@@ -195,10 +197,10 @@
                                 var data = res.data;
                                 var date = (new Date(data.time)).toLocaleTimeString();
                                 var chart = $('#chartsContainer').highcharts();
-                                var isShift = true; //追加后是否删除最前面的点
-                                if(_this.xNums < _this.xNumsMax){
-                                    isShift = false;
-                                }
+                                var isShift = false; //追加后是否删除最前面的点
+//                                if(_this.xNums < _this.xNumsMax){
+//                                    isShift = false;
+//                                }
 
                                 chart.series[0].addPoint([date, data.min], true, isShift);
 
@@ -230,6 +232,7 @@
                                 '&start='+$.Dts.areaManager.historyStart+'&step=50', function(res){
                             if($.Dts.ajax.validRes(res)){ //验证通过
                                 $('#list').html(baidu.template('listTmpl', res));
+                                $.Dts.login.renderPermission();
                             }
                         });
                     },
@@ -244,13 +247,11 @@
                         }
                     },
                     renderAlarmArea: function(data){
-                        console.log('报警了', data)
                         for(var i = 0; i < data.alarmIdxs.length; i++){
                             var item = data.alarmIdxs[i]
                             var alarmId = data.alarmIds[i];
                             this.$areaTableItem.eq(item - 1).data('alarmId', alarmId).addClass('highlight').unbind('click').bind('click', function(){
-                                console.log('点击了',$(this),$(this).data('alarmId'))
-                                $.Dts.areaManager.initArea($(this).data('alarmId'));
+                                $.Dts.areaManager.initArea($(this).data('alarmId'), $.Dts.areaManager.currentTime);
                             });
 
                         }
@@ -296,7 +297,6 @@
                     $('#areaTree a').click(function(e){
                         e.preventDefault();
                         var $target = $(this);
-                        console.log($target);
                         $.Dts.areaManager.initArea($target.attr('data-id'));
                     });
 
@@ -327,10 +327,6 @@
                     }, 200);
                 });
             })();
-
-        </script>
-
-        <script>
 
         </script>
     </body>

@@ -83,7 +83,7 @@
         <!--#include virtual="/dts/inc/footer.html"-->
         <script>
             (function(){
-                $.get($.Dts.rootUri + 'area/areanames', function(res){
+                $.get($.Dts.rootUri + '/area/areanames', function(res){
                     new $.Dts.linkAgeSelect($('#fenquSelect'), res.data, {
                         id:'select1',
                         name:'areaid',

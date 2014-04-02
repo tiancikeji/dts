@@ -95,7 +95,7 @@
                     if(!$.Dts.validForm(this)){
                         return;
                     }
-                    $.post($.Dts.rootUri + 'config/update?type=3&userid=' + $.cookie('userid'), $form.serialize(), function(res){
+                    $.post($.Dts.rootUri + '/config/update?type=3&userid=' + $.cookie('userid'), $form.serialize(), function(res){
                         if($.Dts.ajax.validRes(res)){ //验证通过
                             alert(res.status == 0 ? '操作成功' : '操作失败，请稍后重试');
                         }

@@ -1,8 +1,10 @@
 package tianci.pinao.dts.dao.impl;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,8 +13,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import tianci.pinao.dts.dao.AreaDao;
 import tianci.pinao.dts.models.Area;
@@ -48,13 +53,14 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 
 	@Override
 	public boolean addAreas(final List<Area> areas) {
-		getJdbcTemplate().batchUpdate("insert into " + SqlConstants.TABLE_AREA + "(name, level, `index`, parent, image, lastmod_time, lastmod_userid, isdel) values(?,?,?,?,?,now(),?,?)", new BatchPreparedStatementSetter() {
-			
-			@Override
-			public void setValues(PreparedStatement ps, int index) throws SQLException {
-				if(areas.size() > index){
-					Area area = areas.get(index);
-					if(area != null){
+		if(areas != null && areas.size() > 0)
+			for(final Area area : areas){
+				KeyHolder holder = new GeneratedKeyHolder();
+				int count = getJdbcTemplate().update(new PreparedStatementCreator() {
+					
+					@Override
+					public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+						PreparedStatement ps = con.prepareStatement("insert into " + SqlConstants.TABLE_AREA + "(name, level, `index`, parent, image, lastmod_time, lastmod_userid, isdel) values(?,?,?,?,?,now(),?,?)", Statement.RETURN_GENERATED_KEYS);
 						ps.setObject(1, area.getName());
 						ps.setObject(2, area.getLevel());
 						ps.setObject(3, area.getIndex());
@@ -62,15 +68,14 @@ public class AreaDaoImpl extends JdbcDaoSupport implements AreaDao {
 						ps.setObject(5, area.getImage());
 						ps.setObject(6, area.getLastModUserid());
 						ps.setObject(7, 0);
+						return ps;
 					}
-				}
+				}, holder);
+				
+				if(count > 0 && holder.getKey() != null)
+					area.setId(holder.getKey().intValue());
 			}
-			
-			@Override
-			public int getBatchSize() {
-				return areas.size();
-			}
-		});
+		
 		return true;
 	}
 

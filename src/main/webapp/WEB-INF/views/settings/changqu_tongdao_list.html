@@ -82,14 +82,19 @@
                     <%}%>
                 </tbody>
             </table>
+            <!--#include virtual="/dts/inc/nav_pager.html"-->
+
         </script>
         <script>
-            $.get($.Dts.rootUri + 'area/channels', function(res){
-                if(!$.Dts.ajax.validRes(res)){
-                    return;
-                }
-                $('#list').html(baidu.template('listTmpl', res));
+            $.Dts.listManager.init($('#list'), 10, function(){
+                $.get($.Dts.rootUri + '/area/channels' + '?start='+ this.start +'&step='+ this.step, function(res){
+                    if(!$.Dts.ajax.validRes(res)){
+                        return;
+                    }
+                    $('#list').html(baidu.template('listTmpl', res));
+                });
             });
+
         </script>
     </body>
 </html>

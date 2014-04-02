@@ -354,7 +354,8 @@
 
 
     var Dts = {
-        rootUri: 'http://zaoke.me/dts/',
+        //rootUri: 'http://zaoke.me/dts/',
+        rootUri: location.host  == 'www.lmj.com' ? 'http://zaoke.me/dts/' : '/dts/',
         init: function(){
             this.bindEvents();
 			this.initNav();
@@ -383,17 +384,22 @@
                 var $target = $(this);
                 _self.switchCategory($target.closest('dl'));
             });
+            $(window).bind('close', function(){
+                _self.login.logout();
+            });
         },
 		initNav: function(){
 			var $navList = $('#nav li');
 			if(location.href.indexOf('/settings/') > 1){
-				$navList.get(3).className="active";
+				$($navList.get(3)).addClass('active');
 			}else if(location.href.indexOf('/project/') > 1){
-                $navList.get(2).className="active";
+                $($navList.get(2)).addClass('active');
+
             }else if(location.href.indexOf('/monitor/') > 1){
-                $navList.get(0).className="active";
+                $($navList.get(0)).addClass('active');
+
             }else if(location.href.indexOf('/report/') > 1){
-                $navList.get(1).className="active";
+                $($navList.get(1)).addClass('active');
             }
             //设置时间
             var $dateCtn = $('#localTime span');
@@ -438,35 +444,51 @@
                 return 1;
             },
             init: function(){
+                this.renderPermission();
+                var _this = this;
                 if($.cookie('userid')){
                     $('.j_logout').click(function(e){
-                        var password = prompt('请输入退出密码:');
-                        if(!password){
-                            return;
-                        }
-                        $.post($.Dts.rootUri + '/logout', {
-                            userid: $.cookie('userid'),
-                            password: password
-                        }, function(res){
-                            if(res.status != 0){
-                                var errMsg = {
-                                    700: '复位用户登录失败'
-                                };
-                                alert('退出失败，' + (errMsg[res.status] || ('status:' + res.status)));
-                            }else{
-                                $.removeCookie('name');
-                                $.removeCookie('userid');
-                                $.removeCookie('role');
-                                $.removeCookie('right');
-                                location.href = '../passport/login.html';
-                            }
-                        });
+                        _this.logout();
                     });
                     $('.j_topbar_username').html('欢迎您:' + $.cookie('name'));
                 }else if(!location.pathname.match('login.html')){
                     location.href = '../passport/login.html';
                 }
-            }
+            },
+            renderPermission: function(){
+                $('.j_permission').each(function(e){
+                    var $target = $(this);
+                    var role = +$target.attr('data-role');
+                    var userRole = +$.cookie('role');
+                    if(userRole > role){ //无权限
+                        $target.remove();
+                    }
+                });
+            },
+            logout: function(){
+                var password = prompt('请输入退出密码:');
+                if(!password){
+                    return;
+                }
+                $.post($.Dts.rootUri + '/logout', {
+                    userid: $.cookie('userid'),
+                    password: password
+                }, function(res){
+                    if(res.status != 0){
+                        var errMsg = {
+                            700: '复位用户登录失败'
+                        };
+                        alert('退出失败，' + (errMsg[res.status] || ('status:' + res.status)));
+                    }else{
+                        $.removeCookie('name');
+                        $.removeCookie('userid');
+                        $.removeCookie('role');
+                        $.removeCookie('right');
+                        window.open('','_self','');
+                        window.close();
+                    }
+                });
+            },
         },
         ajax: {
             validRes: function(res){
@@ -483,7 +505,7 @@
                 }
                 if(res.status === '500'){
                     if(!location.pathname.match('login.html')){
-                        location.href = $.Dts.rootUri + '/passport/login.html';
+                        location.href = '../passport/login.html';
                     }
                     return false;
                 }
@@ -552,6 +574,27 @@
                     });
                 });
             }
+        },
+        //分页组件
+        listManager: {
+            init: function($list, step, render){
+                this.$list = $list;
+                this._bindEvents();
+                this.start = 0;
+                this.step = step;
+                this.render = render;
+                render.apply(this);
+            },
+            _bindEvents: function(){
+                var _this = this;
+                this.$list.delegate('.j_btn_page', 'click', function(e){
+                    e.preventDefault();
+                    var $target = $(this);
+                    var page = +$target.attr('data-page');
+                    _this.start = (page - 1) * _this.step;
+                    _this.render && _this.render.apply(_this);
+                });
+            }
         }
     };
 
@@ -588,7 +631,6 @@
             this.bindEvents();
         },
         createSelect: function(selectData, data, level){ //通过当前是第几级来获得数据
-            console.log('createSelect', level)
             var tempSelect = document.createElement('select');
             tempSelect.setAttribute('name', selectData.name);
             tempSelect.setAttribute('id', selectData.id);
@@ -599,7 +641,6 @@
             this.$container.append(tempSelect);
             this.renderOptions(tempSelect, selectData, data);
             if(selectData.children){
-                console.log(data,selectData.childrenTag)
                 var index = tempSelect.options[tempSelect.selectedIndex].getAttribute('data-index');
                 this.createSelect(selectData.children, data[index][selectData.childrenTag], level+1);
             }
@@ -615,7 +656,6 @@
                 if(!changeLevel){
                     return;
                 }
-                console.log('changegegegegege')
                 _self.renderChange(changeLevel, _self.selectTree, _self.data);
 
                 return;
@@ -629,7 +669,6 @@
         },
         renderOptions: function(select, selectData, data){
             select.options.length = 0;
-            console.log(data)
             for(var i in data){
                 if(data.hasOwnProperty(i)){
                     var item = data[i]
@@ -649,7 +688,6 @@
                 return;
             }
             var curSelect = $curSelect[0]; //原生select
-            console.log(changeLevel, curLevel,curData)
             if(curLevel > changeLevel){ //需要渲染当前这一级
                 this.renderOptions(curSelect, curSelectData, curData);
             }
@@ -814,13 +852,24 @@
                 idArr.push(item.id);
             }
             if(!this.dialog){
+                var userRole = +$.cookie('role');
+                var button = [
+                    {
+                        text: '消音'
+                    }
+                ];
+                if(userRole < 4){ //role小于4才可以操作确认
+                    button.push({
+                        text: '确认'
+                    });
+                }
                 this.dialog = new $.Dts.Dialog({
                     buttonClick: function(e){
 
-                        if(e.index == 0){ //确认
-                            _this.notify(idArr);
-                        }else{//消音
+                        if(e.index == 0){ //消音
                             _this.mute(idArr);
+                        }else{//确认
+                            _this.notify(idArr);
                         }
                         this.close();
                         _this.dialog = null;
@@ -828,14 +877,7 @@
                     content: content,
                     width: 500,
                     closeMode: 0, //0：不显示关闭按钮；1：显示关闭按钮，点击后直接销毁窗口；2：显示关闭按钮，点击后仅隐藏窗口而不销毁
-                    button: [
-                        {
-                            text: '确认'
-                        },
-                        {
-                            text: '消音'
-                        }
-                    ]
+                    button: button
                 });
             }
         },
@@ -900,14 +942,26 @@
                         this.close();
                         return;
                     }
-                    $.post($.Dts.rootUri + '/alarm/reset', {
+                    var _this = this;
+                    this._$dialog.find('.j_reset_status').show();
+                    if(this._$dialog.data('loading')){
+                        return;
+                    }
+                    this._$dialog.data('loading', true);
+
+                    $.post($.Dts.rootUri + '/alarm/resetAll', {
                         userid: $.Dts.login.getUserId(),
-                        id: idArr,
+                        //id: idArr,
                         loginname: this._$dialog.find('.j_loginname').val(),
                         password: this._$dialog.find('.j_password').val()
                     }, function(res){
+                        _this._$dialog.data('loading', false);
                         if(res.status == '0'){
-                            alert('操作成功');
+                            alert('复位成功');
+                            if($.Dts.areaManager){
+                                $.Dts.areaManager.loadHistory();
+                            }
+                            _this.close();
                         }else{
                             var errMsg = {
                                 400: '登录过期',
@@ -915,14 +969,17 @@
                                 600: '复位用户没有权限',
                                 700: '复位用户登录失败'
                             };
-                            alert('操作失败，' + (errMsg[res.status] || ('status:' + res.status)));
+                            alert('复位失败，' + (errMsg[res.status] || ('status:' + res.status)));
+                            _this._$dialog.find('.j_reset_status').hide();
                         }
                     });
-                    this.close();
+
 
                 },
                 content: '<p>复位登录名：<input class="j_loginname" size="10" /> </p><br />'+
-                    '<p>复位密码：&nbsp;&nbsp;<input class="j_password" size="10" /> </p>',
+                    '<p>复位密码：&nbsp;&nbsp;<input class="j_password" size="10" /> </p><br />'+
+                    '<p class="j_reset_status hide">复位中，请稍后。。。</p>',
+
                 width: 500,
                 closeMode: 1, //0：不显示关闭按钮；1：显示关闭按钮，点击后直接销毁窗口；2：显示关闭按钮，点击后仅隐藏窗口而不销毁
                 button: [
@@ -964,7 +1021,7 @@
                 }else if($target.attr('data-alarm-type') == '2'){//消音
                     _this.mute($target.attr('data-alarm-id'), true);
                 }else if($target.attr('data-alarm-type') == '3'){//复位
-                    _this.reset($target.attr('data-alarm-id'), true);
+                    _this.reset([], true);
                 }
             });
             $('.j_alarm_table').delegate('.j_history_btn','click', function(e){

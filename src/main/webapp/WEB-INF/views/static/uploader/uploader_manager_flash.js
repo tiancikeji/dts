@@ -127,7 +127,7 @@
             if(!flashMsg.hasFlash){
                 this._flashError();
             }
-            url = 'http://yy.iwami.cn/iwamiadmin/static/fileup.swf?v=' + this._version;
+            url = '../static/images/fileup.swf?v=' + this._version;
 
             var ie = '<object id="'+ id +'" name="'+ id +'" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="https://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="'+ this._options.width +'" height="'+ this._options.height +'"><param name="allowScriptAccess" value="always" /><param value="transparent" name="wmode"><param name="flashvars" value="'+ this._flashVars +'" /><param name="allowFullScreen" value="false" /><param name="movie" value="'+ url +'" /></object>';
 
