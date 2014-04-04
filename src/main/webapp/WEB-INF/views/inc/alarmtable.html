@@ -4,9 +4,11 @@
                 <%}%>
 -->
 <script type="text/html" id="listTmpl">
-    <p style="text-align:right;margin-bottom: 10px;">
-        <input class="btn btn-blue j_btn_reset j_alarm_btn j_permission" data-role="3" data-alarm-type="3" type="button" id="btnRest" value="复位">
-    </p>
+    <%if(location.pathname.indexOf('report/') == -1){%>
+        <p style="text-align:left;margin-bottom: 10px;">
+            <input class="btn btn-blue j_btn_reset j_alarm_btn j_permission" data-role="3" data-alarm-type="3" type="button" id="btnRest" value="复位">
+        </p>
+    <%}%>
     <table class="table table-auto">
         <thead>
         <tr>
@@ -27,9 +29,7 @@
             <th><div style="width:4em;">添加时间</div></th>
             <th><div style="width:6em;">上次更新时间</div></th>
             <th><div style="width:5em;">上次更新人</div></th>
-            <%if(location.pathname.indexOf('report/') == -1){%>
-                <th><div style="width:2em;">操作</div></th>
-            <%}%>
+            <th><div style="width:2em;">操作</div></th>
         </tr>
         </thead>
         <tbody>
@@ -53,19 +53,19 @@
             <td><%=item.addTime%></td>
             <td><%=item.lastModTime%></td>
             <td><%=item.lastModUserid%></td>
-            <%if(location.pathname.indexOf('report/') == -1){%>
             <td>
-                <%if(item.status==1){%>
-                <a href="#" class="j_btn_ok j_alarm_btn j_permission" data-role="3" data-alarm-type="1" data-alarm-id="<%=item.id%>">确认</a>&nbsp;
-                <%}%>
-                <%if(item.status==1||item.status==2){%>
-                <a href="#" class="j_btn_voice j_alarm_btn" data-alarm-type="2" data-alarm-id="<%=item.id%>">消音</a>&nbsp;
+                <%if(location.pathname.indexOf('report/') == -1){%>
+                    <%if(item.status==1){%>
+                    <a href="#" class="j_btn_ok j_alarm_btn j_permission" data-role="3" data-alarm-type="1" data-alarm-id="<%=item.id%>">确认</a>&nbsp;
+                    <%}%>
+                    <%if(item.status==1||item.status==2){%>
+                    <a href="#" class="j_btn_voice j_alarm_btn" data-alarm-type="2" data-alarm-id="<%=item.id%>">消音</a>&nbsp;
+                    <%}%>
                 <%}%>
 
                 <%if(item.history.length){%>
                 <a href="#" class="j_btn_reset j_history_btn j_permission" data-role="3">查看历史</a>&nbsp;<%}%>
             </td>
-            <%}%>
         </tr>
         <%if(item.history.length){%>
         <tr class="hide">

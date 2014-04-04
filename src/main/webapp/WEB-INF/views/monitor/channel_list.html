@@ -51,7 +51,7 @@
                             </p>
                             <div class="charts" id="chartsTemsContainer"></div>
                             <div class="charts" id="chartsStocksContainer"></div>
-                            <div class="charts" id="chartsUnstocksContainer"></div>
+                            <div class="charts hide" id="chartsUnstocksContainer"></div>
                         </div>
 
                         <div class="panes-2 j_tabs_switch_bd hide">
@@ -106,19 +106,27 @@
                             var stocks = [],tems = [],unstocks = [];
                             for(var d in data.data){
                                 var channelData = data.data[d];
-                                xAxis = channelData.length;
-                                stocks.push({
-                                    name: d,
-                                    data: channelData.stocks
-                                });
+                                //xAxis = getLimitedArr(channelData.length, 300);
+                                console.log(xAxis)
+
                                 tems.push({
                                     name: d,
                                     data: channelData.tems
                                 });
-                                unstocks.push({
-                                    name: d,
+
+                                stocks.push({
+                                    name: d + 'stocks',
+                                    data: channelData.stocks
+                                });
+
+                                stocks.push({
+                                    name: d + 'unstocks',
                                     data: channelData.unstocks
                                 });
+//                                unstocks.push({
+//                                    name: d,
+//                                    data: channelData.unstocks
+//                                });
                             }
 
 
@@ -132,7 +140,12 @@
                                     x: -20
                                 },
                                 xAxis: {
-                                    categories: xAxis
+                                    categories: xAxis,
+                                    labels: {
+                                        step: getLimitedArrStep(channelData.length, 20),
+                                        maxStaggerLines: 1
+                                    }
+
                                 },
                                 yAxis: {
                                     title: {
@@ -166,11 +179,15 @@
                                     x: -20
                                 },
                                 xAxis: {
-                                    categories: xAxis
+                                    categories: xAxis,
+                                    labels: {
+                                        step: getLimitedArrStep(channelData.length, 20),
+                                        maxStaggerLines: 1
+                                    }
                                 },
                                 yAxis: {
                                     title: {
-                                        text: 'stock'
+                                        text: 'stock&unstock'
                                     },
                                     plotLines: [{
                                         value: 0,
@@ -190,7 +207,7 @@
                                 series: stocks
                             });
 
-                            $('#chartsUnstocksContainer').highcharts({
+                            /*$('#chartsUnstocksContainer').highcharts({
                                 title: {
                                     text: $.Dts.areaManager.currentName + '反stock监控',
                                     x: -20 //center
@@ -223,7 +240,7 @@
                                 },
                                 series: unstocks
                             });
-
+*/
                             //初始化温度数据
                             _this.maxTemp = data.max;
                             _this.minTemp = data.min;
@@ -347,6 +364,18 @@
                         $(window).trigger('resize');
                     }, 200);
                 });
+
+                function getLimitedArr(arr, limit){
+                    var step = Math.ceil(arr.length / limit);
+                    for(var i = 0; i < arr.length; i++){if(i % step !== 0){arr[i]='';}}
+                    return arr;
+                }
+                function getLimitedArrStep(arr, limit){
+                    var step = Math.ceil(arr.length / limit);
+                    return step;
+                    for(var i = 0; i < arr.length; i++){if(i % step !== 0){arr[i]='';}}
+                    return arr;
+                }
             })();
 
         </script>

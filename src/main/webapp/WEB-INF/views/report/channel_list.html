@@ -423,6 +423,12 @@
                 //日期控件 yyyy-MM-dd HH:mm:ss
                 $('.j_date').calendar({ format:'yyyy-MM-dd HH:mm:ss' });
             })();
+
+            function getLimitedArr(arr, limit){
+                var step = Math.ceil(arr.length / limit);
+                for(var i = 0; i < arr.length; i++){if(i % step !== 0){arr[i]='';}}
+                return arr;
+            }
         </script>
     </body>
 </html>

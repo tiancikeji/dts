@@ -195,25 +195,29 @@
                             }
                             if($.Dts.ajax.validRes(res)){ //验证通过
                                 var data = res.data;
-                                var date = (new Date(data.time)).toLocaleTimeString();
-                                var chart = $('#chartsContainer').highcharts();
-                                var isShift = false; //追加后是否删除最前面的点
+                                if(data.time){ //如果返回的time为0，本次数据忽略，不渲染
+                                    var date = (new Date(data.time)).toLocaleTimeString();
+                                    var chart = $('#chartsContainer').highcharts();
+                                    var isShift = false; //追加后是否删除最前面的点
 //                                if(_this.xNums < _this.xNumsMax){
 //                                    isShift = false;
 //                                }
 
-                                chart.series[0].addPoint([date, data.min], true, isShift);
+                                    chart.series[0].addPoint([date, data.min], true, isShift);
 
-                                chart.series[1].addPoint([date, data.max], true, isShift);
+                                    chart.series[1].addPoint([date, data.max], true, isShift);
 
-                                chart.series[2].addPoint([date, data.avg], true, isShift);
-                                _this.xNums++;
-                                _this.checkAlarm(data);
+                                    chart.series[2].addPoint([date, data.avg], true, isShift);
+                                    _this.xNums++;
+                                    _this.checkAlarm(data);
 
-                                _this.maxTemp = data.max;
-                                _this.minTemp = data.min;
-                                _this.avgTemp = data.avg;
-                                _this.renderTemp();
+                                    _this.maxTemp = data.max;
+                                    _this.minTemp = data.min;
+                                    _this.avgTemp = data.avg;
+                                    _this.renderTemp();
+                                }else{
+                                    data.time = time;
+                                }
                                 _this.loadTimer = setTimeout(function(){
                                     _this.loadData(data.time, id);
                                 }, res.interval * 2000);

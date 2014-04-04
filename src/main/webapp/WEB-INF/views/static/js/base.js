@@ -384,9 +384,15 @@
                 var $target = $(this);
                 _self.switchCategory($target.closest('dl'));
             });
-            $(window).bind('close', function(){
-                _self.login.logout();
-            });
+//            window.onbeforeunload = function () {
+//                return confirm('adfafadf');
+//
+//            };
+//            window.onbeforeunload = function(e){
+//                alert(0)
+//                e.preventDefault();
+//                _self.login.logout();
+//            };
         },
 		initNav: function(){
 			var $navList = $('#nav li');
@@ -476,7 +482,7 @@
                 }, function(res){
                     if(res.status != 0){
                         var errMsg = {
-                            700: '复位用户登录失败'
+                            700: '退出密码错误'
                         };
                         alert('退出失败，' + (errMsg[res.status] || ('status:' + res.status)));
                     }else{
@@ -488,7 +494,7 @@
                         window.close();
                     }
                 });
-            },
+            }
         },
         ajax: {
             validRes: function(res){
@@ -513,6 +519,13 @@
                     alert('无权限');
                     return false;
                 }
+                if(res.status === '1000'){
+                    if(!location.pathname.match('expire.html')){
+                        location.href = '../system/expire.html';
+                    }
+                    return false;
+                }
+
                 if(res.status != 0){
                     alert('请求出错，错误信息：'+ res.msg +',错误状态：' + res.status);
                     return false;
