@@ -11,4 +11,6 @@ public interface LogService {
 
 	public List<Log> getLogs(Date startDate, Date endDate, Integer start, Integer step);
 
+	public int getLogCount(Date start, Date end);
+
 }

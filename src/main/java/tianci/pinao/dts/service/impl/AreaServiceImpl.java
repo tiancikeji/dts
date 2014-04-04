@@ -95,6 +95,12 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean updateArea(Area area, int userid) {
 		if(area != null && area.getId() > 0){
+			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
+			if(areas != null && areas.size() > 0)
+				for(Area tmp : areas)
+					if(StringUtils.equals(tmp.getName(), area.getName()))
+						return false;
+			
 			area.setLastModUserid(userid);
 			return areaDao.updateArea(area);
 		}
@@ -309,6 +315,12 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean updateChannel(Channel channel, int userid) {
 		if(channel != null && channel.getId() > 0){
+			List<Channel> tmps = areaDao.getAllChannels(0, Integer.MAX_VALUE);
+			if(tmps != null && tmps.size() > 0)
+				for(Channel tmp : tmps)
+					if(StringUtils.equals(channel.getName(), tmp.getName()))
+						return false;
+			
 			channel.setLastModUserid(userid);
 			return areaDao.updateChannel(channel);
 		}
@@ -373,6 +385,12 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean updateMachine(Machine machine, int userid) {
 		if(machine != null){
+			List<Machine> tmps = areaDao.getAllMachines(0, Integer.MAX_VALUE);
+			if(tmps != null && tmps.size() > 0)
+				for(Machine tmp : tmps)
+					if(StringUtils.equals(tmp.getName(), machine.getName()))
+						return false;
+			
 			machine.setLastModUserid(userid);
 			return areaDao.updateMachine(machine);
 		} else

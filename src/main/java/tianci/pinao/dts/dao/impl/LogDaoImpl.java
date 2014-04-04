@@ -21,6 +21,11 @@ public class LogDaoImpl extends JdbcDaoSupport implements LogDao {
 				new Object[]{log.getType(), log.getValue(), log.getSource(), 0});
 		return count > 0;
 	}
+	
+	public int getLogCount(Date start, Date end){
+		return getJdbcTemplate().queryForInt("select count(1) from " + SqlConstants.TABLE_LOG + " where isdel = 0 and lastmod_time between ? and ?", 
+				new Object[]{start, end});
+	}
 
 	@Override
 	public List<Log> getLogs(Date startDate, Date endDate, Integer start, Integer step) {

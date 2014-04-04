@@ -90,11 +90,14 @@ public class ConfigController {
 						step = 100;
 					
 					List<Map<String, Object>> data = null;
+					int count = 0;
 					if(_startDate != null && _endDate != null && !_endDate.before(_startDate) && start >= 0 && step > 0){
 						data = parseLog(logService.getLogs(_startDate, _endDate, start, step));
+						count = logService.getLogCount(_startDate, _endDate);
 					} else
 						data = new ArrayList<Map<String,Object>>();
 					result.put("data", data);
+					result.put("count", count);
 					result.put("status", "0");
 				} else
 					result.put("status", "1000");
