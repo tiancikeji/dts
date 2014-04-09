@@ -98,7 +98,7 @@ public class AreaServiceImpl implements AreaService {
 			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
 			if(areas != null && areas.size() > 0)
 				for(Area tmp : areas)
-					if(StringUtils.equals(tmp.getName(), area.getName()))
+					if(tmp.getId() != area.getId() && StringUtils.equals(tmp.getName(), area.getName()))
 						return false;
 			
 			area.setLastModUserid(userid);
@@ -318,7 +318,7 @@ public class AreaServiceImpl implements AreaService {
 			List<Channel> tmps = areaDao.getAllChannels(0, Integer.MAX_VALUE);
 			if(tmps != null && tmps.size() > 0)
 				for(Channel tmp : tmps)
-					if(StringUtils.equals(channel.getName(), tmp.getName()))
+					if(tmp.getId() != channel.getId() && StringUtils.equals(channel.getName(), tmp.getName()))
 						return false;
 			
 			channel.setLastModUserid(userid);
@@ -388,7 +388,7 @@ public class AreaServiceImpl implements AreaService {
 			List<Machine> tmps = areaDao.getAllMachines(0, Integer.MAX_VALUE);
 			if(tmps != null && tmps.size() > 0)
 				for(Machine tmp : tmps)
-					if(StringUtils.equals(tmp.getName(), machine.getName()))
+					if(tmp.getId() != machine.getId() && StringUtils.equals(tmp.getName(), machine.getName()))
 						return false;
 			
 			machine.setLastModUserid(userid);
