@@ -305,17 +305,19 @@ public class TemServiceImpl implements TemService {
 					}
 	
 					String[] tmpStock = StringUtils.split(tem.getStock(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
-					for(int i = 0; i < tmpStock.length; i ++){
-						String key = names.get(tmpChannel) + "-" + i;
-						Map<Date, Double> _tmp = stockData.get(key);
-						if(_tmp == null){
-							_tmp = new HashMap<Date, Double>();
-							stockData.put(key, _tmp);
+					if(tmpStock != null && tmpStock.length > 0)
+						for(int i = 0; i < tmpStock.length; i ++){
+							String key = names.get(tmpChannel) + "-" + i;
+							Map<Date, Double> _tmp = stockData.get(key);
+							if(_tmp == null){
+								_tmp = new HashMap<Date, Double>();
+								stockData.put(key, _tmp);
+							}
+							_tmp.put(tem.getDate(), NumberUtils.toDouble(tmpStock[i], 0));
 						}
-						_tmp.put(tem.getDate(), NumberUtils.toDouble(tmpStock[i], 0));
-					}
 					
 					String[] tmpUnstock = StringUtils.split(tem.getUnstock(), PinaoConstants.TEM_DATA_ELEMENT_SEP);
+					if(tmpUnstock != null && tmpUnstock.length > 0)
 					for(int i = 0; i < tmpUnstock.length; i ++){
 						String key = names.get(tmpChannel) + "-" + i;
 						Map<Date, Double> _tmp = unstockData.get(key);
