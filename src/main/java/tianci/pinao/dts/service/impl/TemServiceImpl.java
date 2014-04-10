@@ -330,17 +330,17 @@ public class TemServiceImpl implements TemService {
 					
 					if(count > 0)
 						avg = new BigDecimal(avg).divide(new BigDecimal(count), 5, RoundingMode.HALF_UP).doubleValue();
-	
-					ReportData data = new ReportData();
-					data.setMax(max);
-					data.setMin(min);
-					data.setAvg(avg);
-					data.setTems(temData);
-					data.setStocks(stockData);
-					data.setUnstocks(unstockData);
-					
-					return data;
 				}
+				
+				ReportData data = new ReportData();
+				data.setMax(max);
+				data.setMin(min);
+				data.setAvg(avg);
+				data.setTems(temData);
+				data.setStocks(stockData);
+				data.setUnstocks(unstockData);
+				
+				return data;
 			}
 		}
 		
