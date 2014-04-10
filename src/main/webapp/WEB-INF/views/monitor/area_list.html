@@ -6,7 +6,7 @@
     </head>
     <body>
         <!--#include virtual="/dts/inc/header.html"-->
-
+        getTreeFromData
         <div id="container" class="grid-elastic cf">
 
             <div id="sidebar" class="grid-220">
@@ -268,8 +268,8 @@
                 }
 
                 function getTreeFromData(data){
-                    if(!data.length){
-                        return {};
+                    if(!data){
+                        return ''; //五道口：''，会被渲染为末级，相当于['五道口']这种形式
                     }
                     if(data[0].children){
                         var obj = {};

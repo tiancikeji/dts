@@ -278,8 +278,8 @@
 
 
                 function getTreeFromData(data){
-                    if(!data.length){
-                        return {};
+                    if(!data){
+                        return ''; //五道口：''，会被渲染为末级，相当于['五道口']这种形式
                     }
                     if(data[0].channels){
                         var obj = {};

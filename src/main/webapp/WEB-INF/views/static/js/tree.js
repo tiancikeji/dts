@@ -58,7 +58,7 @@ $.extend(simpleTree.prototype, {
             htm += this.createFolder(item, status);
             htm += '</dl></dd>';
         }else{//生成文件形式的dd节点
-            htm += '<dd><span><img src="'+this.config.icon.file[cur==num?'leaf':'branchleaf']+'" /><img src="../static/images/tree/o_doc.gif" /></span>'+item+'</dd>';
+            htm += '<dd><span><img src="'+this.config.icon.file[cur==num?'leaf':'branchleaf']+'" /><img src="../static/images/tree/o_doc.gif" /></span>'+(item||key)+'</dd>';
         }
         return htm;
     },
