@@ -80,6 +80,7 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addArea(Area area, int userid) {
 		if(area != null){
+			area.setName(StringUtils.trimToEmpty(area.getName()));
 			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
 			if(areas != null && areas.size() > 0)
 				for(Area tmp : areas)
@@ -95,6 +96,7 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean updateArea(Area area, int userid) {
 		if(area != null && area.getId() > 0){
+			area.setName(StringUtils.trimToEmpty(area.getName()));
 			List<Area> areas = areaDao.getAllAreas(0, Integer.MAX_VALUE);
 			if(areas != null && areas.size() > 0)
 				for(Area tmp : areas)
@@ -300,6 +302,7 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addChannel(Channel channel, int userid) {
 		if(channel != null){
+			channel.setName(StringUtils.trimToEmpty(channel.getName()));
 			List<Channel> tmps = areaDao.getAllChannels(0, Integer.MAX_VALUE);
 			if(tmps != null && tmps.size() > 0)
 				for(Channel tmp : tmps)
@@ -315,6 +318,7 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean updateChannel(Channel channel, int userid) {
 		if(channel != null && channel.getId() > 0){
+			channel.setName(StringUtils.trimToEmpty(channel.getName()));
 			List<Channel> tmps = areaDao.getAllChannels(0, Integer.MAX_VALUE);
 			if(tmps != null && tmps.size() > 0)
 				for(Channel tmp : tmps)
@@ -365,6 +369,7 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean addMachine(Machine machine, int userid) {
 		if(machine != null){
+			machine.setName(StringUtils.trimToEmpty(machine.getName()));
 			List<Machine> tmps = areaDao.getAllMachines(0, Integer.MAX_VALUE);
 			if(tmps != null && tmps.size() > 0)
 				for(Machine tmp : tmps)
@@ -385,6 +390,7 @@ public class AreaServiceImpl implements AreaService {
 	@Override
 	public boolean updateMachine(Machine machine, int userid) {
 		if(machine != null){
+			machine.setName(StringUtils.trimToEmpty(machine.getName()));
 			List<Machine> tmps = areaDao.getAllMachines(0, Integer.MAX_VALUE);
 			if(tmps != null && tmps.size() > 0)
 				for(Machine tmp : tmps)
