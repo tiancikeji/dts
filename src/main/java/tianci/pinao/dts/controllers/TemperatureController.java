@@ -258,17 +258,27 @@ public class TemperatureController {
 	private List<Map<String, Object>> parseCheckAlarmData(List<Alarm> data) {
 		List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
 		
-		if(data != null && data.size() > 0)
+		if(data != null && data.size() > 0){
+			Map<String, Map<String, Object>> maps = new HashMap<String, Map<String,Object>>();
 			for(Alarm alarm : data){
-				Map<String, Object> tmp = new HashMap<String, Object>();
+				Map<String, Object> tmp = maps.get(alarm.getAreaId() + "-" + alarm.getType() + "-" + alarm.getAlarmName()); 
 				
-				tmp.put("id", alarm.getId());
-				tmp.put("type", alarm.getType());
-				tmp.put("areaName", alarm.getAreaName());
-				tmp.put("alarmName", alarm.getAlarmName());
+				if(tmp == null){
+					tmp = new HashMap<String, Object>();
+					maps.put(alarm.getAreaId() + "-" + alarm.getType() + "-" + alarm.getAlarmName(), tmp);
+
+					tmp.put("id", alarm.getId());
+					tmp.put("type", alarm.getType());
+					tmp.put("areaName", alarm.getAreaName());
+					tmp.put("alarmName", alarm.getAlarmName());
+				}
 				
-				result.add(tmp);
+				tmp.put("id", tmp.get("id") + "," + alarm.getId());
 			}
+			
+			for(Map<String, Object> tmp : maps.values())
+				result.add(tmp);
+		}
 		
 		return result;
 	}

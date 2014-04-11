@@ -3,57 +3,57 @@ drop database if exists `dts`;
 
 create database `dts`;
 
-use dts;
+use dts
 
---³§ÇøÉèÖÃ
+--ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 create table area (
-	id int(10) not null auto_increment comment "×ÔÔöid",
-	name varchar(50) not null comment "·ÖÇøÃû×Ö",
-	level tinyint(3) not null default 0 comment "µÚ¼¸²ã£º0-³§Çø£¬1-ÀÂ¹µ£¬2-·ÖÇø",
-	`index` tinyint(3) not null default 0 comment "±¨¾¯ÇøÓò",
-	parent int(10) not null default 0 comment "¸¸¼¶id",
-	image varchar(1024) comment "×Ô¶¨Òå±³¾°Í¼Æ¬",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	name varchar(50) not null comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	level tinyint(3) not null default 0 comment "ï¿½Ú¼ï¿½ï¿½ã£º0-ï¿½ï¿½ï¿½ï¿½1-ï¿½Â¹ï¿½ï¿½ï¿½2-ï¿½ï¿½ï¿½ï¿½",
+	`index` tinyint(3) not null default 0 comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	parent int(10) not null default 0 comment "ï¿½ï¿½ï¿½ï¿½id",
+	image varchar(1024) comment "ï¿½Ô¶ï¿½ï¿½å±³ï¿½ï¿½Í¼Æ¬",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index apid (parent)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table level (
-	id int(10) not null auto_increment comment "×ÔÔöid",
-	name varchar(50) not null comment "·ÖÇøÃû×Ö£º0-³§Çø£¬1-µçÀÂ¹µ£¬2-ÇÅ¼Ü£¬3-ÅäµçÊÒ£¬4-Çø¶Î£¬5-µçÀÂ¼Ð²ã£¬6-¿ª¹Ø¹ñ",
-	image varchar(1024) comment "×Ô¶¨Òå±³¾°Í¼Æ¬",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	name varchar(50) not null comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½0-ï¿½ï¿½ï¿½ï¿½1-ï¿½ï¿½ï¿½Â¹ï¿½ï¿½ï¿½2-ï¿½Å¼Ü£ï¿½3-ï¿½ï¿½ï¿½ï¿½Ò£ï¿½4-ï¿½ï¿½Î£ï¿½5-ï¿½ï¿½ï¿½Â¼Ð²ã£¬6-ï¿½ï¿½ï¿½Ø¹ï¿½",
+	image varchar(1024) comment "ï¿½Ô¶ï¿½ï¿½å±³ï¿½ï¿½Í¼Æ¬",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table area_hardware_config (
-	id int(10) not null auto_increment comment "×ÔÔöid",
-	area_id int(10) not null comment "·ÖÇøid",
-	relay1 varchar(10) not null comment "Ô¤¾¯¼ÌµçÆ÷ºÅ",
-	light varchar(10) not null comment "µÆºÅ",
-	relay varchar(10) not null comment "¼ÌµçÆ÷ºÅ",
-	voice varchar(10) comment "ÉùÒôµØÖ·",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	area_id int(10) not null comment "ï¿½ï¿½ï¿½ï¿½id",
+	relay1 varchar(10) not null comment "Ô¤ï¿½ï¿½ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½",
+	light varchar(10) not null comment "ï¿½Æºï¿½",
+	relay varchar(10) not null comment "ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½",
+	voice varchar(10) comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index ahcaid (area_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table area_channel (
-	id int(10) not null auto_increment  comment "×ÔÔöid",
-	name varchar(50) not null comment "Í¨µÀ±¨¾¯ÏÔÊ¾Ãû×Ö",
-	area_id int(10) not null comment "·ÖÇøid",
-	channel_id int(10) not null default 0 comment "ÏÂÊôÍ¨µÀÊý¾Ý¿âÎ¨Ò»id",
-	start int(10) not null default 0 comment "ÏÂÊôÍ¨µÀ¿ªÊ¼¾àÀë",
-	end int(10) not null default 0 comment "ÏÂÊôÍ¨µÀ½áÊø¾àÀë",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment  comment "ï¿½ï¿½ï¿½ï¿½id",
+	name varchar(50) not null comment "Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½",
+	area_id int(10) not null comment "ï¿½ï¿½ï¿½ï¿½id",
+	channel_id int(10) not null default 0 comment "ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½Î¨Ò»id",
+	start int(10) not null default 0 comment "ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½",
+	end int(10) not null default 0 comment "ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index acname (name),
 	index acaid (area_id),
@@ -61,99 +61,99 @@ create table area_channel (
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table area_temp_config (
-	id int(10) not null auto_increment  comment "×ÔÔöid",
-	area_id int(10) not null comment "·ÖÇøid",
-	temperature_low int(10) not null default 99999 comment "¶¨ÎÂ1",
-	temperature_high int(10) not null default 99999 comment "¶¨ÎÂ2",
-	exotherm int(10) not null default 99999 comment "ÎÂÉý",
-	temperature_diff int(10) not null default 15 comment "²îÎÂ",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment  comment "ï¿½ï¿½ï¿½ï¿½id",
+	area_id int(10) not null comment "ï¿½ï¿½ï¿½ï¿½id",
+	temperature_low int(10) not null default 99999 comment "ï¿½ï¿½ï¿½ï¿½1",
+	temperature_high int(10) not null default 99999 comment "ï¿½ï¿½ï¿½ï¿½2",
+	exotherm int(10) not null default 99999 comment "ï¿½ï¿½ï¿½ï¿½",
+	temperature_diff int(10) not null default 15 comment "ï¿½ï¿½ï¿½ï¿½",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index atcaid (area_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---Í¨µÀÉèÖÃ
+--Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 create table channel (
-	id int(10) not null auto_increment comment "×ÔÔöid",
-	machine_id int(10) not null comment "»úÆ÷Êý¾Ý¿âÎ¨Ò»id",
-	name varchar(50) not null comment "Í¨µÀÃû×Ö",
-	length int(10) not null default 0 comment "Í¨µÀ×Ü³¤¶È",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	machine_id int(10) not null comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½Î¨Ò»id",
+	name varchar(50) not null comment "Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	length int(10) not null default 0 comment "Í¨ï¿½ï¿½ï¿½Ü³ï¿½ï¿½ï¿½",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index cmid (machine_id),
 	index cname (name)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---»úÆ÷ÉèÖÃ
+--ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 create table machine (
-	id int(10) not null auto_increment comment "×ÔÔöid",
-	name varchar(50) not null comment "»úÆ÷Ãû×Ö",
-	serial_port varchar(50) not null default 0 comment "´®¿ÚºÅ",
-	baud_rate varchar(50) not null default 0 comment "²¨ÌØÂÊ",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	name varchar(50) not null comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	serial_port varchar(50) not null default 0 comment "ï¿½ï¿½ï¿½Úºï¿½",
+	baud_rate varchar(50) not null default 0 comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index mname (name)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---Èí¼þÊ¹ÓÃÈ¨ÏÞÉèÖÃ
+--ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 create table license (
-	id int(10) not null auto_increment comment "×ÔÔöid",
+	id int(10) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
 	mac varchar(20) not null comment "mac",
-	use_time bigint(20) not null default 0 comment "ÒÑ¾­Ê¹ÓÃÆÚÏÞ£¬ÒÔÃëÎªµ¥Î»",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	use_time bigint(20) not null default 0 comment "ï¿½Ñ¾ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½Þ£ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---ÏµÍ³ÅäÖÃ
+--ÏµÍ³ï¿½ï¿½ï¿½ï¿½
 create table config (
-	id int(10) not null auto_increment comment "×ÔÔöid",
-	type tinyint(3) not null comment "ÅäÖÃÀàÐÍ",
-	value bigint(20) not null comment "ÅäÖÃÖµ",
-	intr varchar(20) comment "ÅäÖÃÐÅÏ¢",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid int(10) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id int(10) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	type tinyint(3) not null comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	value bigint(20) not null comment "ï¿½ï¿½ï¿½ï¿½Öµ",
+	intr varchar(20) comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid int(10) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index ctype (type)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --lifetime
 insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(1, -1, "lifetime", now(), 1, 0);
---±£´æstockÊý¾Ý£º0-²»±£´æ£¬1-±£´æ
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(2, 0, "±£´æstockÊý¾Ý", now(), 1, 0);
---±£´ærefertemÊý¾Ý£º0-²»±£´æ£¬1-±£´æ
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(3, 0, "±£´ærefertemÊý¾Ý", now(), 1, 0);
---±¸·ÝÊý¾Ý¼ä¸ô£ºÒÔ·ÖÖÓÎªµ¥Î»
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(4, 1, "±¸·ÝÊý¾Ý¼ä¸ô", now(), 1, 0);
---Ç°ºó¶Ë¸üÐÂÆµÂÊ£ºÒÔÃëÎªµ¥Î»
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(5, 10, "Ë¢ÐÂÊ±¼ä", now(), 1, 0);
---Ë¹ÍÐ¿ËË¹±¨¾¯Öµ
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(6, 0, "Ë¹ÍÐ¿ËË¹±¨¾¯Öµ", now(), 1, 0);
---·´Ë¹ÍÐ¿ËË¹±¨¾¯Öµ
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(7, 0, "·´Ë¹ÍÐ¿ËË¹±¨¾¯Öµ", now(), 1, 0);
---¸ßÎÂ¹ÊÕÏÖµ
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(8, 120, "¸ßÎÂ¹ÊÕÏÖµ", now(), 1, 0);
---µÍÎÂ¹ÊÕÏÖµ
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(9, -40, "µÍÎÂ¹ÊÕÏÖµ", now(), 1, 0);
---Ó²ÅÌÊ£ÓàÈÝÁ¿°Ù·Ö±È
-insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(10, 10, "Ó²ÅÌÊ£ÓàÈÝÁ¿°Ù·Ö±È", now(), 1, 0);
+--ï¿½ï¿½ï¿½ï¿½stockï¿½ï¿½Ý£ï¿½0-ï¿½ï¿½ï¿½ï¿½ï¿½æ£¬1-ï¿½ï¿½ï¿½ï¿½
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(2, 0, "ï¿½ï¿½ï¿½ï¿½stockï¿½ï¿½ï¿½", now(), 1, 0);
+--ï¿½ï¿½ï¿½ï¿½refertemï¿½ï¿½Ý£ï¿½0-ï¿½ï¿½ï¿½ï¿½ï¿½æ£¬1-ï¿½ï¿½ï¿½ï¿½
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(3, 0, "ï¿½ï¿½ï¿½ï¿½refertemï¿½ï¿½ï¿½", now(), 1, 0);
+--ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¼ï¿½ï¿½ï¿½ï¿½ï¿½Ô·ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(4, 1, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¼ï¿½ï¿½", now(), 1, 0);
+--Ç°ï¿½ï¿½Ë¸ï¿½ï¿½ï¿½Æµï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(5, 10, "Ë¢ï¿½ï¿½Ê±ï¿½ï¿½", now(), 1, 0);
+--Ë¹ï¿½Ð¿ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½Öµ
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(6, 0, "Ë¹ï¿½Ð¿ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½Öµ", now(), 1, 0);
+--ï¿½ï¿½Ë¹ï¿½Ð¿ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½Öµ
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(7, 0, "ï¿½ï¿½Ë¹ï¿½Ð¿ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½Öµ", now(), 1, 0);
+--ï¿½ï¿½ï¿½Â¹ï¿½ï¿½ï¿½Öµ
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(8, 120, "ï¿½ï¿½ï¿½Â¹ï¿½ï¿½ï¿½Öµ", now(), 1, 0);
+--ï¿½ï¿½ï¿½Â¹ï¿½ï¿½ï¿½Öµ
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(9, -40, "ï¿½ï¿½ï¿½Â¹ï¿½ï¿½ï¿½Öµ", now(), 1, 0);
+--Ó²ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù·Ö±ï¿½
+insert into config(type, value, intr, lastmod_time, lastmod_userid, isdel) values(10, 10, "Ó²ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù·Ö±ï¿½", now(), 1, 0);
 
---ÈÕÖ¾£ºtype£º1-webÏµÍ³Æô¶¯£¬2-webÏµÍ³¹Ø±Õ£¬3-ÓÃ»§µÇÂ¼£¬4-ÓÃ»§µÇ³ö£¬5-Êý¾Ý²É¼¯Æô¶¯£¬6-Êý¾Ý²É¼¯¹Ø±Õ
+--ï¿½ï¿½Ö¾ï¿½ï¿½typeï¿½ï¿½1-webÏµÍ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2-webÏµÍ³ï¿½Ø±Õ£ï¿½3-ï¿½Ã»ï¿½ï¿½ï¿½Â¼ï¿½ï¿½4-ï¿½Ã»ï¿½ï¿½Ç³ï¿½ï¿½ï¿½5-ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½6-ï¿½ï¿½Ý²É¼ï¿½ï¿½Ø±ï¿½
 create table log (
-	id bigint(20) not null auto_increment comment "×ÔÔöid",
-	type int(10) not null comment "ÀàÐÍ",
+	id bigint(20) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	type int(10) not null comment "ï¿½ï¿½ï¿½ï¿½",
 	value varchar(50) not null comment "Öµ",
-	source varchar(50) not null comment "À´Ô´",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	source varchar(50) not null comment "ï¿½ï¿½Ô´",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index logtime (lastmod_time)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -197,46 +197,46 @@ CREATE TABLE `temperature_log` (
   KEY `tm_key` (`channel`,`date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 
---ÓÃ»§
+--ï¿½Ã»ï¿½
 create table user (
-	id bigint(20) not null auto_increment comment "×ÔÔöid",
-	name varchar(50) not null comment "Ãû×Ö&µÇÂ¼Ãû",
-	password_login varchar(50) not null comment "µÇÂ¼ÃÜÂë",
-	password_reset varchar(50) not null comment "¸´Î»ÃÜÂë",
-	password_logout varchar(50) not null comment "ÍË³öÃÜÂë",
-	role int(10) not null comment "½ÇÉ«£º1 super admin, 2 system admin, 3 super user, 4 normal user",
-	area_ids varchar(255) not null comment "²éÑ¯³§Çøid",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid bigint(20) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id bigint(20) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	name varchar(50) not null comment "ï¿½ï¿½ï¿½ï¿½&ï¿½ï¿½Â¼ï¿½ï¿½",
+	password_login varchar(50) not null comment "ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½",
+	password_reset varchar(50) not null comment "ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½",
+	password_logout varchar(50) not null comment "ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½",
+	role int(10) not null comment "ï¿½ï¿½É«ï¿½ï¿½1 super admin, 2 system admin, 3 super user, 4 normal user",
+	area_ids varchar(255) not null comment "ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½id",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid bigint(20) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index uname (name, password_login)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- alarm
 create table alarm (
-	id bigint(20) not null auto_increment comment "×ÔÔöid",
-	type tinyint(3) not null comment "±¨¾¯ÀàÐÍ£º1Ô¤¾¯£¬2»ð¾¯£¬3²îÎÂ±¨¾¯£¬4ÎÂÉýËÙÂÊ±¨¾¯£¬5µÍÎÂ¹ÊÕÏ£¬6¸ßÎÂ¹ÊÕÏ£¬7Ë¹ÍÐ¿ËË¹¹ÊÕÏ£¬8·´Ë¹ÍÐ¿ËË¹¹ÊÕÏ£¬9Êý¾Ý´æ´¢Òç³ö",
-	machine_id int(10) default 0 comment "»úÆ÷Î¨Ò»id",
-	machine_name varchar(50) default 0 comment "»úÆ÷Ãû³Æ",
-	channel_id int(10) default 0 comment "Í¨µÀÊý¾Ý¿âÎ¨Ò»id",
-	channel_name varchar(50) default 0 comment "Í¨µÀÃû³Æ",
-	length int(10) comment "±¨¾¯¾àÀë",
-	area_id int(10) default 0 comment "ÇøÓòÎ¨Ò»id",
-	area_name varchar(50) default 0 comment "ÇøÓòÃû³Æ",
-	alarm_name varchar(50) default 0 comment "±¨¾¯ÇøÓòÃû³Æ",
-	light varchar(10) comment "µÆºÅ",
-	relay varchar(10) comment "¼ÌµçÆ÷ºÅ",
-	relay1 varchar(10) comment "¼ÌµçÆ÷ºÅ",
-	voice varchar(10) comment "ÉùÒôµØÖ·",
-	temperature double(10,2) comment "Ä¿Ç°ÎÂ¶È",
-	temperature_pre double(10,2) comment "ÉèÖÃÎÂ¶È",
-	temperature_max double(10,2) comment "×î´óÎÂ¶È",
-	status tinyint(3) not null default 0 comment '×´Ì¬£º0ÐÂÔö£¬1±¨¾¯£¬2È·ÈÏ£¬3ÏûÒô£¬4ÏûÒô¹ý£¬5¸´Î»£¬6¸´Î»¹ý',
-	add_time datetime not null comment "Ìí¼ÓÊ±¼ä",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid bigint(20) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id bigint(20) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	type tinyint(3) not null comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½1Ô¤ï¿½ï¿½ï¿½ï¿½2ï¿½ð¾¯£ï¿½3ï¿½ï¿½ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½5ï¿½ï¿½ï¿½Â¹ï¿½ï¿½Ï£ï¿½6ï¿½ï¿½ï¿½Â¹ï¿½ï¿½Ï£ï¿½7Ë¹ï¿½Ð¿ï¿½Ë¹ï¿½ï¿½ï¿½Ï£ï¿½8ï¿½ï¿½Ë¹ï¿½Ð¿ï¿½Ë¹ï¿½ï¿½ï¿½Ï£ï¿½9ï¿½ï¿½Ý´æ´¢ï¿½ï¿½ï¿½",
+	machine_id int(10) default 0 comment "ï¿½ï¿½ï¿½ï¿½Î¨Ò»id",
+	machine_name varchar(50) default 0 comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	channel_id int(10) default 0 comment "Í¨ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½Î¨Ò»id",
+	channel_name varchar(50) default 0 comment "Í¨ï¿½ï¿½ï¿½ï¿½ï¿½",
+	length int(10) comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	area_id int(10) default 0 comment "ï¿½ï¿½ï¿½ï¿½Î¨Ò»id",
+	area_name varchar(50) default 0 comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	alarm_name varchar(50) default 0 comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	light varchar(10) comment "ï¿½Æºï¿½",
+	relay varchar(10) comment "ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½",
+	relay1 varchar(10) comment "ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½",
+	voice varchar(10) comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·",
+	temperature double(10,2) comment "Ä¿Ç°ï¿½Â¶ï¿½",
+	temperature_pre double(10,2) comment "ï¿½ï¿½ï¿½ï¿½ï¿½Â¶ï¿½",
+	temperature_max double(10,2) comment "ï¿½ï¿½ï¿½ï¿½Â¶ï¿½",
+	status tinyint(3) not null default 0 comment '×´Ì¬ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2È·ï¿½Ï£ï¿½3ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½5ï¿½ï¿½Î»ï¿½ï¿½6ï¿½ï¿½Î»ï¿½ï¿½',
+	add_time datetime not null comment "ï¿½ï¿½ï¿½Ê±ï¿½ï¿½",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid bigint(20) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index acid (channel_id),
 	index amid (machine_id),
@@ -245,26 +245,26 @@ create table alarm (
 
 create table alarm_history (
 	alarm_id bigint(20) not null default 0 comment "alarmÎ¨Ò»id",
-	operation tinyint(3) not null default 0 comment '2È·ÈÏ£¬3ÏûÒô£¬5¸´Î»',
-	add_time datetime not null comment "ÐÞ¸ÄÊ±¼ä",
-	add_userid bigint(20) not null comment "ÐÞ¸ÄÈË",
+	operation tinyint(3) not null default 0 comment '2È·ï¿½Ï£ï¿½3ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½5ï¿½ï¿½Î»',
+	add_time datetime not null comment "ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	add_userid bigint(20) not null comment "ï¿½Þ¸ï¿½ï¿½ï¿½",
 	index ahaid (alarm_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table `check` (
-	id bigint(20) not null auto_increment comment "×ÔÔöid",
-	machine_id int(10) default 0 comment "»úÆ÷Î¨Ò»id",
-	channel_id int(10) default 0 comment "Í¨µÀÊý¾Ý¿âÎ¨Ò»id",
-	area_id int(10) default 0 comment "ÇøÓòÎ¨Ò»id",
-	light varchar(10) comment "µÆºÅ",
-	relay varchar(10) comment "¼ÌµçÆ÷ºÅ",
-	relay1 varchar(10) comment "¼ÌµçÆ÷ºÅ",
-	voice varchar(10) comment "ÉùÒôµØÖ·",
-	status tinyint(3) not null default 0 comment '×´Ì¬£º0ÐÂÔö£¬1×Ô¼ì',
-	add_time datetime not null comment "Ìí¼ÓÊ±¼ä",
-	lastmod_time datetime not null comment "ÉÏ´ÎÐÞ¸ÄÊ±¼ä",
-	lastmod_userid bigint(20) not null comment "ÉÏ´ÎÐÞ¸ÄÈË",
-	isdel tinyint(3) not null default 0 comment "ÊÇ·ñÉ¾³ý",
+	id bigint(20) not null auto_increment comment "ï¿½ï¿½ï¿½ï¿½id",
+	machine_id int(10) default 0 comment "ï¿½ï¿½ï¿½ï¿½Î¨Ò»id",
+	channel_id int(10) default 0 comment "Í¨ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½Î¨Ò»id",
+	area_id int(10) default 0 comment "ï¿½ï¿½ï¿½ï¿½Î¨Ò»id",
+	light varchar(10) comment "ï¿½Æºï¿½",
+	relay varchar(10) comment "ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½",
+	relay1 varchar(10) comment "ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½",
+	voice varchar(10) comment "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·",
+	status tinyint(3) not null default 0 comment '×´Ì¬ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½Ô¼ï¿½',
+	add_time datetime not null comment "ï¿½ï¿½ï¿½Ê±ï¿½ï¿½",
+	lastmod_time datetime not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½",
+	lastmod_userid bigint(20) not null comment "ï¿½Ï´ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½",
+	isdel tinyint(3) not null default 0 comment "ï¿½Ç·ï¿½É¾ï¿½ï¿½",
 	primary key(id),
 	index ccid (channel_id),
 	index cmid (machine_id),

@@ -83,8 +83,9 @@
                         return; //仪器没有平面视图，直接显示数据报表
                         this.$areaImage.find('img').attr('src', $.Dts.rootUri + $.Dts.areaManager.areaListData[id].image);
                     },
-                    initArea: function(id){ //初始化一个区域
+                    initArea: function(id, time){ //初始化一个区域
                         id = id || $.Dts.areaManager.currentId;
+                        time = time || -1;
                         var _this = this;
                         this.xNums = 1;
                         this.initImage(id);
@@ -92,8 +93,15 @@
                         clearTimeout(_this.loadTimer);
                         _this.loadTimer = null;
                         this.$monitorName.html($.Dts.areaManager.currentName);
+                        this.loadData(time, id);
+                    },
+
+                    loadData: function(time, id){
+                        var _this = this;
+                        _this.loadTimer = null;
+                        this.currentTime = time;
                         $.get($.Dts.rootUri + '/monitor/'+ ($.Dts.areaManager.isMechine ? 'machine' : 'channel') +
-                                '/data?userid='+$.Dts.login.getUserId()+'&id='+id+'&time=-1&start='+
+                                '/data?userid='+$.Dts.login.getUserId()+'&id='+id+'&time=' + time+'&start='+
                                 $.Dts.areaManager.start +'&end=' + $.Dts.areaManager.end, function(res){
                             if(!$.Dts.ajax.validRes(res)){
                                 return;
@@ -107,7 +115,6 @@
                             for(var d in data.data){
                                 var channelData = data.data[d];
                                 //xAxis = getLimitedArr(channelData.length, 300);
-                                console.log(xAxis)
 
                                 tems.push({
                                     name: d,
@@ -129,124 +136,150 @@
 //                                });
                             }
 
-
-                            $('#chartsTemsContainer').highcharts({
-                                title: {
-                                    text: $.Dts.areaManager.currentName + '温度监控',
-                                    x: -20 //center
-                                },
-                                subtitle: {
-                                    text: ' ',
-                                    x: -20
-                                },
-                                xAxis: {
-                                    categories: xAxis,
-                                    labels: {
-                                        step: getLimitedArrStep(channelData.length, 20),
-                                        maxStaggerLines: 1
-                                    }
-
-                                },
-                                yAxis: {
-                                    title: {
-                                        text: '温度 (°C)'
+                            if(time == -1){
+                                $('#chartsTemsContainer').highcharts({
+                                    chart: {
+                                        zoomType: 'xy',
+                                        spacingRight: 20
                                     },
-                                    plotLines: [{
-                                        value: 0,
-                                        width: 1,
-                                        color: '#808080'
-                                    }]
-                                },
-                                tooltip: {
-                                    valueSuffix: '°C'
-                                },
-                                legend: {
-                                    layout: 'vertical',
-                                    align: 'right',
-                                    verticalAlign: 'middle',
-                                    borderWidth: 0
-                                },
-                                series: tems
-                            });
-
-                            $('#chartsStocksContainer').highcharts({
-                                title: {
-                                    text: $.Dts.areaManager.currentName + 'stock监控',
-                                    x: -20 //center
-                                },
-                                subtitle: {
-                                    text: ' ',
-                                    x: -20
-                                },
-                                xAxis: {
-                                    categories: xAxis,
-                                    labels: {
-                                        step: getLimitedArrStep(channelData.length, 20),
-                                        maxStaggerLines: 1
-                                    }
-                                },
-                                yAxis: {
                                     title: {
-                                        text: 'stock&unstock'
+                                        text: $.Dts.areaManager.currentName + '温度监控',
+                                        x: -20 //center
                                     },
-                                    plotLines: [{
-                                        value: 0,
-                                        width: 1,
-                                        color: '#808080'
-                                    }]
-                                },
-                                tooltip: {
-                                    valueSuffix: '°C'
-                                },
-                                legend: {
-                                    layout: 'vertical',
-                                    align: 'right',
-                                    verticalAlign: 'middle',
-                                    borderWidth: 0
-                                },
-                                series: stocks
-                            });
+                                    subtitle: {
+                                        text: ' ',
+                                        x: -20
+                                    },
+                                    xAxis: {
+                                        categories: xAxis,
+                                        labels: {
+                                            step: getLimitedArrStep(channelData.length, 20),
+                                            maxStaggerLines: 1
+                                        }
+
+                                    },
+                                    yAxis: {
+                                        title: {
+                                            text: '温度 (°C)'
+                                        },
+                                        plotLines: [{
+                                            value: 0,
+                                            width: 1,
+                                            color: '#808080'
+                                        }]
+                                    },
+                                    tooltip: {
+                                        valueSuffix: '°C'
+                                    },
+                                    legend: {
+                                        layout: 'vertical',
+                                        align: 'right',
+                                        verticalAlign: 'middle',
+                                        borderWidth: 0
+                                    },
+                                    series: tems
+                                });
+
+                                $('#chartsStocksContainer').highcharts({
+                                    chart: {
+                                        zoomType: 'xy',
+                                        spacingRight: 20
+                                    },
+                                    title: {
+                                        text: $.Dts.areaManager.currentName + 'stock监控',
+                                        x: -20 //center
+                                    },
+                                    subtitle: {
+                                        text: ' ',
+                                        x: -20
+                                    },
+                                    xAxis: {
+                                        categories: xAxis,
+                                        labels: {
+                                            step: getLimitedArrStep(channelData.length, 20),
+                                            maxStaggerLines: 1
+                                        }
+                                    },
+                                    yAxis: {
+                                        title: {
+                                            text: 'stock&unstock'
+                                        },
+                                        plotLines: [{
+                                            value: 0,
+                                            width: 1,
+                                            color: '#808080'
+                                        }]
+                                    },
+                                    tooltip: {
+                                        valueSuffix: '°C'
+                                    },
+                                    legend: {
+                                        layout: 'vertical',
+                                        align: 'right',
+                                        verticalAlign: 'middle',
+                                        borderWidth: 0
+                                    },
+                                    series: stocks
+                                });
+                            }else{
+                                var chartTemp = $('#chartsTemsContainer').highcharts();
+                                for(var s = 0; s < chartTemp.series.length; s++){
+                                    chartTemp.series[s].setData(tems[s].data);
+                                }
+
+                                var chartStocks = $('#chartsStocksContainer').highcharts();
+                                for(var s = 0; s < chartStocks.series.length; s++){
+                                    chartStocks.series[s].setData(stocks[s].data);
+                                }
+                                //chart.series[1].setData(tems[1]);
+                                //chart.series[2].setData(tems[2]);
+
+
+                            }
 
                             /*$('#chartsUnstocksContainer').highcharts({
-                                title: {
-                                    text: $.Dts.areaManager.currentName + '反stock监控',
-                                    x: -20 //center
-                                },
-                                subtitle: {
-                                    text: ' ',
-                                    x: -20
-                                },
-                                xAxis: {
-                                    categories: xAxis
-                                },
-                                yAxis: {
-                                    title: {
-                                        text: '反stock'
-                                    },
-                                    plotLines: [{
-                                        value: 0,
-                                        width: 1,
-                                        color: '#808080'
-                                    }]
-                                },
-                                tooltip: {
-                                    valueSuffix: '°C'
-                                },
-                                legend: {
-                                    layout: 'vertical',
-                                    align: 'right',
-                                    verticalAlign: 'middle',
-                                    borderWidth: 0
-                                },
-                                series: unstocks
-                            });
-*/
+                             title: {
+                             text: $.Dts.areaManager.currentName + '反stock监控',
+                             x: -20 //center
+                             },
+                             subtitle: {
+                             text: ' ',
+                             x: -20
+                             },
+                             xAxis: {
+                             categories: xAxis
+                             },
+                             yAxis: {
+                             title: {
+                             text: '反stock'
+                             },
+                             plotLines: [{
+                             value: 0,
+                             width: 1,
+                             color: '#808080'
+                             }]
+                             },
+                             tooltip: {
+                             valueSuffix: '°C'
+                             },
+                             legend: {
+                             layout: 'vertical',
+                             align: 'right',
+                             verticalAlign: 'middle',
+                             borderWidth: 0
+                             },
+                             series: unstocks
+                             });
+                             */
                             //初始化温度数据
                             _this.maxTemp = data.max;
                             _this.minTemp = data.min;
                             _this.avgTemp = data.avg;
                             _this.renderTemp();
                             _this.loadHistory(id);
+                            _this.loadTimer = setTimeout(function(){
+                                _this.loadData(data.time, id);
+                            }, res.interval * 1000);
                         }, 'json');
                     },
 

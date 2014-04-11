@@ -132,6 +132,10 @@
                             var data = res.data;
                             var date = (new Date(data.time)).toLocaleTimeString();
                             $('#chartsContainer').highcharts({
+                                chart: {
+                                    zoomType: 'x',
+                                    spacingRight: 20
+                                },
                                 title: {
                                     text: $.Dts.areaManager.areaListData[id].name + '温度监控',
                                     x: -20 //center
