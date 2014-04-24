@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -1035,7 +1036,7 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					if(channel != null && channel.getLength() > 0){
+					if(channel != null && channel.getLength() > 0 && NumberUtils.isNumber(channel.getName())){
 						boolean success= areaService.addChannel(channel, new Long(userid).intValue());
 						if(success)
 							result.put("status", "0");
@@ -1066,7 +1067,7 @@ public class AreaController {
 			if(obj != null && obj instanceof User){
 				User user = (User) obj;
 				if(user.getRole() == 1){
-					if(channel.getLength() > 0){
+					if(channel != null && channel.getLength() > 0 && NumberUtils.isNumber(channel.getName())){
 						boolean success= areaService.updateChannel(channel, new Long(userid).intValue());
 						if(success)
 							result.put("status", "0");
